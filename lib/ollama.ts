@@ -51,11 +51,11 @@ export async function getAIStream(
     // Provide a more helpful error message
     if ((error as any).message?.includes("fetch failed") || (error as any).code === "ECONNREFUSED") {
       throw new Error("Ollama is not running. Please make sure Ollama is installed and running locally.");
-    } else if (error.message?.includes("not found")) {
+    } else if ((error as any).message?.includes("not found")) {
       throw new Error("The 'llama3.2' model was not found. Please run 'ollama pull llama3.2' in your terminal.");
     }
     
-    throw new Error(error.message || "Failed to get stream from AI");
+    throw new Error((error as any).message || "Failed to get stream from AI");
   }
 }
 

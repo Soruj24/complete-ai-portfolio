@@ -5,6 +5,7 @@ import Settings from "@/models/Settings";
 import { Project } from "@/models/Project";
 import { Experience } from "@/models/Experience";
 import { Skill } from "@/models/Skill";
+import { ISkill, IExperience, IProject } from "@/types";
 import { MultiFileLoader } from "@langchain/classic/document_loaders/fs/multi_file";
 import { JSONLoader } from "@langchain/classic/document_loaders/fs/json";
 import { TextLoader } from "@langchain/classic/document_loaders/fs/text";
@@ -24,9 +25,9 @@ function detectLanguage(text: string): "english" | "bengali" {
 
 function createBengaliContext(
   settings: any | null,
-  skills: Skill[],
-  experiences: Experience[],
-  projects: Project[],
+  skills: ISkill[],
+  experiences: IExperience[],
+  projects: IProject[],
   extraContext: string
 ) {
   return `
@@ -86,10 +87,10 @@ function createBengaliContext(
 
 // ইংরেজি কনটেক্সট তৈরি
 function createEnglishContext(
-  settings: PersonalInfo,
-  skills: Skill[],
-  experiences: Experience[],
-  projects: Project[],
+  settings: any | null,
+  skills: ISkill[],
+  experiences: IExperience[],
+  projects: IProject[],
   extraContext: string
 ) {
   return `

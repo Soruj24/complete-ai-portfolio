@@ -105,7 +105,7 @@ interface ContactMessage {
   createdAt: string;
 }
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -1053,5 +1053,13 @@ export default function AdminDashboard() {
         </Tabs>
       </div>
     </>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AdminDashboardContent />
+    </Suspense>
   );
 }

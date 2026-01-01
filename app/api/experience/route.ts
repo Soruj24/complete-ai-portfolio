@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     await dbConnect();
-    const experience = await Experience.create(body);
+    const experience = (await Experience.create(body)) as any;
 
     await logAction({
       action: "CREATE",

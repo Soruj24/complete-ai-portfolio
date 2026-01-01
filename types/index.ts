@@ -98,18 +98,6 @@ export interface IProject {
   fullDescription: string;
   image: string;
   technologies: string[];
-}
-
-export interface AuditLog {
-  _id: string;
-  createdAt: string;
-  userEmail: string;
-  userId: string;
-  action: string;
-  entityType: string;
-  entityId: string;
-  ipAddress: string;
-}
   features: string[];
   githubUrl?: string;
   liveUrl?: string;
@@ -140,6 +128,26 @@ export interface AuditLog {
     description: string;
   }[];
   lessonsLearned: string[];
+  futureImprovements: string[];
+  metaDescription?: string;
+  seoTitle?: string;
+  performance?: {
+    loadTime: number;
+    accessibility: number;
+    bestPractices: number;
+    seo: number;
+  };
+}
+
+export interface AuditLog {
+  _id: string;
+  createdAt: string;
+  userEmail: string;
+  userId: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  ipAddress: string;
 }
 
 export interface IExperience {

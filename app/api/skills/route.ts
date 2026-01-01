@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     await dbConnect();
-    const skill = await Skill.create(body);
+    const skill = (await Skill.create(body)) as any;
 
     await logAction({
       action: "CREATE",
