@@ -333,12 +333,6 @@ export function AdminSettings({
           <div className="space-y-2">
             <Button
               variant="ghost"
-              className="w-full justify-start font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 h-10 md:h-12 text-sm md:text-base"
-            >
-              View Audit Logs
-            </Button>
-            <Button
-              variant="ghost"
               className="w-full justify-start font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 h-10 md:h-12 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 text-sm md:text-base"
             >
               Clear Cache

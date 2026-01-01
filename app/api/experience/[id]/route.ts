@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { dbConnect } from "@/config/db";
 import { Experience } from "@/models/Experience";
 import { NextResponse } from "next/server";
-import { logAction } from "@/lib/audit";
 
 export async function PUT(
   request: Request,
@@ -23,15 +22,6 @@ export async function PUT(
       return NextResponse.json({ error: "Experience not found" }, { status: 404 });
     }
 
-    await logAction({
-      action: "UPDATE",
-      userId: session.user.id!,
-      userEmail: session.user.email!,
-      entityType: "EXPERIENCE",
-      entityId: id,
-      changes: body,
-    });
-
     return NextResponse.json({ success: true, experience });
   } catch (error) {
     console.error("Experience update error:", error);
@@ -51,18 +41,7 @@ export async function DELETE(
     }
 
     await dbConnect();
-    const experience = await Experience.findByIdAndDelete(id);
-
-    if (experience) {
-      await logAction({
-        action: "DELETE",
-        userId: session.user.id!,
-        userEmail: session.user.email!,
-        entityType: "EXPERIENCE",
-        entityId: id,
-        changes: { deletedExperienceRole: experience.role },
-      });
-    }
+    await Experience.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true, message: "Experience deleted successfully" });
   } catch (error) {

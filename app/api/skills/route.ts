@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { dbConnect } from "@/config/db";
 import { Skill } from "@/models/Skill";
 import { NextResponse } from "next/server";
-import { logAction } from "@/lib/audit";
 import { skillCategories as initialSkillCategories } from "@/data/skills";
 
 export async function GET() {
@@ -38,15 +37,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     await dbConnect();
     const skill = (await Skill.create(body)) as any;
-
-    await logAction({
-      action: "CREATE",
-      userId: session.user.id!,
-      userEmail: session.user.email!,
-      entityType: "SKILL",
-      entityId: skill._id.toString(),
-      changes: body,
-    });
 
     return NextResponse.json({ success: true, skill });
   } catch (error) {

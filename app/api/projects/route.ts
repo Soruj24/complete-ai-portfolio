@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { dbConnect } from "@/config/db";
 import { Project } from "@/models/Project";
 import { NextResponse } from "next/server";
-import { logAction } from "@/lib/audit";
 import { projects as initialProjects } from "@/data/projects";
 
 export async function GET(request: Request) {
@@ -63,15 +62,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     await dbConnect();
     const project = (await Project.create(body)) as any;
-
-    await logAction({
-      action: "CREATE",
-      userId: session.user.id!,
-      userEmail: session.user.email!,
-      entityType: "PROJECT",
-      entityId: project._id.toString(),
-      changes: body,
-    });
 
     return NextResponse.json({ success: true, project });
   } catch (error) {

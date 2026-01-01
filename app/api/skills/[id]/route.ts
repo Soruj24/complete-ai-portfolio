@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { dbConnect } from "@/config/db";
 import { Skill } from "@/models/Skill";
 import { NextResponse } from "next/server";
-import { logAction } from "@/lib/audit";
 
 export async function PUT(
   request: Request,
@@ -24,15 +23,6 @@ export async function PUT(
       return NextResponse.json({ error: "Skill not found" }, { status: 404 });
     }
 
-    await logAction({
-      action: "UPDATE",
-      userId: session.user.id!,
-      userEmail: session.user.email!,
-      entityType: "SKILL",
-      entityId: id,
-      changes: body,
-    });
-
     return NextResponse.json({ success: true, skill });
   } catch (error) {
     console.error("Skill update error:", error);
@@ -52,18 +42,7 @@ export async function DELETE(
     }
 
     await dbConnect();
-    const skill = await Skill.findByIdAndDelete(id);
-
-    if (skill) {
-      await logAction({
-        action: "DELETE",
-        userId: session.user.id!,
-        userEmail: session.user.email!,
-        entityType: "SKILL",
-        entityId: id,
-        changes: { deletedSkillName: skill.name },
-      });
-    }
+    await Skill.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true, message: "Skill deleted successfully" });
   } catch (error) {

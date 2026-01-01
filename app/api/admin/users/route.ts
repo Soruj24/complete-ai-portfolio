@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { dbConnect } from "@/config/db";
 import { User } from "@/models/User";
 import { NextResponse } from "next/server";
-import { logAction } from "@/lib/audit";
 import { adminUpdateUserSchema, adminDeleteUserSchema } from "@/lib/validations";
 
 export async function GET(request: Request) {
@@ -74,15 +73,6 @@ export async function DELETE(request: Request) {
     const userToDelete = await User.findById(userId);
     if (userToDelete) {
       await User.findByIdAndDelete(userId);
-      
-      await logAction({
-        action: "DELETE",
-        userId: session.user.id!,
-        userEmail: session.user.email!,
-        entityType: "USER",
-        entityId: userId,
-        changes: { deletedUserEmail: userToDelete.email },
-      });
     }
 
     return NextResponse.json({ success: true, message: "User deleted successfully" });
@@ -119,21 +109,6 @@ export async function PATCH(request: Request) {
 
     const oldUser = await User.findById(userId);
     await User.findByIdAndUpdate(userId, updateData);
-
-    if (oldUser) {
-      let action = "UPDATE";
-      if (role) action = "ROLE_CHANGE";
-      if (status) action = "STATUS_CHANGE";
-
-      await logAction({
-        action,
-        userId: session.user.id!,
-        userEmail: session.user.email!,
-        entityType: "USER",
-        entityId: userId,
-        changes: updateData,
-      });
-    }
 
     return NextResponse.json({
       success: true,

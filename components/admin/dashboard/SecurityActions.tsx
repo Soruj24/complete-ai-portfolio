@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 
 interface SecurityActionsProps {
   onSetup2FA: () => void;
-  auditLogs: any[];
 }
 
-export function SecurityActions({ onSetup2FA, auditLogs }: SecurityActionsProps) {
+export function SecurityActions({ onSetup2FA }: SecurityActionsProps) {
   return (
     <Card className="border-none shadow-xl shadow-gray-200/50 dark:shadow-none dark:bg-slate-900/50 dark:border dark:border-slate-800 rounded-[32px] overflow-hidden transition-all duration-300">
       <CardHeader className="bg-white dark:bg-slate-900/80 border-b border-gray-100 dark:border-slate-800 py-6 px-8">
@@ -37,26 +36,6 @@ export function SecurityActions({ onSetup2FA, auditLogs }: SecurityActionsProps)
             >
               Enable 2FA
             </Button>
-          </div>
-
-          <div className="p-4 border-2 border-dashed border-gray-100 dark:border-slate-800 rounded-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <AlertCircle className="h-5 w-5 text-amber-500" />
-              <p className="text-sm font-bold text-gray-700 dark:text-slate-300">Recent Critical Events</p>
-            </div>
-            <div className="space-y-3">
-              {auditLogs.slice(0, 3).map((log) => (
-                <div key={log._id} className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500 dark:text-slate-400 font-medium">{log.action}</span>
-                  <span className="text-gray-400 dark:text-slate-500 font-medium">
-                    {new Date(log.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              ))}
-              {auditLogs.length === 0 && (
-                <p className="text-xs text-gray-400 dark:text-slate-500 text-center font-bold">No recent events</p>
-              )}
-            </div>
           </div>
         </div>
       </CardContent>

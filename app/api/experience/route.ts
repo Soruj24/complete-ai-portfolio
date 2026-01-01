@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { dbConnect } from "@/config/db";
 import { Experience } from "@/models/Experience";
 import { NextResponse } from "next/server";
-import { logAction } from "@/lib/audit";
 import { experiences as initialExperiences } from "@/data/experience";
 
 export async function GET() {
@@ -32,15 +31,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     await dbConnect();
     const experience = (await Experience.create(body)) as any;
-
-    await logAction({
-      action: "CREATE",
-      userId: session.user.id!,
-      userEmail: session.user.email!,
-      entityType: "EXPERIENCE",
-      entityId: experience._id.toString(),
-      changes: body,
-    });
 
     return NextResponse.json({ success: true, experience });
   } catch (error) {

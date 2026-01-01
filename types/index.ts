@@ -139,17 +139,6 @@ export interface IProject {
   };
 }
 
-export interface AuditLog {
-  _id: string;
-  createdAt: string;
-  userEmail: string;
-  userId: string;
-  action: string;
-  entityType: string;
-  entityId: string;
-  ipAddress: string;
-}
-
 export interface IExperience {
   _id?: string;
   id?: string;

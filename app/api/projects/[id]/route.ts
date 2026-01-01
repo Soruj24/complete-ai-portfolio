@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { dbConnect } from "@/config/db";
 import { Project } from "@/models/Project";
 import { NextResponse } from "next/server";
-import { logAction } from "@/lib/audit";
 
 export async function GET(
   request: Request,
@@ -43,15 +42,6 @@ export async function PUT(
 
     const project = await Project.findByIdAndUpdate(id, body, { new: true });
 
-    await logAction({
-      action: "UPDATE",
-      userId: session.user.id!,
-      userEmail: session.user.email!,
-      entityType: "PROJECT",
-      entityId: id,
-      changes: body,
-    });
-
     return NextResponse.json({ success: true, project });
   } catch (error) {
     console.error("Project update error:", error);
@@ -71,18 +61,7 @@ export async function DELETE(
     }
 
     await dbConnect();
-    const project = await Project.findByIdAndDelete(id);
-
-    if (project) {
-      await logAction({
-        action: "DELETE",
-        userId: session.user.id!,
-        userEmail: session.user.email!,
-        entityType: "PROJECT",
-        entityId: id,
-        changes: { deletedProjectTitle: project.title },
-      });
-    }
+    await Project.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true, message: "Project deleted successfully" });
   } catch (error) {

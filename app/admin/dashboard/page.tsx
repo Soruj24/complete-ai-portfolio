@@ -51,7 +51,6 @@ import { SecurityActions } from "@/components/admin/dashboard/SecurityActions";
 import { UserTable } from "@/components/admin/dashboard/UserTable";
 import { SystemHealth } from "@/components/admin/dashboard/SystemHealth";
 import { ContactInquiries } from "@/components/admin/dashboard/ContactInquiries";
-import { AuditLogsTable } from "@/components/admin/dashboard/AuditLogsTable";
 import { AdminSettings } from "@/components/admin/dashboard/AdminSettings";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -82,7 +81,6 @@ import Navbar from "@/components/layout/Navbar";
 import { ProjectManager } from "@/components/admin/dashboard/ProjectManager";
 import { SkillManager } from "@/components/admin/dashboard/SkillManager";
 import { ExperienceManager } from "@/components/admin/dashboard/ExperienceManager";
-import { AuditLog } from "@/types";
 
 interface User {
   _id: string;
@@ -161,12 +159,6 @@ function AdminDashboardContent() {
   });
   const [settingsLoading, setSettingsLoading] = useState(false);
 
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [auditPagination, setAuditPagination] = useState({
-    page: 1,
-    pages: 1,
-    total: 0
-  });
   const [activityData, setActivityData] = useState<
     {
       date: string;
@@ -246,27 +238,6 @@ function AdminDashboardContent() {
       }
     } catch (error) {
       toast.error("Error verifying 2FA");
-    }
-  };
-
-  const fetchAuditLogs = async (page = 1) => {
-    try {
-      const res = await fetch(`/api/admin/audit-logs?page=${page}&limit=10`);
-
-      // Check if response is JSON
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("Non-JSON response received:", await res.text());
-        return;
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        setAuditLogs(data.logs);
-        setAuditPagination(data.pagination);
-      }
-    } catch (error) {
-      console.error("Failed to fetch audit logs");
     }
   };
 
@@ -373,7 +344,6 @@ function AdminDashboardContent() {
       fetchUsers();
       fetchContactMessages();
       fetchSettings();
-      fetchAuditLogs();
       fetchActivityData();
     }
   }, [session]);
@@ -748,13 +718,6 @@ function AdminDashboardContent() {
                 Inquiries
               </TabsTrigger>
               <TabsTrigger
-                value="audit"
-                className="rounded-xl md:rounded-2xl px-4 md:px-8 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-200/50 dark:data-[state=active]:shadow-none transition-all font-bold text-xs md:text-sm"
-              >
-                <History className="w-4 h-4 mr-2 hidden md:inline" />
-                Audit Logs
-              </TabsTrigger>
-              <TabsTrigger
                 value="settings"
                 className="rounded-xl md:rounded-2xl px-4 md:px-8 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-200/50 dark:data-[state=active]:shadow-none transition-all font-bold text-xs md:text-sm"
               >
@@ -776,7 +739,7 @@ function AdminDashboardContent() {
                 <SystemHealth />
               </div>
               <div className="space-y-6 md:space-y-10">
-                <SecurityActions onSetup2FA={setup2FA} auditLogs={auditLogs} />
+                <SecurityActions onSetup2FA={setup2FA} />
                 <AdminChat />
               </div>
             </div>
@@ -911,47 +874,6 @@ function AdminDashboardContent() {
                     setIsMessageDialogOpen(true);
                   }}
                 />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="audit" className="focus-visible:outline-none">
-            <Card className="border-none shadow-xl shadow-gray-200/50 dark:shadow-none dark:bg-slate-900/50 dark:border dark:border-slate-800 rounded-[32px] overflow-hidden">
-              <CardHeader className="bg-white dark:bg-slate-900/80 border-b border-gray-100 dark:border-slate-800 py-6 px-8">
-                <CardTitle className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                  <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-                    <History className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  Audit Logs
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <AuditLogsTable logs={auditLogs} />
-                {auditPagination.pages > 1 && (
-                  <div className="flex justify-end items-center gap-2 mt-4 p-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fetchAuditLogs(auditPagination.page - 1)}
-                      disabled={auditPagination.page === 1}
-                      className="rounded-xl font-bold"
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-                    </Button>
-                    <span className="text-sm font-bold text-gray-500 mx-2">
-                      Page {auditPagination.page} of {auditPagination.pages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fetchAuditLogs(auditPagination.page + 1)}
-                      disabled={auditPagination.page === auditPagination.pages}
-                      className="rounded-xl font-bold"
-                    >
-                      Next <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>
