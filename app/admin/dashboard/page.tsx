@@ -161,13 +161,13 @@ export default function AdminDashboard() {
   const [settingsLoading, setSettingsLoading] = useState(false);
   interface AuditLog {
     _id: string;
-    userId?: string;
+    createdAt: string;
+    userEmail: string;
+    userId: string;
     action: string;
-    resource: string;
-    details?: Record<string, unknown>;
-    ip?: string;
-    userAgent?: string;
-    timestamp: string;
+    entityType: string;
+    entityId: string;
+    ipAddress: string;
   }
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
