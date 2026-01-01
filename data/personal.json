@@ -1,0 +1,24 @@
+{
+  "personal_info": {
+    "name": "Soruj Mahmud",
+    "title": "Senior Full-Stack Developer & AI Specialist",
+    "location": "Tangail, Dhaka, Bangladesh",
+    "email": "soruj@example.com",
+    "phone": "+8801795397598",
+    "github": "https://github.com/sorujmahmud",
+    "linkedin": "https://linkedin.com/in/sorujmahmud"
+  },
+  "education": [
+    {
+      "degree": "BSc in Computer Science",
+      "institution": "Local University",
+      "year": "2022"
+    }
+  ],
+  "interests": [
+    "Artificial Intelligence",
+    "Full-Stack Web Development",
+    "Open Source Contributing",
+    "Problem Solving"
+  ]
+}

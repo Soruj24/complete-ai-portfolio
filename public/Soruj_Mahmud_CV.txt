@@ -1,0 +1,51 @@
+SORUJ MAHMUD
+Full-Stack Developer & AI Innovator
+Tangail, Dhaka, Bangladesh | +8801795397598 | sorujmahmudb2h@gmail.com
+
+SUMMARY
+Aspiring Full-Stack Developer with a strong focus on building scalable, AI-powered web applications. Proficient in Next.js, React, TypeScript, and Node.js. Experienced in integrating advanced AI solutions using LangChain and developing MCP Servers. Dedicated to creating high-impact digital experiences with clean, maintainable code.
+
+TECHNICAL SKILLS
+- Languages: JavaScript (ES6+), TypeScript, Python, HTML5, CSS3
+- Frontend: React.js, Next.js (App Router), Tailwind CSS, Framer Motion, Shadcn UI
+- Backend: Node.js, Express.js, FastAPI, REST APIs, WebSockets
+- Databases: MongoDB, PostgreSQL, Redis, Pinecone (Vector DB)
+- AI & ML: LangChain, OpenAI API, MCP Server Development, AI Agents
+- Tools: Git, GitHub, Docker, Vercel, Postman, JWT, OAuth
+
+PROJECTS
+
+1. AI-Powered Chatbot Platform (Next.js, FastAPI, OpenAI, Pinecone)
+- Developed a sophisticated AI chatbot platform with natural language processing and multi-channel support.
+- Integrated LangChain for advanced conversation memory and context retention.
+- Utilized Pinecone for efficient vector similarity search in large knowledge bases.
+
+2. E-Commerce Ecosystem (Next.js, Stripe, MongoDB, Tailwind)
+- Built a high-performance e-commerce platform with real-time inventory management and secure payments.
+- Implemented complex state management for a seamless shopping experience.
+- Designed a mobile-first, responsive UI with modern design principles.
+
+3. Crypto Analytics Dashboard (Next.js, Recharts, CoinGecko API)
+- Created a real-time cryptocurrency tracking dashboard with interactive data visualizations.
+- Integrated multiple third-party APIs for live market data and news updates.
+- Optimized performance for handling large-scale real-time data streams.
+
+EXPERIENCE
+Full-Stack Project Developer (Self-Employed) | 2023 - Present
+- Built and deployed multiple end-to-end web applications demonstrating technical capabilities.
+- Focused on full-stack development with AI integration through rigorous project work.
+- Contributed to open-source prototypes and demo applications.
+
+EDUCATION
+HSC in Science
+Tangail, Dhaka, Bangladesh
+- Self-taught developer with comprehensive project-based learning in modern web technologies and AI applications.
+
+CERTIFICATIONS & LEARNING
+- Full-Stack Web Development (Project-based)
+- Advanced AI Application Development with LangChain
+- Modern UI/UX Design Principles
+
+LANGUAGES
+- Bengali (Native)
+- English (Professional)

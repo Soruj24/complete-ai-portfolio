@@ -1,0 +1,16 @@
+Soruj Mahmud - Professional Summary
+
+Background:
+I am a dedicated Full-Stack Developer with a strong passion for AI and modern web technologies. Based in Bangladesh, I have built numerous applications using Next.js, TypeScript, and MongoDB.
+
+Technical Philosophy:
+I believe in writing clean, maintainable code and leveraging AI to solve complex problems. My goal is to build applications that are not only functional but also provide an exceptional user experience.
+
+Soft Skills:
+- Team Collaboration
+- Critical Thinking
+- Adaptability to new technologies
+- Fast Learner
+
+Current Focus:
+Currently, I am exploring the potential of LangChain and Model Context Protocol (MCP) to build advanced AI agents and assistants.
