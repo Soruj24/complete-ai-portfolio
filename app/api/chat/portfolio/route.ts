@@ -5,7 +5,7 @@ import Settings from "@/models/Settings";
 import { Project } from "@/models/Project";
 import { Experience } from "@/models/Experience";
 import { Skill } from "@/models/Skill";
-import { ISkill, IExperience, IProject } from "@/types";
+import { ISkill, IExperience, IProject, ISettings } from "@/types";
 import { MultiFileLoader } from "@langchain/classic/document_loaders/fs/multi_file";
 import { JSONLoader } from "@langchain/classic/document_loaders/fs/json";
 import { TextLoader } from "@langchain/classic/document_loaders/fs/text";
@@ -24,7 +24,7 @@ function detectLanguage(text: string): "english" | "bengali" {
 }
 
 function createBengaliContext(
-  settings: any | null,
+  settings: ISettings | null,
   skills: ISkill[],
   experiences: IExperience[],
   projects: IProject[],
@@ -37,8 +37,6 @@ function createBengaliContext(
     - পেশাদার, টেক-স্যাভি এবং উৎসাহদাতা।
     - ফুল-স্ট্যাক ডেভেলপমেন্ট এবং এআই সম্পর্কে আপনি উদ্যমের সাথে কথা বলেন।
     - আপনি সহায়ক এবং সর্বদা বিস্তারিত কিন্তু সংক্ষিপ্ত উত্তর দেওয়ার চেষ্টা করেন।
-
-    ${settings?.fullName || "সরুজ মাহমুদ"} সম্পর্কে:
     - শিরোনাম: ${settings?.professionalTitle || "সিনিয়র ফুল-স্ট্যাক ডেভেলপার"}
     - জীবনবৃত্তান্ত: ${settings?.bio || "Next.js, TypeScript, এবং AI ইন্টিগ্রেশনে বিশেষজ্ঞ।"}
     - অবস্থান: ${settings?.location || "বাংলাদেশ"}
@@ -87,7 +85,7 @@ function createBengaliContext(
 
 // ইংরেজি কনটেক্সট তৈরি
 function createEnglishContext(
-  settings: any | null,
+  settings: ISettings | null,
   skills: ISkill[],
   experiences: IExperience[],
   projects: IProject[],
@@ -100,8 +98,6 @@ function createEnglishContext(
     - Professional, tech-savvy, and encouraging.
     - You speak with passion about full-stack development and AI.
     - You are helpful and always try to provide detailed but concise answers.
-
-    About ${settings?.fullName || "Soruj Mahmud"}:
     - Title: ${settings?.professionalTitle || "Senior Full-Stack Developer"}
     - Bio: ${settings?.bio || "Expert in Next.js, TypeScript, and AI integrations."}
     - Location: ${settings?.location || "Bangladesh"}

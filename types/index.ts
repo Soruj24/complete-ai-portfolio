@@ -165,6 +165,26 @@ export interface ISkill {
   createdAt?: string;
   updatedAt?: string;
 }
+export interface ISettings {
+  _id?: string;
+  siteName: string;
+  contactEmail: string;
+  allowRegistration: boolean;
+  maintenanceMode: boolean;
+  fullName: string;
+  professionalTitle: string;
+  bio: string;
+  location: string;
+  phone: string;
+  githubUrl: string;
+  linkedinUrl: string;
+  twitterUrl: string;
+  specializations: string[];
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface IPersonalInfo {
   _id?: string;
   id?: string;
