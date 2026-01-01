@@ -9,17 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-
-interface AuditLog {
-  _id: string;
-  createdAt: string;
-  userEmail: string;
-  userId: string;
-  action: string;
-  entityType: string;
-  entityId: string;
-  ipAddress: string;
-}
+import { AuditLog } from "@/types";
 
 interface AuditLogsTableProps {
   logs: AuditLog[];

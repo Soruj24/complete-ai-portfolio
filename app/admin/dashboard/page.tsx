@@ -82,6 +82,7 @@ import Navbar from "@/components/layout/Navbar";
 import { ProjectManager } from "@/components/admin/dashboard/ProjectManager";
 import { SkillManager } from "@/components/admin/dashboard/SkillManager";
 import { ExperienceManager } from "@/components/admin/dashboard/ExperienceManager";
+import { AuditLog } from "@/types";
 
 interface User {
   _id: string;
@@ -159,16 +160,6 @@ export default function AdminDashboard() {
     ],
   });
   const [settingsLoading, setSettingsLoading] = useState(false);
-  interface AuditLog {
-    _id: string;
-    createdAt: string;
-    userEmail: string;
-    userId: string;
-    action: string;
-    entityType: string;
-    entityId: string;
-    ipAddress: string;
-  }
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [auditPagination, setAuditPagination] = useState({

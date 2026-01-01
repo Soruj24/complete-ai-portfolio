@@ -98,6 +98,18 @@ export interface IProject {
   fullDescription: string;
   image: string;
   technologies: string[];
+}
+
+export interface AuditLog {
+  _id: string;
+  createdAt: string;
+  userEmail: string;
+  userId: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  ipAddress: string;
+}
   features: string[];
   githubUrl?: string;
   liveUrl?: string;
