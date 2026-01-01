@@ -81,6 +81,7 @@ import Navbar from "@/components/layout/Navbar";
 import { ProjectManager } from "@/components/admin/dashboard/ProjectManager";
 import { SkillManager } from "@/components/admin/dashboard/SkillManager";
 import { ExperienceManager } from "@/components/admin/dashboard/ExperienceManager";
+import Link from "next/link";
 
 interface User {
   _id: string;
@@ -960,13 +961,13 @@ function AdminDashboardContent() {
                         Reply via Chat
                       </Button>
                     )}
-                    <a
+                    <Link
                       href={`mailto:${selectedMessage.email}?subject=${encodeURIComponent("Re: " + selectedMessage.subject)}&body=${encodeURIComponent("\n\n--- Original Message ---\n" + (selectedMessage.message.length > 500 ? selectedMessage.message.substring(0, 500) + "..." : selectedMessage.message))}`}
                       className="inline-flex items-center justify-center rounded-xl bg-white border-2 border-gray-100 px-6 font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-200 transition-all flex-1 h-12 shadow-sm"
                     >
                       <Mail className="w-4 h-4 mr-2" />
                       Reply via Email
-                    </a>
+                    </Link>
                   </DialogFooter>
                 </>
               )}
