@@ -165,3 +165,15 @@ export interface ISkill {
   createdAt?: string;
   updatedAt?: string;
 }
+export interface IPersonalInfo {
+  _id?: string;
+  id?: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  address: string;
+  bio: string;
+  profilePicture: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
