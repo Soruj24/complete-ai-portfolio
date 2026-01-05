@@ -4,8 +4,8 @@ import { PUBLIC_ROUTES, LOGIN, ROOT, ADMIN_ROUTES } from "@/lib/routes";
 
 const { auth } = NextAuth(authConfig);
 
-// Renamed from middleware to proxy as per Next.js deprecation warning
-export const proxy = auth((req) => {
+// Exporting the auth function as middleware for Next.js
+export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
   const role = req.auth?.user?.role;
@@ -39,8 +39,6 @@ export const proxy = auth((req) => {
 
   return;
 });
-
-export default proxy;
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
