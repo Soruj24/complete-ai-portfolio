@@ -8,6 +8,7 @@ import { Loader2, Calendar, User, ArrowRight, ChevronLeft, ChevronRight } from "
 import Link from "next/link";
 import Image from "next/image";
 import { Navbar } from "@/components/portfolio/Navbar";
+import { CustomPagination } from "@/components/shared/CustomPagination";
 
 interface BlogPost {
   _id: string;
@@ -114,45 +115,13 @@ export default function BlogPage() {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-20">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => paginate(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="w-14 h-14 rounded-2xl border-2 border-gray-200 hover:bg-gray-900 hover:text-white transition-all disabled:opacity-30"
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </Button>
-                
-                <div className="flex gap-3">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => paginate(page)}
-                      className={`w-14 h-14 rounded-2xl font-black text-lg transition-all ${
-                        currentPage === page 
-                          ? "bg-blue-600 text-white shadow-xl shadow-blue-100" 
-                          : "bg-white border-2 border-gray-100 text-gray-400 hover:border-gray-900 hover:text-gray-900"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="w-14 h-14 rounded-2xl border-2 border-gray-200 hover:bg-gray-900 hover:text-white transition-all disabled:opacity-30"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </Button>
-              </div>
-            )}
+            <div className="mt-20">
+              <CustomPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={paginate}
+              />
+            </div>
           </>
         )}
       </div>

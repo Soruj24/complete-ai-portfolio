@@ -167,7 +167,7 @@ export function About() {
               <div
                 className="absolute inset-0 bg-cover bg-center grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
                 style={{
-                  backgroundImage: `url(${profilePic})`,
+                  backgroundImage: `url(${profilePic.src})`,
                 }}
               />
               <div className="absolute inset-0 bg-blue-600/20  " />

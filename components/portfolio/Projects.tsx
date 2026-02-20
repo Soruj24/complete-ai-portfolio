@@ -11,6 +11,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { IProject } from "@/types";
+import { CustomPagination } from "@/components/shared/CustomPagination";
 // import { projects } from "@/data/projects"; // Removed static import
 
 export function Projects() {
@@ -163,45 +164,13 @@ export function Projects() {
         </div>
 
         {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex flex-wrap justify-center items-center gap-2 md:gap-4 mt-12 md:mt-20 projects-reveal-text">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => paginate(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-2xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-900 dark:hover:bg-white hover:text-white dark:hover:text-gray-900 transition-all disabled:opacity-30"
-            >
-              <ChevronLeft className="h-4 w-4 md:h-6 md:w-6" />
-            </Button>
-            
-            <div className="flex flex-wrap justify-center gap-1.5 md:gap-3">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => paginate(page)}
-                  className={`w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-2xl font-black text-sm md:text-lg transition-all ${
-                    currentPage === page 
-                      ? "bg-blue-600 text-white shadow-xl shadow-blue-100 dark:shadow-none" 
-                      : "bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 text-gray-400 hover:border-gray-900 dark:hover:border-white hover:text-gray-900 dark:hover:text-white"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-2xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-900 dark:hover:bg-white hover:text-white dark:hover:text-gray-900 transition-all disabled:opacity-30"
-            >
-              <ChevronRight className="h-4 w-4 md:h-6 md:w-6" />
-            </Button>
-          </div>
-        )}
+        <div className="mt-12 md:mt-20 projects-reveal-text">
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={paginate}
+          />
+        </div>
 
         <div className="mt-12 md:mt-24 text-center projects-reveal-text">
           <Button asChild variant="outline" size="lg" className="w-full sm:w-auto h-12 md:h-16 px-6 md:px-12 rounded-xl md:rounded-2xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-900 dark:hover:bg-white hover:text-white dark:hover:text-gray-900 transition-all text-sm md:text-lg group">
