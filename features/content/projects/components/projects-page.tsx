@@ -1,21 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useProjects } from "../hooks/use-projects";
 import { ProjectStats } from "./project-stats";
 import { ProjectGrid, type ViewMode } from "./project-grid";
 import { ProjectKanban } from "./project-kanban";
 import { ProjectFilters } from "./projects-filters";
 import { ProjectFormDialog } from "./project-form-dialog";
+import type { Project } from "../types";
 
 export function ProjectsPage() {
   const {
-    stats, filtered, columns, categories, loading, error, filters, setFilters, updateStatus, addProject, refresh,
+    stats, filtered, columns, categories, loading, error, filters, setFilters,
+    updateStatus, addProject, updateProject, deleteProject, refresh,
   } = useProjects();
   const [view, setView] = useState<ViewMode>("grid");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const handleEdit = useCallback((project: Project) => {
+    setEditingProject(project);
+    setDialogOpen(true);
+  }, []);
+
+  const handleDelete = useCallback(async (id: string) => {
+    if (!confirm("Are you sure you want to delete this project?")) return;
+    setDeleting(id);
+    try {
+      await deleteProject(id);
+    } finally {
+      setDeleting(null);
+    }
+  }, [deleteProject]);
+
+  const handleSubmit = useCallback(async (data: Partial<Project>) => {
+    if (editingProject) {
+      await updateProject(editingProject.id, data);
+    } else {
+      await addProject(data);
+    }
+  }, [editingProject, addProject, updateProject]);
+
+  const handleClose = useCallback(() => {
+    setDialogOpen(false);
+    setEditingProject(null);
+  }, []);
 
   if (error) {
     return (
@@ -68,10 +100,15 @@ export function ProjectsPage() {
       ) : view === "kanban" ? (
         <ProjectKanban columns={columns} onStatusChange={updateStatus} />
       ) : (
-        <ProjectGrid projects={filtered} view={view} onViewChange={setView} loading={false} />
+        <ProjectGrid projects={filtered} view={view} onViewChange={setView} loading={false} onEdit={handleEdit} onDelete={handleDelete} />
       )}
 
-      <ProjectFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addProject(d); }} />
+      <ProjectFormDialog
+        open={dialogOpen}
+        onClose={handleClose}
+        onSubmit={handleSubmit}
+        project={editingProject}
+      />
     </div>
   );
 }

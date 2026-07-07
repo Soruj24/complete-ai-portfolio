@@ -84,7 +84,7 @@ function ListRow({ project, onEdit, onDelete }: { project: Project; onEdit?: Pro
   );
 }
 
-export function ProjectGrid({ projects, view, onViewChange, loading }: Props) {
+export function ProjectGrid({ projects, view, onViewChange, loading, onEdit, onDelete }: Props) {
   if (loading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -126,11 +126,11 @@ export function ProjectGrid({ projects, view, onViewChange, loading }: Props) {
 
       {view === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((p, i) => <ProjectCard key={p.id ?? i} project={p} index={i} />)}
+          {projects.map((p, i) => <ProjectCard key={p.id ?? i} project={p} index={i} onEdit={onEdit} onDelete={onDelete} />)}
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          {projects.map((p, i) => <ListRow key={p.id ?? i} project={p} />)}
+          {projects.map((p, i) => <ListRow key={p.id ?? i} project={p} onEdit={onEdit} onDelete={onDelete} />)}
         </div>
       )}
     </div>
