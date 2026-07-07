@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, FolderKanban, Pencil, Trash2 } from "lucide-react";
+import type { ProjectCategory } from "../types";
 import { useProjectCategories } from "../hooks/use-project-categories";
-import { toastSuccess } from "@/shared/utils/swal";
+import { confirmDelete, toastSuccess } from "@/shared/utils/swal";
 import { CategoryFormDialog } from "./category-form-dialog";
 
 export function ProjectCategoriesPage() {
-  const { filtered, loading, error, search, setSearch, addCategory, refresh } = useProjectCategories();
+  const { filtered, loading, error, search, setSearch, addCategory, updateCategory, deleteCategory, refresh } = useProjectCategories();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<ProjectCategory | null>(null);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
@@ -29,7 +31,7 @@ export function ProjectCategoriesPage() {
           <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
-          <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
+          <button onClick={() => { setEditing(null); setDialogOpen(true); }} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
             <Plus size={16} /> New Category
           </button>
         </div>
@@ -61,8 +63,8 @@ export function ProjectCategoriesPage() {
                   <FolderKanban size={18} style={{ color: cat.color }} />
                 </div>
                 <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  <button className="rounded-lg p-1.5 text-text-tertiary transition-colors hover:bg-surface-hover hover:text-accent"><Pencil size={14} /></button>
-                  <button className="rounded-lg p-1.5 text-text-tertiary transition-colors hover:bg-surface-hover hover:text-error"><Trash2 size={14} /></button>
+                  <button onClick={() => { setEditing(cat); setDialogOpen(true); }} className="rounded-lg p-1.5 text-text-tertiary transition-colors hover:bg-surface-hover hover:text-accent"><Pencil size={14} /></button>
+                  <button onClick={async () => { const ok = await confirmDelete("Delete category?", "This will remove this category."); if (ok) { deleteCategory(cat.id); toastSuccess("Deleted!", "Category has been deleted."); } }} className="rounded-lg p-1.5 text-text-tertiary transition-colors hover:bg-surface-hover hover:text-error"><Trash2 size={14} /></button>
                 </div>
               </div>
               <h3 className="font-semibold text-text-primary">{cat.name}</h3>
@@ -76,7 +78,15 @@ export function ProjectCategoriesPage() {
         </div>
       )}
 
-      <CategoryFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addCategory(d); toastSuccess("Created!", "Category has been created."); }} />
+      <CategoryFormDialog open={dialogOpen} category={editing} onClose={() => { setDialogOpen(false); setEditing(null); }} onSubmit={async (d) => {
+        if (editing) {
+          await updateCategory(editing.id, d);
+          toastSuccess("Updated!", "Category has been updated.");
+        } else {
+          await addCategory(d);
+          toastSuccess("Created!", "Category has been created.");
+        }
+      }} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, FolderKanban } from "lucide-react";
 import type { ProjectCategory } from "../types";
@@ -8,15 +8,25 @@ import { COLORS } from "../constants/mock-data";
 
 interface Props {
   open: boolean;
+  category?: ProjectCategory | null;
   onClose: () => void;
   onSubmit: (data: Partial<ProjectCategory>) => Promise<void>;
 }
 
-export function CategoryFormDialog({ open, onClose, onSubmit }: Props) {
+export function CategoryFormDialog({ open, category, onClose, onSubmit }: Props) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [color, setColor] = useState(COLORS[0]);
+  const [color, setColor] = useState(COLORS[0] || "#6366f1");
   const [submitting, setSubmitting] = useState(false);
+  const isEdit = !!category;
+
+  useEffect(() => {
+    if (open) {
+      setName(category?.name ?? "");
+      setDescription(category?.description ?? "");
+      setColor(category?.color ?? (COLORS[0] || "#6366f1"));
+    }
+  }, [open, category]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,11 +34,12 @@ export function CategoryFormDialog({ open, onClose, onSubmit }: Props) {
     setSubmitting(true);
     try {
       await onSubmit({
+        ...(category ? { id: category.id } : {}),
         name: name.trim(), slug: name.trim().toLowerCase().replace(/\s+/g, "-"),
         description: description.trim(), color, icon: "folder", projectCount: 0,
-        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        createdAt: category?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString(),
       });
-      setName(""); setDescription(""); setColor(COLORS[0]);
+      setName(""); setDescription(""); setColor(COLORS[0] || "#6366f1");
       onClose();
     } finally {
       setSubmitting(false);
@@ -44,7 +55,7 @@ export function CategoryFormDialog({ open, onClose, onSubmit }: Props) {
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
             className="relative w-full max-w-lg rounded-xl border border-border-primary bg-surface-primary shadow-xl">
             <div className="flex items-center justify-between border-b border-border-primary px-6 py-4">
-              <h2 className="text-lg font-semibold text-text-primary">New Category</h2>
+              <h2 className="text-lg font-semibold text-text-primary">{isEdit ? "Edit Category" : "New Category"}</h2>
               <button onClick={onClose} className="rounded-lg p-1.5 text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
@@ -83,7 +94,7 @@ export function CategoryFormDialog({ open, onClose, onSubmit }: Props) {
                 <button type="button" onClick={onClose} className="flex-1 rounded-lg border border-border-primary px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-hover transition-colors">Cancel</button>
                 <button type="submit" disabled={submitting || !name.trim()}
                   className="flex-1 rounded-lg bg-accent px-4 py-2.5 text-sm text-white hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  {submitting ? "Creating..." : "Create Category"}
+                  {submitting ? (isEdit ? "Saving..." : "Creating...") : (isEdit ? "Save Changes" : "Create Category")}
                 </button>
               </div>
             </form>

@@ -10,6 +10,14 @@ export class ProjectCategoryService {
   async create(data: Partial<ProjectCategory>): Promise<ProjectCategory> {
     return projectCategoryRepository.create(data).then((r) => r.data);
   }
+
+  async update(id: string, data: Partial<ProjectCategory>): Promise<ProjectCategory> {
+    return projectCategoryRepository.update(id, data).then((r) => r.data);
+  }
+
+  async delete(id: string): Promise<boolean> {
+    return projectCategoryRepository.delete(id).then((r) => r.data);
+  }
 }
 
 export const projectCategoryService = new ProjectCategoryService();

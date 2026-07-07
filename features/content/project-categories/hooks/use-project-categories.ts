@@ -31,5 +31,16 @@ export function useProjectCategories() {
     return created;
   }, []);
 
-  return { categories, filtered, loading, error, search, setSearch, setCategories, addCategory, refresh: fetchData };
+  const updateCategory = useCallback(async (id: string, data: Partial<ProjectCategory>) => {
+    const updated = await projectCategoryService.update(id, data);
+    setCategories((prev) => prev.map((c) => (c.id === id ? updated : c)));
+    return updated;
+  }, []);
+
+  const deleteCategory = useCallback(async (id: string) => {
+    await projectCategoryService.delete(id);
+    setCategories((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
+  return { categories, filtered, loading, error, search, setSearch, setCategories, addCategory, updateCategory, deleteCategory, refresh: fetchData };
 }
