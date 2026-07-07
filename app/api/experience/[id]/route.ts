@@ -1,51 +1,39 @@
 import { auth } from "@/auth";
-import { dbConnect } from "@/config/db";
-import { Experience } from "@/models/Experience";
-import { NextResponse } from "next/server";
+import { portfolioService } from "@/lib/services";
+import { experienceSchema } from "@/lib/schemas";
+import { createApiResponse, createErrorResponse, handleApiError } from "@/lib/utils/api-response";
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;
     const session = await auth();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
-
+    const { id } = await params;
     const body = await request.json();
-    await dbConnect();
-    const experience = await Experience.findByIdAndUpdate(id, body, { new: true });
-
-    if (!experience) {
-      return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+    const validation = experienceSchema.partial().safeParse(body);
+    if (!validation.success) {
+      return createErrorResponse("Validation failed", 400, validation.error.flatten().fieldErrors as Record<string, string[]>);
     }
-
-    return NextResponse.json({ success: true, experience });
+    const exp = await portfolioService.updateExperience(id, validation.data);
+    if (!exp) return createErrorResponse("Experience not found", 404);
+    return createApiResponse(exp, { message: "Experience updated" });
   } catch (error) {
-    console.error("Experience update error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;
     const session = await auth();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
-
-    await dbConnect();
-    await Experience.findByIdAndDelete(id);
-
-    return NextResponse.json({ success: true, message: "Experience deleted successfully" });
+    const { id } = await params;
+    const exp = await portfolioService.deleteExperience(id);
+    if (!exp) return createErrorResponse("Experience not found", 404);
+    return createApiResponse(null, { message: "Experience deleted" });
   } catch (error) {
-    console.error("Experience delete error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

@@ -1,71 +1,57 @@
-import { auth } from "@/auth";
-import { dbConnect } from "@/config/db";
-import { Project } from "@/models/Project";
-import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth/session";
+import { portfolioService } from "@/lib/services";
+import { projectSchema } from "@/lib/schemas";
+import { createApiResponse, createErrorResponse, handleApiError } from "@/lib/utils/api-response";
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    await dbConnect();
-    const project = await Project.findById(id);
+    const project = await portfolioService.getProjectById(id);
     if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return createErrorResponse("Project not found", 404);
     }
-    return NextResponse.json({ success: true, project });
+    return createApiResponse(project);
   } catch (error) {
-    console.error("Project fetch error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;
-    const session = await auth();
+    const session = await getSession();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
-
+    const { id } = await params;
     const body = await request.json();
-    await dbConnect();
-    
-    const oldProject = await Project.findById(id);
-    if (!oldProject) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    const validation = projectSchema.partial().safeParse(body);
+    if (!validation.success) {
+      return createErrorResponse("Validation failed", 400, validation.error.flatten().fieldErrors as Record<string, string[]>);
     }
 
-    const project = await Project.findByIdAndUpdate(id, body, { new: true });
-
-    return NextResponse.json({ success: true, project });
+    const project = await portfolioService.updateProject(id, validation.data);
+    if (!project) {
+      return createErrorResponse("Project not found", 404);
+    }
+    return createApiResponse(project, { message: "Project updated" });
   } catch (error) {
-    console.error("Project update error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;
-    const session = await auth();
+    const session = await getSession();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
-
-    await dbConnect();
-    await Project.findByIdAndDelete(id);
-
-    return NextResponse.json({ success: true, message: "Project deleted successfully" });
+    const { id } = await params;
+    const project = await portfolioService.deleteProject(id);
+    if (!project) {
+      return createErrorResponse("Project not found", 404);
+    }
+    return createApiResponse(null, { message: "Project deleted" });
   } catch (error) {
-    console.error("Project delete error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

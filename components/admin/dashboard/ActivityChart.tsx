@@ -1,111 +1,101 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import {
   AreaChart,
   Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  CartesianGrid,
 } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Activity } from "lucide-react";
 
-interface ActivityChartProps {
-  data: { date: string; count: number }[];
+interface ActivityDataPoint {
+  date: string;
+  count: number;
 }
 
-export function ActivityChart({ data }: ActivityChartProps) {
-  const { theme, resolvedTheme } = useTheme();
+interface Props {
+  data: ActivityDataPoint[];
+}
+
+export function ActivityChart({ data }: Props) {
+  const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    // SSR guard: mark component as mounted on the client
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   if (!mounted) {
     return (
-      <Card className="border-none shadow-xl shadow-gray-200/50 dark:shadow-none dark:bg-slate-900/50 rounded-[32px] overflow-hidden">
-        <div className="h-[400px] w-full animate-pulse bg-gray-100 dark:bg-slate-800" />
+      <Card className="border border-border-subtle shadow-none rounded-xl bg-surface">
+        <CardContent className="p-6">
+          <div className="h-[300px] shimmer rounded-lg" />
+        </CardContent>
       </Card>
     );
   }
 
-  const isDark = resolvedTheme === "dark";
+  const isDark = theme === "dark";
+  const accent = isDark ? "var(--accent)" : "var(--accent)";
+  const textSecondary = isDark ? "var(--text-tertiary)" : "var(--text-tertiary)";
+  const surface = isDark ? "var(--surface)" : "var(--surface)";
 
   return (
-    <Card className="border-none shadow-xl shadow-gray-200/50 dark:shadow-none dark:bg-slate-900/50 dark:border dark:border-slate-800 rounded-[24px] md:rounded-[32px] overflow-hidden transition-all duration-300">
-      <CardHeader className="bg-white dark:bg-slate-900/80 border-b border-gray-100 dark:border-slate-800 py-3 md:py-6 px-4 md:px-8">
-        <div className="flex items-center gap-2.5 md:gap-3">
-          <div className="p-1.5 md:p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg md:rounded-xl">
-            <Activity className="h-3.5 w-3.5 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
-          </div>
-          <CardTitle className="text-base md:text-xl font-black text-gray-900 dark:text-white">User Activity</CardTitle>
-        </div>
+    <Card className="border border-border-subtle shadow-none rounded-xl bg-surface">
+      <CardHeader className="pb-4 px-6 pt-6">
+        <CardTitle className="text-sm font-semibold text-text-primary flex items-center gap-2">
+          <Activity className="h-4 w-4 text-text-tertiary" />
+          Activity Overview
+        </CardTitle>
       </CardHeader>
-      <CardContent className="p-2 md:p-8 h-[200px] sm:h-[250px] md:h-[350px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={isDark ? 0.3 : 0.1} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid 
-              strokeDasharray="3 3" 
-              vertical={false} 
-              stroke={isDark ? "#1e293b" : "#f1f5f9"} 
-            />
-            <XAxis
-              dataKey="date"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: isDark ? "#64748b" : "#94a3b8", fontSize: 10 }}
-              minTickGap={30}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: isDark ? "#64748b" : "#94a3b8", fontSize: 10 }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: isDark ? "#0f172a" : "#ffffff",
-                borderRadius: "12px",
-                border: isDark ? "1px solid #1e293b" : "none",
-                boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-                padding: "8px 12px",
-              }}
-              itemStyle={{
-                color: isDark ? "#f8fafc" : "#1e293b",
-                fontSize: "12px",
-                fontWeight: "bold",
-              }}
-              labelStyle={{
-                color: isDark ? "#64748b" : "#94a3b8",
-                fontSize: "10px",
-                marginBottom: "4px",
-                textTransform: "uppercase",
-                fontWeight: "black",
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="count"
-              stroke="#3b82f6"
-              strokeWidth={3}
-              fillOpacity={1}
-              fill="url(#colorValue)"
-              animationDuration={1500}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      <CardContent className="px-2 pb-4">
+        <div className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data.length > 0 ? data : [{ date: "No data", count: 0 }]} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+              <defs>
+                <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tick={{ fill: "var(--text-tertiary)", fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                allowDecimals={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  color: "var(--text-primary)",
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="count"
+                stroke="var(--accent)"
+                strokeWidth={2}
+                fill="url(#activityGradient)"
+                dot={false}
+                activeDot={{ r: 4, stroke: "var(--accent)", strokeWidth: 2, fill: "var(--background)" }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

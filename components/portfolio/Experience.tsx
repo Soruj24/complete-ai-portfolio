@@ -100,12 +100,8 @@ export function Experience() {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center mb-10 md:mb-24">
           <h2 className="text-[10px] md:text-sm font-black uppercase tracking-[0.4em] text-blue-600 dark:text-blue-400 mb-4 md:mb-6 experience-reveal-text">
-            Career Path
+            Experience
           </h2>
-          <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 md:mb-8 experience-reveal-text">
-            My journey through <br />
-            <span className="text-gray-400 dark:text-gray-500">tech & innovation.</span>
-          </h3>
         </div>
 
         <div className="max-w-5xl mx-auto relative px-2 md:px-0">

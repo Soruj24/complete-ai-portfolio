@@ -1,52 +1,39 @@
 import { auth } from "@/auth";
-import { dbConnect } from "@/config/db";
-import { Skill } from "@/models/Skill";
-import { NextResponse } from "next/server";
+import { portfolioService } from "@/lib/services";
+import { skillSchema } from "@/lib/schemas";
+import { createApiResponse, createErrorResponse, handleApiError } from "@/lib/utils/api-response";
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;
     const session = await auth();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
-
+    const { id } = await params;
     const body = await request.json();
-    await dbConnect();
-    
-    const skill = await Skill.findByIdAndUpdate(id, body, { new: true });
-
-    if (!skill) {
-      return NextResponse.json({ error: "Skill not found" }, { status: 404 });
+    const validation = skillSchema.partial().safeParse(body);
+    if (!validation.success) {
+      return createErrorResponse("Validation failed", 400, validation.error.flatten().fieldErrors as Record<string, string[]>);
     }
-
-    return NextResponse.json({ success: true, skill });
+    const skill = await portfolioService.updateSkill(id, validation.data);
+    if (!skill) return createErrorResponse("Skill not found", 404);
+    return createApiResponse(skill, { message: "Skill updated" });
   } catch (error) {
-    console.error("Skill update error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params;
     const session = await auth();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
-
-    await dbConnect();
-    await Skill.findByIdAndDelete(id);
-
-    return NextResponse.json({ success: true, message: "Skill deleted successfully" });
+    const { id } = await params;
+    const skill = await portfolioService.deleteSkill(id);
+    if (!skill) return createErrorResponse("Skill not found", 404);
+    return createApiResponse(null, { message: "Skill deleted" });
   } catch (error) {
-    console.error("Skill delete error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

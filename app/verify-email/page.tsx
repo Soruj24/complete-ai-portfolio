@@ -55,22 +55,22 @@ function VerifyEmailContent() {
   }, [token]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl text-center">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md space-y-8 rounded-2xl bg-surface p-8 shadow-lg text-center">
         {status === "loading" && (
           <div className="space-y-4">
-            <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Verifying your email...</h2>
-            <p className="text-gray-600">Please wait while we verify your account.</p>
+            <Loader2 className="mx-auto h-12 w-12 animate-spin text-accent" />
+            <h2 className="text-2xl font-bold text-text-primary">Verifying your email...</h2>
+            <p className="text-text-secondary">Please wait while we verify your account.</p>
           </div>
         )}
 
         {status === "success" && (
           <div className="space-y-4">
-            <CheckCircle2 className="mx-auto h-12 w-12 text-green-500" />
-            <h2 className="text-2xl font-bold text-gray-900">Email Verified!</h2>
-            <p className="text-gray-600">{message}</p>
-            <p className="text-sm text-blue-600 animate-pulse">Redirecting to login page in 3 seconds...</p>
+            <CheckCircle2 className="mx-auto h-12 w-12 text-success" />
+            <h2 className="text-2xl font-bold text-text-primary">Email Verified!</h2>
+            <p className="text-text-secondary">{message}</p>
+            <p className="text-sm text-accent animate-pulse">Redirecting to login page in 3 seconds...</p>
             <div className="pt-4">
               <Button asChild className="w-full">
                 <Link href="/login">Go to Login</Link>
@@ -81,9 +81,9 @@ function VerifyEmailContent() {
 
         {status === "error" && (
           <div className="space-y-4">
-            <XCircle className="mx-auto h-12 w-12 text-red-500" />
-            <h2 className="text-2xl font-bold text-gray-900">Verification Failed</h2>
-            <p className="text-gray-600">{message}</p>
+            <XCircle className="mx-auto h-12 w-12 text-error" />
+            <h2 className="text-2xl font-bold text-text-primary">Verification Failed</h2>
+            <p className="text-text-secondary">{message}</p>
             <div className="pt-4 space-y-2">
               <Button asChild className="w-full">
                 <Link href="/register">Try Registering Again</Link>
@@ -102,11 +102,11 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl text-center">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md space-y-8 rounded-2xl bg-surface p-8 shadow-lg text-center">
           <div className="space-y-4">
-            <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Loading...</h2>
+            <Loader2 className="mx-auto h-12 w-12 animate-spin text-accent" />
+            <h2 className="text-2xl font-bold text-text-primary">Loading...</h2>
           </div>
         </div>
       </div>

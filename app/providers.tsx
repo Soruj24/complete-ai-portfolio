@@ -1,7 +1,9 @@
- 
-import { SessionProvider } from 'next-auth/react';
-import { ReactNode } from 'react';
+"use client";
+
+import { Provider as ReduxProvider } from "react-redux";
+import { store } from "@/lib/store/store";
+import type { ReactNode } from "react";
 
 export default function Providers({ children }: { children: ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return <ReduxProvider store={store}>{children}</ReduxProvider>;
 }

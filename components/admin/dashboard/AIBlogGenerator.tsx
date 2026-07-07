@@ -140,18 +140,18 @@ export function AIBlogGenerator() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <Card className="border-none shadow-xl shadow-gray-200/50 dark:shadow-none bg-white dark:bg-slate-900/50 dark:border dark:border-slate-800 rounded-[24px] md:rounded-[32px] overflow-hidden transition-all duration-300">
+      <Card className="border border-border-subtle shadow-lg bg-surface rounded-[24px] md:rounded-[32px] overflow-hidden transition-all duration-300">
         <CardHeader className="p-5 md:p-8 pb-3 md:pb-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <CardTitle className="flex items-center gap-2.5 text-blue-600 dark:text-blue-400 text-xl md:text-2xl font-black">
-                <div className="p-2 md:p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-xl md:rounded-2xl">
+              <CardTitle className="flex items-center gap-2.5 text-accent text-xl md:text-2xl font-black">
+                <div className="p-2 md:p-2.5 bg-accent/10 rounded-xl md:rounded-2xl">
                   <Sparkles className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 AI Blog Generator
               </CardTitle>
-              <CardDescription className="dark:text-slate-400 text-[10px] md:text-sm font-medium">
-                Generate professional blog posts using Ollama 3.2
+              <CardDescription className="text-text-secondary text-[10px] md:text-sm font-medium">
+                Generate professional blog posts using Gemma 4
               </CardDescription>
             </div>
           </div>
@@ -159,21 +159,21 @@ export function AIBlogGenerator() {
         <CardContent className="p-4 md:p-8 pt-0 md:pt-0 space-y-4 md:space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
             <div className="space-y-1.5 md:space-y-2">
-              <label className="text-[9px] md:text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em]">Topic</label>
+              <label className="text-[9px] md:text-xs font-black text-text-tertiary uppercase tracking-[0.2em]">Topic</label>
               <Input
                 placeholder="e.g., The Future of Next.js and AI"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-100 dark:border-slate-800 dark:text-white rounded-xl md:rounded-2xl h-10 md:h-14 text-xs md:text-base px-3 md:px-5 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="bg-surface border-border-subtle rounded-xl md:rounded-2xl h-10 md:h-14 text-xs md:text-base px-3 md:px-5 focus:ring-2 focus:ring-accent/20 transition-all"
               />
             </div>
             <div className="space-y-1.5 md:space-y-2">
-              <label className="text-[9px] md:text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em]">Keywords</label>
+              <label className="text-[9px] md:text-xs font-black text-text-tertiary uppercase tracking-[0.2em]">Keywords</label>
               <Input
                 placeholder="e.g., react, ai, development"
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
-                className="bg-gray-50/50 dark:bg-slate-950/50 border-gray-100 dark:border-slate-800 dark:text-white rounded-xl md:rounded-2xl h-10 md:h-14 text-xs md:text-base px-3 md:px-5 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="bg-surface border-border-subtle rounded-xl md:rounded-2xl h-10 md:h-14 text-xs md:text-base px-3 md:px-5 focus:ring-2 focus:ring-accent/20 transition-all"
               />
             </div>
           </div>
@@ -183,8 +183,8 @@ export function AIBlogGenerator() {
             className={cn(
               "w-full rounded-xl md:rounded-2xl h-10 md:h-14 font-black gap-2 text-xs md:text-base shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99]",
               loading 
-                ? "bg-red-500 hover:bg-red-600 text-white shadow-red-100 dark:shadow-none" 
-                : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white shadow-blue-100 dark:shadow-none"
+                ? "bg-error hover:bg-error/90" 
+                : "bg-accent hover:bg-accent/90"
             )}
           >
             {loading ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" /> : <Send className="h-4 w-4 md:h-5 md:w-5" />}
@@ -194,15 +194,15 @@ export function AIBlogGenerator() {
       </Card>
 
       {generatedPost && (
-        <Card className="border-none shadow-xl shadow-gray-200/50 dark:shadow-none bg-white dark:bg-slate-900/50 dark:border dark:border-slate-800 rounded-[20px] md:rounded-[32px] overflow-hidden transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
-          <CardHeader className="border-b border-gray-50 dark:border-slate-800 p-4 md:p-8 flex flex-row items-center justify-between gap-3 md:gap-4">
+        <Card className="border border-border-subtle shadow-lg bg-surface rounded-[20px] md:rounded-[32px] overflow-hidden transition-all duration-500 animate-in fade-in slide-in-from-bottom-4">
+          <CardHeader className="border-b border-border-subtle p-4 md:p-8 flex flex-row items-center justify-between gap-3 md:gap-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <span className="px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[9px] md:text-xs font-bold uppercase tracking-wider">
+                <span className="px-1.5 py-0.5 rounded-md bg-accent/10 text-accent text-[9px] md:text-xs font-bold uppercase tracking-wider">
                   {generatedPost.category}
                 </span>
               </div>
-              <CardTitle className="text-base md:text-2xl font-black dark:text-white truncate leading-tight">
+              <CardTitle className="text-base md:text-2xl font-black truncate leading-tight">
                 {generatedPost.title}
               </CardTitle>
             </div>
@@ -210,20 +210,20 @@ export function AIBlogGenerator() {
               variant="outline" 
               size="icon" 
               onClick={copyToClipboard} 
-              className="h-9 w-9 md:h-12 md:w-12 rounded-lg md:rounded-2xl border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 shrink-0 transition-all"
+              className="h-9 w-9 md:h-12 md:w-12 rounded-lg md:rounded-2xl border-border-subtle hover:bg-surface-hover shrink-0 transition-all"
             >
-              {copied ? <Check className="h-4 w-4 md:h-5 md:w-5 text-green-500" /> : <Copy className="h-4 w-4 md:h-5 md:w-5 text-gray-400 dark:text-slate-500" />}
+              {copied ? <Check className="h-4 w-4 md:h-5 md:w-5 text-success" /> : <Copy className="h-4 w-4 md:h-5 md:w-5 text-text-tertiary" />}
             </Button>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="p-4 md:p-8 bg-gray-50/30 dark:bg-slate-950/30 min-h-[150px] md:min-h-[400px]">
-              <div className="font-medium text-gray-700 dark:text-slate-300 leading-relaxed text-xs md:text-sm max-w-none prose dark:prose-invert prose-p:leading-relaxed prose-headings:font-black prose-headings:text-gray-900 dark:prose-headings:text-white prose-a:text-blue-600">
+            <div className="p-4 md:p-8 bg-surface/50 min-h-[150px] md:min-h-[400px]">
+              <div className="font-medium text-text-secondary leading-relaxed text-xs md:text-sm max-w-none prose prose-p:leading-relaxed prose-headings:font-black prose-headings:text-text-primary prose-a:text-accent">
                 <ReactMarkdown>{generatedPost.content}</ReactMarkdown>
               </div>
             </div>
-            <div className="p-4 md:p-8 border-t border-gray-50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
-              <h4 className="text-[9px] md:text-xs font-black text-gray-400 dark:text-slate-500 mb-2 md:mb-3 uppercase tracking-[0.2em]">Quick Excerpt</h4>
-              <p className="text-gray-600 dark:text-slate-400 text-[10px] md:text-base italic font-medium leading-relaxed">
+            <div className="p-4 md:p-8 border-t border-border-subtle bg-surface">
+              <h4 className="text-[9px] md:text-xs font-black text-text-tertiary mb-2 md:mb-3 uppercase tracking-[0.2em]">Quick Excerpt</h4>
+              <p className="text-text-secondary text-[10px] md:text-base italic font-medium leading-relaxed">
                 {generatedPost.excerpt}
               </p>
             </div>

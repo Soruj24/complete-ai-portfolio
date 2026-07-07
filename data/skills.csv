@@ -2,10 +2,18 @@ Skill,Category,Level
 Next.js,Frontend,Expert
 React,Frontend,Expert
 TypeScript,Frontend,Expert
-Node.js,Backend,Expert
-MongoDB,Database,Expert
-LangChain,AI,Advanced
-Python,AI,Intermediate
+Redux Toolkit,Frontend,Expert
+Zod,Frontend,Advanced
 Tailwind CSS,Frontend,Expert
+Node.js,Backend,Expert
+Express.js,Backend,Expert
+MongoDB,Database,Expert
+Socket.io,Backend,Advanced
+LangChain,AI,Expert
+LangGraph,AI,Advanced
+AI SDK,AI,Advanced
+Deep Agent,AI,Advanced
+MCP Server Development,AI,Expert
+Vector Databases,AI,Advanced
 Docker,DevOps,Intermediate
 Git,Version Control,Expert

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-const AIChatBot = dynamic(() => import("./AIChatBot"), {
+const AIChatBot = dynamic(() => import("./AIChatBot").then((m) => ({ default: m.AIChatBot })), {
   ssr: false,
   loading: () => (
     <div className="fixed bottom-6 right-6 z-[100]">

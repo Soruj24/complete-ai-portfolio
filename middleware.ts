@@ -1,45 +1,70 @@
-import NextAuth from "next-auth";
-import { authConfig } from "./auth.config";
-import { PUBLIC_ROUTES, LOGIN, ROOT, ADMIN_ROUTES } from "@/lib/routes";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { verifyAccessToken } from "@/lib/auth/jwt";
 
-const { auth } = NextAuth(authConfig);
+const PUBLIC_ROUTES = ["/", "/projects", "/privacy", "/terms", "/cookie-policy"];
+const GUEST_ROUTES = ["/login", "/setup"];
+const ADMIN_PREFIX = "/admin";
 
-// Exporting the auth function as middleware for Next.js
-export default auth((req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
-  const role = req.auth?.user?.role;
-  const status = (req.auth?.user as unknown as { status: string })?.status;
+function isPublicRoute(path: string) {
+  return PUBLIC_ROUTES.some((r) => path === r || path.startsWith(`${r}/`));
+}
 
-  const isPublicRoute = PUBLIC_ROUTES.includes(nextUrl.pathname);
-  const isAdminRoute = ADMIN_ROUTES.some(route => nextUrl.pathname.startsWith(route));
+function isGuestRoute(path: string) {
+  return GUEST_ROUTES.some((r) => path === r || path.startsWith(`${r}/`));
+}
 
-  // Block banned users from everything except maybe a "banned" page or logout
-  if (isLoggedIn && status === "banned" && nextUrl.pathname !== "/banned") {
-    return Response.redirect(new URL("/banned", nextUrl));
+function isAdminRoute(path: string) {
+  return path.startsWith(ADMIN_PREFIX);
+}
+
+export default async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const token = req.cookies.get("token")?.value;
+
+  if (isPublicRoute(pathname)) {
+    return NextResponse.next();
   }
 
-  // If logged in and trying to access login/register, redirect to dashboard
-  if (
-    isLoggedIn &&
-    (nextUrl.pathname === LOGIN || nextUrl.pathname === "/register")
-  ) {
-    return Response.redirect(new URL("/dashboard", nextUrl));
+  if (isGuestRoute(pathname)) {
+    if (token) {
+      try {
+        await verifyAccessToken(token);
+        return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+      } catch {
+        return NextResponse.next();
+      }
+    }
+    return NextResponse.next();
   }
 
-  // Admin access control
-  if (isAdminRoute && role !== "admin") {
-    return Response.redirect(new URL("/dashboard", nextUrl));
+  if (isAdminRoute(pathname)) {
+    if (!token) {
+      const url = new URL("/login", req.url);
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    try {
+      const payload = await verifyAccessToken(token);
+      if (payload.role !== "admin") {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set("x-user-id", payload.sub);
+      requestHeaders.set("x-user-role", payload.role);
+      return NextResponse.next({ request: { headers: requestHeaders } });
+    } catch {
+      const res = NextResponse.redirect(new URL("/login", req.url));
+      res.cookies.delete("token");
+      res.cookies.delete("refreshToken");
+      return res;
+    }
   }
 
-  // If not logged in and trying to access protected route, redirect to login
-  if (!isLoggedIn && !isPublicRoute) {
-    return Response.redirect(new URL(LOGIN, nextUrl));
-  }
-
-  return;
-});
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|images/|fonts/).*)"],
 };

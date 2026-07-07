@@ -17,6 +17,8 @@ export interface IBlogPost extends Document {
   authorId: string;
   authorName: string;
   authorImage?: string;
+  tags: string[];
+  published: boolean;
   likes: string[];
   comments: IComment[];
   createdAt: Date;
@@ -41,6 +43,8 @@ const BlogPostSchema = new Schema<IBlogPost>(
     authorId: { type: String, required: true },
     authorName: { type: String, required: true },
     authorImage: { type: String },
+    tags: [{ type: String }],
+    published: { type: Boolean, default: false },
     likes: [{ type: String }],
     comments: [CommentSchema],
   },

@@ -1,43 +1,34 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Shield, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Shield, ShieldCheck } from "lucide-react";
 
-interface SecurityActionsProps {
+interface Props {
   onSetup2FA: () => void;
 }
 
-export function SecurityActions({ onSetup2FA }: SecurityActionsProps) {
+export function SecurityActions({ onSetup2FA }: Props) {
   return (
-    <Card className="border-none shadow-xl shadow-gray-200/50 dark:shadow-none dark:bg-slate-900/50 dark:border dark:border-slate-800 rounded-[32px] overflow-hidden transition-all duration-300">
-      <CardHeader className="bg-white dark:bg-slate-900/80 border-b border-gray-100 dark:border-slate-800 py-6 px-8">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-            <Lock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-          </div>
-          <CardTitle className="text-xl font-black text-gray-900 dark:text-white">Security Actions</CardTitle>
-        </div>
+    <Card className="border border-border-subtle shadow-none rounded-xl bg-surface">
+      <CardHeader className="pb-3 px-5 pt-5">
+        <CardTitle className="text-sm font-semibold text-text-primary flex items-center gap-2">
+          <Shield className="h-4 w-4 text-text-tertiary" />
+          Security
+        </CardTitle>
       </CardHeader>
-      <CardContent className="p-8">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl">
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              <div>
-                <p className="font-bold text-gray-900 dark:text-slate-100">Two-Factor Authentication</p>
-                <p className="text-xs text-gray-500 dark:text-slate-400">Secure your admin account with 2FA</p>
-              </div>
-            </div>
-            <Button
-              size="sm"
-              onClick={onSetup2FA}
-              className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 rounded-xl font-bold transition-colors"
-            >
-              Enable 2FA
-            </Button>
-          </div>
-        </div>
+      <CardContent className="px-5 pb-5 space-y-4">
+        <p className="text-xs text-text-tertiary leading-relaxed">
+          Two-factor authentication adds an extra layer of security to your account.
+        </p>
+        <Button
+          onClick={onSetup2FA}
+          variant="outline"
+          className="w-full h-9 rounded-lg text-xs font-medium border-border-subtle"
+        >
+          <ShieldCheck className="h-3.5 w-3.5 mr-2" />
+          Enable 2FA
+        </Button>
       </CardContent>
     </Card>
   );

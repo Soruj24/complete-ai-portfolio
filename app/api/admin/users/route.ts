@@ -1,52 +1,19 @@
 import { auth } from "@/auth";
-import { dbConnect } from "@/config/db";
-import { User } from "@/models/User";
-import { NextResponse } from "next/server";
-import { adminUpdateUserSchema, adminDeleteUserSchema } from "@/lib/validations";
+import { adminService } from "@/lib/services";
+import { updateUserSchema, deleteUserSchema } from "@/lib/schemas";
+import { createApiResponse, createErrorResponse, handleApiError } from "@/lib/utils/api-response";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const session = await auth();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
 
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const skip = (page - 1) * limit;
-    const search = searchParams.get("search") || "";
-
-    await dbConnect();
-
-    const query = search 
-      ? { 
-          $or: [
-            { name: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } }
-          ]
-        } 
-      : {};
-
-    const total = await User.countDocuments(query);
-    const users = await User.find(query, "-password")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    return NextResponse.json({ 
-      success: true, 
-      users,
-      pagination: {
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit)
-      }
-    });
+    const users = await adminService.getUsers();
+    return createApiResponse(users);
   } catch (error) {
-    console.error("Admin users fetch error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -54,31 +21,19 @@ export async function DELETE(request: Request) {
   try {
     const session = await auth();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
 
     const body = await request.json();
-    const validation = adminDeleteUserSchema.safeParse(body);
-
+    const validation = deleteUserSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error.issues[0].message },
-        { status: 400 }
-      );
+      return createErrorResponse("Validation failed", 400, validation.error.flatten().fieldErrors as Record<string, string[]>);
     }
 
-    const { userId } = validation.data;
-
-    await dbConnect();
-    const userToDelete = await User.findById(userId);
-    if (userToDelete) {
-      await User.findByIdAndDelete(userId);
-    }
-
-    return NextResponse.json({ success: true, message: "User deleted successfully" });
+    await adminService.deleteUser(validation.data.userId);
+    return createApiResponse(null, { message: "User deleted successfully" });
   } catch (error) {
-    console.error("Admin user delete error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -86,36 +41,19 @@ export async function PATCH(request: Request) {
   try {
     const session = await auth();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
 
     const body = await request.json();
-    const validation = adminUpdateUserSchema.safeParse(body);
-
+    const validation = updateUserSchema.safeParse(body);
     if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error.issues[0].message },
-        { status: 400 }
-      );
+      return createErrorResponse("Validation failed", 400, validation.error.flatten().fieldErrors as Record<string, string[]>);
     }
 
-    const { userId, role, status, name } = validation.data;
-
-    await dbConnect();
-    const updateData: any = {};
-    if (role) updateData.role = role;
-    if (status) updateData.status = status;
-    if (name) updateData.name = name;
-
-    const oldUser = await User.findById(userId);
-    await User.findByIdAndUpdate(userId, updateData);
-
-    return NextResponse.json({
-      success: true,
-      message: "User updated successfully",
-    });
+    const { userId, ...updateData } = validation.data;
+    await adminService.updateUser(userId, updateData);
+    return createApiResponse(null, { message: "User updated successfully" });
   } catch (error) {
-    console.error("Admin user update error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

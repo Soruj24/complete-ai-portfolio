@@ -13,14 +13,14 @@ export const authConfig = {
         token.status = (user as { status?: string }).status;
         token.refreshToken = (user as { refreshToken?: string }).refreshToken;
       }
-      
+
       // Add access_token and refresh_token from the account (OAuth providers)
       if (account) {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.expiresAt = account.expires_at;
       }
-      
+
       return token;
     },
     async session({ session, token }) {

@@ -8,11 +8,11 @@ export async function GET() {
     if (res.ok) {
       const data = await res.json();
       const models = data.models || [];
-      const hasLlama32 = models.some((m: any) => m.name.includes("llama3.2"));
+      const hasGemma4 = models.some((m: any) => m.name.includes("gemma4"));
       
       return NextResponse.json({ 
         status: "online", 
-        hasLlama32,
+        hasGemma4,
         models: models.map((m: any) => m.name)
       });
     }

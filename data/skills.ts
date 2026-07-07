@@ -31,6 +31,27 @@ export const skillCategories = [
         color: "from-blue-500 to-cyan-500",
         description: "Working with vector stores and semantic search"
       },
+      {
+        name: "LangGraph",
+        level: 88,
+        icon: "🕸️",
+        color: "from-teal-500 to-green-500",
+        description: "Building stateful, multi-agent workflows with LangGraph"
+      },
+      {
+        name: "AI SDK (ai-sdk.dev)",
+        level: 85,
+        icon: "🤖",
+        color: "from-violet-500 to-purple-500",
+        description: "Vercel AI SDK for streaming LLM responses and tool calls"
+      },
+      {
+        name: "Deep Agent",
+        level: 82,
+        icon: "🧠",
+        color: "from-rose-500 to-pink-500",
+        description: "Building deep reasoning agents for complex tasks"
+      },
     ],
   },
   {
@@ -61,6 +82,20 @@ export const skillCategories = [
         icon: "💨",
         color: "from-cyan-400 to-blue-400",
       },
+      {
+        name: "Redux Toolkit",
+        level: 85,
+        icon: "🔄",
+        color: "from-purple-500 to-indigo-500",
+        description: "State management with Redux Toolkit and RTK Query"
+      },
+      {
+        name: "Zod",
+        level: 83,
+        icon: "✅",
+        color: "from-blue-500 to-sky-500",
+        description: "Schema validation and type inference with Zod"
+      },
     ],
   },
   {
@@ -90,6 +125,13 @@ export const skillCategories = [
         level: 90,
         icon: "🌐",
         color: "from-orange-500 to-red-500",
+      },
+      {
+        name: "Socket.io",
+        level: 82,
+        icon: "🔌",
+        color: "from-gray-500 to-slate-600",
+        description: "Real-time bidirectional event-based communication"
       },
     ],
   },

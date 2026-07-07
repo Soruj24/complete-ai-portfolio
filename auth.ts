@@ -79,7 +79,9 @@ export const {
             refreshToken, // Pass to JWT callback
           };
         } catch (error) {
-          console.error("Auth error:", error);
+          if (error instanceof Error) {
+            throw error;
+          }
           throw new Error("Authentication failed");
         }
       },

@@ -1,28 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Code2 } from "lucide-react";
+import { useManagerCrud } from "@/hooks/use-manager-crud";
 
 interface Skill {
   _id: string;
@@ -33,229 +24,87 @@ interface Skill {
   color: string;
 }
 
+const defaultForm = {
+  name: "", level: 80, icon: "", category: "", color: "from-accent to-accent-hover",
+};
+
 export function SkillManager() {
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const {
+    items: skills, loading, submitting, dialogOpen, editingItem,
+    setDialogOpen, setEditingItem,
+    fetch: fetchSkills, handleSave, handleDelete, handleSeed, handleDialogChange,
+  } = useManagerCrud<Skill>({ apiUrl: "/api/skills", dataKey: "skills", entityName: "skill" });
 
-  const [formData, setFormData] = useState({
-    name: "",
-    level: 80,
-    icon: "",
-    category: "",
-    color: "from-blue-500 to-indigo-500",
-  });
-
-  const fetchSkills = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/skills");
-
-      // Check if response is JSON
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("Non-JSON response received:", await res.text());
-        return;
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        setSkills(data.skills);
-      }
-    } catch (error) {
-      toast.error("Failed to fetch skills");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSkills();
-  }, []);
+  const [formData, setFormData] = useState(defaultForm);
 
   const handleEdit = (skill: Skill) => {
-    setEditingSkill(skill);
+    setEditingItem(skill);
     setFormData({
       name: skill.name,
       level: skill.level,
       icon: skill.icon || "",
       category: skill.category,
-      color: skill.color || "from-blue-500 to-indigo-500",
+      color: skill.color || "from-accent to-accent-hover",
     });
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure?")) return;
-    try {
-      const res = await fetch(`/api/skills/${id}`, { method: "DELETE" });
-
-      // Check if response is JSON
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("Non-JSON response received:", await res.text());
-        return;
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Skill deleted");
-        fetchSkills();
-      }
-    } catch (error) {
-      toast.error("Error deleting skill");
-    }
+    setDialogOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
-    try {
-      const url = editingSkill ? `/api/skills/${editingSkill._id}` : "/api/skills";
-      const res = await fetch(url, {
-        method: editingSkill ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          level: Number(formData.level),
-        }),
-      });
-
-      // Check if response is JSON
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("Non-JSON response received:", await res.text());
-        return;
-      }
-
-      const data = await res.json();
-      if (data.success) {
-        toast.success(`Skill ${editingSkill ? "updated" : "created"}`);
-        setIsDialogOpen(false);
-        setEditingSkill(null);
-        setFormData({ name: "", level: 80, icon: "", category: "", color: "from-blue-500 to-indigo-500" });
-        fetchSkills();
-      }
-    } catch (error) {
-      toast.error("Error saving skill");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const seedDatabase = async () => {
-    if (!confirm("This will overwrite existing data with initial skills. Continue?")) return;
-    try {
-      const res = await fetch("/api/seed", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Database seeded successfully");
-        fetchSkills();
-      }
-    } catch (error) {
-      toast.error("Failed to seed database");
-    }
+    await handleSave({ ...formData, level: Number(formData.level) });
+    if (!editingItem) setFormData(defaultForm);
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Skill Manager</h2>
-          <p className="text-xs md:text-sm text-gray-500 dark:text-slate-400 font-medium">Add and manage your technical skills</p>
+          <h2 className="text-base font-semibold text-text-primary flex items-center gap-2">
+            <Code2 className="h-4 w-4 text-text-tertiary" />
+            Skill Manager
+          </h2>
+          <p className="text-xs text-text-tertiary mt-0.5">Manage your technical skills</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <Button 
-            variant="outline" 
-            onClick={seedDatabase}
-            className="rounded-xl md:rounded-2xl border-gray-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 transition-all duration-300 h-11 md:h-12"
-          >
-            Seed Data
-          </Button>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) setEditingSkill(null);
-          }}>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={handleSeed} size="sm" className="h-9 rounded-lg text-xs border-border-subtle">Seed Data</Button>
+          <Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
             <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto rounded-xl md:rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200/50 dark:shadow-none font-bold gap-2 h-11 md:h-12 px-5 md:px-6 transition-all duration-300">
-                <Plus className="h-4 w-4 md:h-5 md:w-5" />
-                Add Skill
+              <Button size="sm" className="h-9 rounded-lg text-xs gap-1.5">
+                <Plus className="h-3.5 w-3.5" /> Add Skill
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md dark:bg-slate-900 dark:border-slate-800 rounded-[32px]">
+            <DialogContent className="max-w-md rounded-xl">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-black dark:text-white">
-                  {editingSkill ? "Edit Skill" : "Add New Skill"}
-                </DialogTitle>
+                <DialogTitle>{editingItem ? "Edit Skill" : "Add New Skill"}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="font-bold dark:text-slate-300">Skill Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. React"
-                    required
-                    className="rounded-xl border-gray-200 dark:border-slate-800 dark:bg-slate-950 dark:text-white focus:ring-blue-500 transition-all"
-                  />
+                  <Label>Skill Name</Label>
+                  <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. React" required />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="level" className="font-bold dark:text-slate-300">Proficiency (%)</Label>
-                    <Input
-                      id="level"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={formData.level}
-                      onChange={(e) => setFormData({ ...formData, level: Number(e.target.value) })}
-                      required
-                      className="rounded-xl border-gray-200 dark:border-slate-800 dark:bg-slate-950 dark:text-white focus:ring-blue-500 transition-all"
-                    />
+                    <Label>Proficiency (%)</Label>
+                    <Input type="number" min="0" max="100" value={formData.level} onChange={(e) => setFormData({ ...formData, level: Number(e.target.value) })} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="category" className="font-bold dark:text-slate-300">Category</Label>
-                    <Input
-                      id="category"
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      placeholder="Frontend, Backend, etc."
-                      required
-                      className="rounded-xl border-gray-200 dark:border-slate-800 dark:bg-slate-950 dark:text-white focus:ring-blue-500 transition-all"
-                    />
+                    <Label>Category</Label>
+                    <Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="Frontend, Backend" required />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="icon" className="font-bold dark:text-slate-300">Icon (SVG or Emoji)</Label>
-                    <Input
-                      id="icon"
-                      value={formData.icon}
-                      onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                      placeholder="🚀"
-                      className="rounded-xl border-gray-200 dark:border-slate-800 dark:bg-slate-950 dark:text-white focus:ring-blue-500 transition-all"
-                    />
+                    <Label>Icon (SVG or Emoji)</Label>
+                    <Input value={formData.icon} onChange={(e) => setFormData({ ...formData, icon: e.target.value })} placeholder="🚀" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="color" className="font-bold dark:text-slate-300">Color (Gradient)</Label>
-                    <Input
-                      id="color"
-                      value={formData.color}
-                      onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                      className="rounded-xl border-gray-200 dark:border-slate-800 dark:bg-slate-950 dark:text-white focus:ring-blue-500 transition-all"
-                    />
+                    <Label>Color (Gradient)</Label>
+                    <Input value={formData.color} onChange={(e) => setFormData({ ...formData, color: e.target.value })} />
                   </div>
                 </div>
-                <DialogFooter className="pt-6">
-                  <Button 
-                    type="submit" 
-                    disabled={submitting}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 font-bold h-12 transition-all duration-300"
-                  >
-                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : (editingSkill ? "Update" : "Create")}
+                <DialogFooter className="pt-4">
+                  <Button type="submit" disabled={submitting}>
+                    {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (editingItem ? "Update" : "Create")}
                   </Button>
                 </DialogFooter>
               </form>
@@ -264,76 +113,59 @@ export function SkillManager() {
         </div>
       </div>
 
-      <div className="overflow-x-auto no-scrollbar rounded-2xl md:rounded-[32px] border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 shadow-xl shadow-gray-200/50 dark:shadow-none transition-all duration-300">
+      <div className="overflow-x-auto no-scrollbar rounded-xl border border-border-subtle bg-surface">
         <Table>
-          <TableHeader className="bg-gray-50/50 dark:bg-slate-900/50">
-            <TableRow className="hover:bg-transparent border-gray-100 dark:border-slate-800">
-              <TableHead className="font-bold text-gray-700 dark:text-slate-300 py-4 text-[10px] md:text-xs uppercase tracking-widest px-4 md:px-8">Skill</TableHead>
-              <TableHead className="font-bold text-gray-700 dark:text-slate-300 text-[10px] md:text-xs uppercase tracking-widest hidden sm:table-cell">Category</TableHead>
-              <TableHead className="font-bold text-gray-700 dark:text-slate-300 text-[10px] md:text-xs uppercase tracking-widest hidden md:table-cell text-center">Level</TableHead>
-              <TableHead className="text-right font-bold text-gray-700 dark:text-slate-300 text-[10px] md:text-xs uppercase tracking-widest pr-4 md:pr-8">Actions</TableHead>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-border-subtle">
+              <TableHead className="font-medium text-text-tertiary py-3 text-xs px-4">Skill</TableHead>
+              <TableHead className="font-medium text-text-tertiary text-xs hidden sm:table-cell">Category</TableHead>
+              <TableHead className="font-medium text-text-tertiary text-xs hidden md:table-cell text-center">Level</TableHead>
+              <TableHead className="text-right font-medium text-text-tertiary text-xs pr-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-40 text-center">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-blue-600" />
+                <TableCell colSpan={4} className="h-32 text-center">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-text-tertiary" />
                 </TableCell>
               </TableRow>
             ) : skills.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-40 text-center text-gray-400 font-bold">
-                  No skills found.
-                </TableCell>
+                <TableCell colSpan={4} className="h-32 text-center text-sm text-text-tertiary">No skills found.</TableCell>
               </TableRow>
             ) : (
               skills.map((skill) => (
-                <TableRow key={skill._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-900/50 border-gray-100 dark:border-slate-800 transition-colors">
-                  <TableCell className="py-4 md:py-5 px-4 md:px-8">
-                    <div className="flex items-center gap-3 md:gap-4">
-                      <div className={`h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-gradient-to-br ${skill.color || 'from-blue-500 to-indigo-500'} flex items-center justify-center text-white font-black text-xs md:text-sm`}>
+                <TableRow key={skill._id} className="hover:bg-surface-hover border-border-subtle transition-colors">
+                  <TableCell className="py-3 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent font-semibold text-xs">
                         {skill.name.charAt(0)}
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="font-bold text-gray-900 dark:text-slate-100 text-[11px] md:text-sm truncate">{skill.name}</span>
-                        <span className="sm:hidden text-[8px] text-gray-400 font-bold uppercase tracking-wider">{skill.category}</span>
+                        <span className="text-sm font-medium text-text-primary truncate">{skill.name}</span>
+                        <span className="sm:hidden text-[10px] text-text-tertiary">{skill.category}</span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    <Badge className="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 border-none rounded-lg px-2 py-0.5 text-[10px] md:text-xs font-bold uppercase tracking-wider">
-                      {skill.category}
-                    </Badge>
+                    <Badge className="bg-accent/10 text-accent border-none rounded-lg px-2 py-0.5 text-[10px] font-medium">{skill.category}</Badge>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-center">
                     <div className="flex items-center justify-center gap-2">
-                      <div className="w-24 h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full bg-gradient-to-r ${skill.color || 'from-blue-500 to-indigo-500'}`} 
-                          style={{ width: `${skill.level}%` }}
-                        />
+                      <div className="w-24 h-1.5 bg-surface-hover rounded-full overflow-hidden">
+                        <div className="h-full bg-accent/60 rounded-full" style={{ width: `${skill.level}%` }} />
                       </div>
-                      <span className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-slate-400">{skill.level}%</span>
+                      <span className="text-[10px] font-medium text-text-tertiary">{skill.level}%</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right pr-4 md:pr-8">
-                    <div className="flex justify-end gap-1 md:gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(skill)}
-                        className="h-8 w-8 md:h-9 md:w-9 rounded-lg md:rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                      >
-                        <Pencil className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                  <TableCell className="text-right pr-4">
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(skill)} className="h-8 w-8 rounded-lg text-text-tertiary hover:text-accent">
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(skill._id)}
-                        className="h-8 w-8 md:h-9 md:w-9 rounded-lg md:rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(skill._id)} className="h-8 w-8 rounded-lg text-text-tertiary hover:text-error">
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </TableCell>

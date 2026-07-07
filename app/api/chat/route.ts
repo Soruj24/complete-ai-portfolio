@@ -1,112 +1,75 @@
 import { auth } from "@/auth";
+import { chatService } from "@/lib/services";
+import { sendMessageSchema } from "@/lib/schemas";
+import { createApiResponse, createErrorResponse, handleApiError } from "@/lib/utils/api-response";
 import { dbConnect } from "@/config/db";
-import { ChatMessage } from "@/models/ChatMessage";
 import { User } from "@/models/User";
 import { Notification } from "@/models/Notification";
-import { NextResponse } from "next/server";
 
-// GET messages
 export async function GET(request: Request) {
   try {
     const session = await auth();
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user) {
+      return createErrorResponse("Unauthorized", 401);
     }
 
-    await dbConnect();
     const { searchParams } = new URL(request.url);
-    const otherUserId = searchParams.get("userId");
-
-    if (session.user.role === "admin") {
-      // Admin fetching messages for a specific user
-      if (!otherUserId) return NextResponse.json([]);
-      const messages = await ChatMessage.find({
-        $or: [
-          { senderId: session.user.id, receiverId: otherUserId },
-          { senderId: otherUserId, receiverId: session.user.id },
-        ],
-      }).sort({ createdAt: 1 });
-      return NextResponse.json(messages);
-    } else {
-      // User fetching their conversation with admin
-      const admin = await User.findOne({ role: "admin" });
-      if (!admin) return NextResponse.json([]);
-
-      const messages = await ChatMessage.find({
-        $or: [
-          { senderId: session.user.id, receiverId: admin._id },
-          { senderId: admin._id, receiverId: session.user.id },
-        ],
-      }).sort({ createdAt: 1 });
-      return NextResponse.json(messages);
-    }
+    const userId = searchParams.get("userId");
+    const messages = await chatService.getConversation(userId || session.user.id);
+    return createApiResponse(messages);
   } catch (error) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
-// SEND a message
 export async function POST(request: Request) {
   try {
     const session = await auth();
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user) {
+      return createErrorResponse("Unauthorized", 401);
     }
 
-    const { message, receiverId } = await request.json();
+    const body = await request.json();
+    const validation = sendMessageSchema.safeParse(body);
+    if (!validation.success) {
+      return createErrorResponse("Validation failed", 400, validation.error.flatten().fieldErrors as Record<string, string[]>);
+    }
+
     await dbConnect();
 
-    if (session.user.role !== "admin") {
-      // If user is sending, automatically target the admin
-      const admin = await User.findOne({ role: "admin" });
-      if (!admin)
-        return NextResponse.json({ error: "No admin found" }, { status: 404 });
-      const finalReceiverId = admin._id;
-    }
+    const { message, receiverId } = validation.data;
 
-    const newMessage = await ChatMessage.create({
+    const newMessage = await chatService.sendMessage({
       senderId: session.user.id,
-      senderName: session.user.name,
-      senderImage: session.user.image,
-      receiverId: receiverId,
+      senderName: session.user.name || "Unknown",
       message,
       isAdmin: session.user.role === "admin",
-      isRead: false,
     });
 
-    // If admin is replying, send a notification to the user
     if (session.user.role === "admin") {
       await Notification.create({
         userId: receiverId,
         title: "New Message from Support",
-        message: `Support: ${message.length > 50 ? message.substring(0, 50) + "..." : message}`,
+        message: message.length > 50 ? message.substring(0, 50) + "..." : message,
         type: "info",
-        link: "/contact?openChat=true", // Linking to contact page and automatically opening chat
+        link: "/contact?openChat=true",
       });
     } else {
-      // If user is sending, send a notification to all admins
       const admins = await User.find({ role: "admin" });
-      console.log(`Found ${admins.length} admins for chat notification`);
-
-      if (admins.length > 0) {
-        const notificationPromises = admins.map((admin) => {
-          console.log(`Creating chat notification for admin: ${admin.email}`);
-          return Notification.create({
-            userId: admin._id.toString(),
-            title: "New Chat Message",
-            message: `${session.user.name}: ${message.length > 50 ? message.substring(0, 50) + "..." : message}`,
-            type: "info",
-            link: `/admin/dashboard?tab=overview&userId=${session.user.id}`,
-          });
-        });
-        await Promise.all(notificationPromises);
-        console.log("All chat notifications created successfully");
-      }
+      const notificationPromises = admins.map((admin) =>
+        Notification.create({
+          userId: admin._id.toString(),
+          title: "New Chat Message",
+          message: `${session.user.name}: ${message.length > 50 ? message.substring(0, 50) + "..." : message}`,
+          type: "info",
+          link: `/admin/dashboard?tab=overview&userId=${session.user.id}`,
+        })
+      );
+      await Promise.all(notificationPromises);
     }
 
-    return NextResponse.json(newMessage, { status: 201 });
+    return createApiResponse(newMessage, { message: "Message sent", status: 201 });
   } catch (error) {
-    console.error("Chat API Error:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

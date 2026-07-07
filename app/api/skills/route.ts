@@ -1,29 +1,16 @@
 import { auth } from "@/auth";
-import { dbConnect } from "@/config/db";
-import { Skill } from "@/models/Skill";
-import { NextResponse } from "next/server";
-import { skillCategories as initialSkillCategories } from "@/data/skills";
+import { portfolioService } from "@/lib/services";
+import { skillSchema } from "@/lib/schemas";
+import { createApiResponse, createErrorResponse, handleApiError } from "@/lib/utils/api-response";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    await dbConnect();
-    const skills = await Skill.find({}).sort({ category: 1, name: 1 });
-    
-    // If no skills in database, return initial demo skills
-    if (skills.length === 0) {
-      const demoSkills = initialSkillCategories.flatMap(cat => 
-        cat.skills.map(skill => ({
-          ...skill,
-          category: cat.title
-        }))
-      );
-      return NextResponse.json({ success: true, skills: demoSkills });
-    }
-    
-    return NextResponse.json({ success: true, skills });
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category") || undefined;
+    const skills = await portfolioService.getSkills({ category });
+    return createApiResponse(skills);
   } catch (error) {
-    console.error("Skills fetch error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -31,16 +18,16 @@ export async function POST(request: Request) {
   try {
     const session = await auth();
     if (session?.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return createErrorResponse("Forbidden", 403);
     }
-
     const body = await request.json();
-    await dbConnect();
-    const skill = (await Skill.create(body)) as any;
-
-    return NextResponse.json({ success: true, skill });
+    const validation = skillSchema.safeParse(body);
+    if (!validation.success) {
+      return createErrorResponse("Validation failed", 400, validation.error.flatten().fieldErrors as Record<string, string[]>);
+    }
+    const skill = await portfolioService.createSkill(validation.data);
+    return createApiResponse(skill, { message: "Skill created", status: 201 });
   } catch (error) {
-    console.error("Skill create error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return handleApiError(error);
   }
 }

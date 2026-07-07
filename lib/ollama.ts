@@ -4,7 +4,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 
 export const ollamaModel = new ChatOllama({
   baseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
-  model: "llama3.2",
+  model: "gemma4",
   temperature: 0.7,
 });
 
@@ -14,7 +14,7 @@ export async function getAIStream(
   context?: string
 ) {
   try {
-    const systemPrompt = context || `You are "Nexus AI", the highly intelligent and friendly assistant for Soruj Mahmud's portfolio.
+    const systemPrompt = context || `You are "Soruj AI", the highly intelligent and friendly assistant for Soruj Mahmud's portfolio.
       
       Your personality:
       - Professional, tech-savvy, and encouraging.
@@ -52,7 +52,7 @@ export async function getAIStream(
     if ((error as any).message?.includes("fetch failed") || (error as any).code === "ECONNREFUSED") {
       throw new Error("Ollama is not running. Please make sure Ollama is installed and running locally.");
     } else if ((error as any).message?.includes("not found")) {
-      throw new Error("The 'llama3.2' model was not found. Please run 'ollama pull llama3.2' in your terminal.");
+      throw new Error("The 'gemma4' model was not found. Please run 'ollama pull gemma4' in your terminal.");
     }
     
     throw new Error((error as any).message || "Failed to get stream from AI");

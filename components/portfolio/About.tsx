@@ -44,7 +44,7 @@ export function About() {
 
         const data = await res.json();
         if (data.success) {
-          setSettings(data.settings);
+          setSettings(data.data);
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
