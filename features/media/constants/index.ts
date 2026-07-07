@@ -30,4 +30,14 @@ export const SORT_OPTIONS = [
 
 export const MEDIA_PAGE_SIZE = 30;
 
-export { MOCK_MEDIA, MOCK_STORAGE, TAGS, CATEGORIES, FOLDERS } from "./mock-data";
+import type { Folder, Tag, Category, StorageStats } from "../types";
+
+export const FOLDERS: Folder[] = [];
+export const TAGS: Tag[] = [];
+export const CATEGORIES: Category[] = [];
+
+export const MOCK_STORAGE: StorageStats = {
+  total: 0, used: 0, images: 0, videos: 0, documents: 0, icons: 0, audio: 0,
+};
+
+

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Code2, BarChart3 } from "lucide-react";
 import { useSkills } from "../hooks/use-skills";
+import { toastSuccess } from "@/shared/utils/swal";
 import { SKILL_CATEGORY_LABELS } from "../types";
 import type { SkillCategory } from "../types";
 import { SkillFormDialog } from "./skill-form-dialog";
@@ -119,7 +120,7 @@ export function SkillsPage() {
           ))}
         </div>
       )}
-      <SkillFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addSkill(d); }} />
+      <SkillFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addSkill(d); toastSuccess("Created!", "Skill has been created."); }} />
     </div>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, BookOpen, Pencil, Trash2 } from "lucide-react";
 import { useBlogCategories } from "../hooks/use-blog-categories";
+import { toastSuccess } from "@/shared/utils/swal";
 import { BlogCategoryFormDialog } from "./blog-category-form-dialog";
 
 export function BlogCategoriesPage() {
@@ -74,7 +75,7 @@ export function BlogCategoriesPage() {
           ))}
         </div>
       )}
-      <BlogCategoryFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addCategory(d); }} />
+      <BlogCategoryFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addCategory(d); toastSuccess("Created!", "Category has been created."); }} />
     </div>
   );
 }

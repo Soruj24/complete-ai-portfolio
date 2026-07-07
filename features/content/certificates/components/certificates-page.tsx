@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Award, ExternalLink, Calendar, Clock, Shield } from "lucide-react";
 import { useCertificates } from "../hooks/use-certificates";
+import { toastSuccess } from "@/shared/utils/swal";
 import { PROVIDER_LABELS } from "../types";
 import type { CertProvider } from "../types";
 import { CertificateFormDialog } from "./certificate-form-dialog";
@@ -114,7 +115,7 @@ export function CertificatesPage() {
           ))}
         </div>
       )}
-      <CertificateFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addCertificate(d); }} />
+      <CertificateFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addCertificate(d); toastSuccess("Created!", "Certificate has been created."); }} />
     </div>
   );
 }

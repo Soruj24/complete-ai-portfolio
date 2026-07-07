@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Plus, RefreshCw, LayoutGrid, List } from "lucide-react";
 import { useBlogs } from "../hooks/use-blogs";
+import { toastSuccess } from "@/shared/utils/swal";
 import { STATUS_OPTIONS } from "../constants";
 import { BlogStats } from "./blog-stats";
 import { BlogCard } from "./blog-card";
@@ -115,7 +116,7 @@ export function BlogsPage() {
           </table>
         </div>
       )}
-      <BlogFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addPost(d); }} />
+      <BlogFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addPost(d); toastSuccess("Created!", "Blog post has been created."); }} />
     </div>
   );
 }

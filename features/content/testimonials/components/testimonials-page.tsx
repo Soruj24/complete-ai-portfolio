@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, MessageSquare, Star, Quote, ExternalLink } from "lucide-react";
 import { useTestimonials } from "../hooks/use-testimonials";
+import { toastSuccess } from "@/shared/utils/swal";
 import { TestimonialFormDialog } from "./testimonial-form-dialog";
 
 export function TestimonialsPage() {
@@ -105,7 +106,7 @@ export function TestimonialsPage() {
           ))}
         </div>
       )}
-      <TestimonialFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addTestimonial(d); }} />
+      <TestimonialFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addTestimonial(d); toastSuccess("Created!", "Testimonial has been created."); }} />
     </div>
   );
 }

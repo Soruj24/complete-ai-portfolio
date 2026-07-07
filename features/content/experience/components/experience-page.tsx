@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Briefcase, Building2, Calendar, MapPin, Clock } from "lucide-react";
 import { useExperience } from "../hooks/use-experience";
+import { toastSuccess } from "@/shared/utils/swal";
 import { EMPLOYMENT_LABELS } from "../types";
 import type { EmploymentType } from "../types";
 import { ExperienceFormDialog } from "./experience-form-dialog";
@@ -133,7 +134,7 @@ export function ExperiencePage() {
           ))}
         </div>
       )}
-      <ExperienceFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addEntry(d); }} />
+      <ExperienceFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addEntry(d); toastSuccess("Created!", "Experience entry has been created."); }} />
     </div>
   );
 }

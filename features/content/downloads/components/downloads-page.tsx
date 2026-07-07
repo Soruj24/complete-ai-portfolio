@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Download, FileText, Archive, Image, Eye, EyeOff, BarChart3 } from "lucide-react";
 import { useDownloads } from "../hooks/use-downloads";
+import { toastSuccess } from "@/shared/utils/swal";
 import { DownloadFormDialog } from "./download-form-dialog";
 
 const CATEGORIES = ["all", "resume", "code", "document", "presentation", "other"];
@@ -115,7 +116,7 @@ export function DownloadsPage() {
           ))}
         </div>
       )}
-      <DownloadFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addDownload(d); }} />
+      <DownloadFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addDownload(d); toastSuccess("Created!", "Download has been created."); }} />
     </div>
   );
 }

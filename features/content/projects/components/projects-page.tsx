@@ -3,6 +3,8 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Plus, RefreshCw, Trash2 } from "lucide-react";
+import Swal from "sweetalert2";
+import { toastSuccess } from "@/shared/utils/swal";
 import { useProjects } from "../hooks/use-projects";
 import { ProjectStats } from "./project-stats";
 import { ProjectGrid, type ViewMode } from "./project-grid";
@@ -27,10 +29,23 @@ export function ProjectsPage() {
   }, []);
 
   const handleDelete = useCallback(async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project?")) return;
+    const result = await Swal.fire({
+      title: "Delete Project",
+      text: "Are you sure you want to delete this project? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+      background: "var(--surface-primary)",
+      color: "var(--text-primary)",
+    });
+    if (!result.isConfirmed) return;
     setDeleting(id);
     try {
       await deleteProject(id);
+      toastSuccess("Deleted!", "Project has been deleted.");
     } finally {
       setDeleting(null);
     }
@@ -39,8 +54,10 @@ export function ProjectsPage() {
   const handleSubmit = useCallback(async (data: Partial<Project>) => {
     if (editingProject) {
       await updateProject(editingProject.id, data);
+      toastSuccess("Updated!", "Project has been updated.");
     } else {
       await addProject(data);
+      toastSuccess("Created!", "Project has been created.");
     }
   }, [editingProject, addProject, updateProject]);
 

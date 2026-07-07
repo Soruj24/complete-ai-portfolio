@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Tags, Pencil, Trash2 } from "lucide-react";
 import { useProjectTags } from "../hooks/use-project-tags";
+import { toastSuccess } from "@/shared/utils/swal";
 import { ProjectTagFormDialog } from "./project-tag-form-dialog";
 
 export function ProjectTagsPage() {
@@ -71,7 +72,7 @@ export function ProjectTagsPage() {
           ))}
         </div>
       )}
-      <ProjectTagFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addTag(d); }} />
+      <ProjectTagFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addTag(d); toastSuccess("Created!", "Tag has been created."); }} />
     </div>
   );
 }

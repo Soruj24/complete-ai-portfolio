@@ -1,12 +1,3 @@
 import type { Download } from "../types";
 
-export const MOCK_DOWNLOADS: Download[] = [
-  { id: "dl-1", name: "Resume – Full Stack Developer", description: "Comprehensive CV highlighting 7+ years of full-stack development experience.", fileType: "PDF", fileSize: "245 KB", icon: "file-text", downloads: 1240, category: "resume", url: "/downloads/resume.pdf", featured: true, visible: true, order: 1, createdAt: "2026-01-10" },
-  { id: "dl-2", name: "Resume – One Page", description: "Concise one-page resume optimized for quick scanning by recruiters.", fileType: "PDF", fileSize: "180 KB", icon: "file-text", downloads: 890, category: "resume", url: "/downloads/resume-onepage.pdf", featured: true, visible: true, order: 2, createdAt: "2026-01-10" },
-  { id: "dl-3", name: "Portfolio Source Code", description: "Complete source code for this portfolio website built with Next.js.", fileType: "ZIP", fileSize: "4.2 MB", icon: "archive", downloads: 456, category: "code", url: "/downloads/portfolio-source.zip", featured: true, visible: true, order: 3, createdAt: "2026-02-01" },
-  { id: "dl-4", name: "Component Library", description: "Reusable React component library with 50+ accessible UI components.", fileType: "ZIP", fileSize: "1.8 MB", icon: "archive", downloads: 320, category: "code", url: "/downloads/component-library.zip", featured: false, visible: true, order: 4, createdAt: "2026-02-15" },
-  { id: "dl-5", name: "API Documentation", description: "Comprehensive API documentation for all portfolio backend services.", fileType: "PDF", fileSize: "890 KB", icon: "file-text", downloads: 210, category: "document", url: "/downloads/api-docs.pdf", featured: false, visible: true, order: 5, createdAt: "2026-03-01" },
-  { id: "dl-6", name: "Tech Talk – React Patterns", description: "Slide deck from my React Summit 2026 presentation on advanced React patterns.", fileType: "PPTX", fileSize: "12.5 MB", icon: "presentation", downloads: 520, category: "presentation", url: "/downloads/react-patterns.pptx", featured: true, visible: true, order: 6, createdAt: "2026-03-20" },
-  { id: "dl-7", name: "Database Schema Diagram", description: "ERD diagram for the portfolio CMS database schema.", fileType: "PNG", fileSize: "340 KB", icon: "image", downloads: 150, category: "document", url: "/downloads/schema.png", featured: false, visible: false, order: 7, createdAt: "2026-04-01" },
-  { id: "dl-8", name: "Cover Letter Template", description: "Professional cover letter template for software engineering roles.", fileType: "DOCX", fileSize: "120 KB", icon: "file-text", downloads: 680, category: "document", url: "/downloads/cover-letter.docx", featured: false, visible: true, order: 8, createdAt: "2026-04-15" },
-];
+export const MOCK_DOWNLOADS: Download[] = [];

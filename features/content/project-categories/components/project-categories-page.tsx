@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, FolderKanban, Pencil, Trash2 } from "lucide-react";
 import { useProjectCategories } from "../hooks/use-project-categories";
+import { toastSuccess } from "@/shared/utils/swal";
 import { CategoryFormDialog } from "./category-form-dialog";
 
 export function ProjectCategoriesPage() {
@@ -75,7 +76,7 @@ export function ProjectCategoriesPage() {
         </div>
       )}
 
-      <CategoryFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addCategory(d); }} />
+      <CategoryFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addCategory(d); toastSuccess("Created!", "Category has been created."); }} />
     </div>
   );
 }

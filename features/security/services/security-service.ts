@@ -6,27 +6,27 @@ import type {
 } from "../types";
 
 export class SecurityService {
-  getSessions(): Session[] { return securityRepository.getSessions(); }
-  getDevices(): Device[] { return securityRepository.getDevices(); }
-  getLoginHistory(): LoginEntry[] { return securityRepository.getLoginHistory(); }
-  getFailedLogins(): LoginEntry[] { return securityRepository.getFailedLogins(); }
+  async getSessions(): Promise<Session[]> { return securityRepository.getSessions(); }
+  async getDevices(): Promise<Device[]> { return securityRepository.getDevices(); }
+  async getLoginHistory(): Promise<LoginEntry[]> { return securityRepository.getLoginHistory(); }
+  async getFailedLogins(): Promise<LoginEntry[]> { return securityRepository.getFailedLogins(); }
 
-  getIPWhitelist(): IPEntry[] { return securityRepository.getIPWhitelist(); }
-  getIPBlacklist(): IPEntry[] { return securityRepository.getIPBlacklist(); }
-  getRateLimits(): RateLimit[] { return securityRepository.getRateLimits(); }
-  getPasswordPolicy(): PasswordPolicy { return securityRepository.getPasswordPolicy(); }
-  getRoles(): Role[] { return securityRepository.getRoles(); }
+  async getIPWhitelist(): Promise<IPEntry[]> { return securityRepository.getIPWhitelist(); }
+  async getIPBlacklist(): Promise<IPEntry[]> { return securityRepository.getIPBlacklist(); }
+  async getRateLimits(): Promise<RateLimit[]> { return securityRepository.getRateLimits(); }
+  async getPasswordPolicy(): Promise<PasswordPolicy | null> { return securityRepository.getPasswordPolicy(); }
+  async getRoles(): Promise<Role[]> { return securityRepository.getRoles(); }
 
-  getAuditLogs(): AuditLog[] { return securityRepository.getAuditLogs(); }
-  getAlerts(): SecurityAlert[] { return securityRepository.getAlerts(); }
+  async getAuditLogs(): Promise<AuditLog[]> { return securityRepository.getAuditLogs(); }
+  async getAlerts(): Promise<SecurityAlert[]> { return securityRepository.getAlerts(); }
 
-  getAPIKeys(): APIKey[] { return securityRepository.getAPIKeys(); }
-  getEnvVars(): EnvVar[] { return securityRepository.getEnvVars(); }
-  getJWTConfig(): JWTConfig { return securityRepository.getJWTConfig(); }
+  async getAPIKeys(): Promise<APIKey[]> { return securityRepository.getAPIKeys(); }
+  async getEnvVars(): Promise<EnvVar[]> { return securityRepository.getEnvVars(); }
+  async getJWTConfig(): Promise<JWTConfig | null> { return securityRepository.getJWTConfig(); }
 
-  getRecoveryCodes(): RecoveryCode[] { return securityRepository.getRecoveryCodes(); }
-  getBackupStatus(): BackupStatus { return securityRepository.getBackupStatus(); }
-  getSecurityScore(): SecurityScore { return securityRepository.getSecurityScore(); }
+  async getRecoveryCodes(): Promise<RecoveryCode[]> { return securityRepository.getRecoveryCodes(); }
+  async getBackupStatus(): Promise<BackupStatus | null> { return securityRepository.getBackupStatus(); }
+  async getSecurityScore(): Promise<SecurityScore | null> { return securityRepository.getSecurityScore(); }
 
   getAlertColor(severity: string): string {
     const map: Record<string, string> = {

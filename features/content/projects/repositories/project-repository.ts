@@ -6,7 +6,7 @@ const API_BASE = "/api/projects";
 
 function toLocalProject(api: IProject): Project {
   return {
-    id: api.id ?? api._id ?? "",
+    id: api._id ?? api.id ?? "",
     title: api.title,
     slug: api.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
     description: api.description,

@@ -1,26 +1,3 @@
 import type { Skill } from "../types";
 
-export const MOCK_SKILLS: Skill[] = [
-  { id: "sk-1", name: "React", slug: "react", category: "frontend", level: 95, icon: "react", color: "#3b82f6", yearsOfExperience: 5, order: 1, createdAt: "2026-01-10" },
-  { id: "sk-2", name: "Next.js", slug: "nextjs", category: "frontend", level: 92, icon: "nextjs", color: "#10b981", yearsOfExperience: 4, order: 2, createdAt: "2026-01-10" },
-  { id: "sk-3", name: "TypeScript", slug: "typescript", category: "frontend", level: 90, icon: "typescript", color: "#3b82f6", yearsOfExperience: 4, order: 3, createdAt: "2026-01-10" },
-  { id: "sk-4", name: "JavaScript", slug: "javascript", category: "frontend", level: 95, icon: "javascript", color: "#f59e0b", yearsOfExperience: 7, order: 4, createdAt: "2026-01-10" },
-  { id: "sk-5", name: "Tailwind CSS", slug: "tailwind-css", category: "frontend", level: 88, icon: "tailwind", color: "#06b6d4", yearsOfExperience: 3, order: 5, createdAt: "2026-01-15" },
-  { id: "sk-6", name: "HTML/CSS", slug: "html-css", category: "frontend", level: 95, icon: "html", color: "#f97316", yearsOfExperience: 7, order: 6, createdAt: "2026-01-10" },
-  { id: "sk-7", name: "Node.js", slug: "nodejs", category: "backend", level: 88, icon: "nodejs", color: "#84cc16", yearsOfExperience: 5, order: 7, createdAt: "2026-01-10" },
-  { id: "sk-8", name: "Python", slug: "python", category: "backend", level: 78, icon: "python", color: "#f59e0b", yearsOfExperience: 3, order: 8, createdAt: "2026-01-20" },
-  { id: "sk-9", name: "GraphQL", slug: "graphql", category: "backend", level: 82, icon: "graphql", color: "#ec4899", yearsOfExperience: 3, order: 9, createdAt: "2026-02-01" },
-  { id: "sk-10", name: "REST APIs", slug: "rest-apis", category: "backend", level: 92, icon: "api", color: "#6366f1", yearsOfExperience: 6, order: 10, createdAt: "2026-01-10" },
-  { id: "sk-11", name: "PostgreSQL", slug: "postgresql", category: "database", level: 82, icon: "postgresql", color: "#06b6d4", yearsOfExperience: 4, order: 11, createdAt: "2026-02-01" },
-  { id: "sk-12", name: "MongoDB", slug: "mongodb", category: "database", level: 76, icon: "mongodb", color: "#10b981", yearsOfExperience: 3, order: 12, createdAt: "2026-02-05" },
-  { id: "sk-13", name: "Redis", slug: "redis", category: "database", level: 70, icon: "redis", color: "#ef4444", yearsOfExperience: 2, order: 13, createdAt: "2026-04-01" },
-  { id: "sk-14", name: "Prisma", slug: "prisma", category: "database", level: 80, icon: "prisma", color: "#6366f1", yearsOfExperience: 3, order: 14, createdAt: "2026-03-10" },
-  { id: "sk-15", name: "Docker", slug: "docker", category: "devops", level: 78, icon: "docker", color: "#06b6d4", yearsOfExperience: 3, order: 15, createdAt: "2026-02-10" },
-  { id: "sk-16", name: "AWS", slug: "aws", category: "devops", level: 72, icon: "aws", color: "#f59e0b", yearsOfExperience: 3, order: 16, createdAt: "2026-03-15" },
-  { id: "sk-17", name: "CI/CD", slug: "cicd", category: "devops", level: 76, icon: "cicd", color: "#84cc16", yearsOfExperience: 3, order: 17, createdAt: "2026-02-15" },
-  { id: "sk-18", name: "Figma", slug: "figma", category: "design", level: 65, icon: "figma", color: "#f97316", yearsOfExperience: 2, order: 18, createdAt: "2026-05-01" },
-  { id: "sk-19", name: "Git", slug: "git", category: "tools", level: 90, icon: "git", color: "#f97316", yearsOfExperience: 7, order: 19, createdAt: "2026-01-10" },
-  { id: "sk-20", name: "VS Code", slug: "vs-code", category: "tools", level: 92, icon: "vscode", color: "#3b82f6", yearsOfExperience: 7, order: 20, createdAt: "2026-01-10" },
-  { id: "sk-21", name: "OpenAI", slug: "openai", category: "ai", level: 74, icon: "openai", color: "#10b981", yearsOfExperience: 2, order: 21, createdAt: "2026-04-10" },
-  { id: "sk-22", name: "LangChain", slug: "langchain", category: "ai", level: 68, icon: "langchain", color: "#8b5cf6", yearsOfExperience: 1, order: 22, createdAt: "2026-04-15" },
-];
+export const MOCK_SKILLS: Skill[] = [];

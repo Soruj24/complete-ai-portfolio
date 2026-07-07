@@ -1,31 +1,17 @@
-import { MockRepository } from "@/shared/repositories/mock-repository";
-import { MOCK_MEDIA } from "../constants";
 import type { MediaItem } from "../types";
 
-interface MediaEntity extends MediaItem {
-  _id: string;
-}
-
-export class MediaRepository extends MockRepository<MediaEntity> {
-  constructor() {
-    super({ baseUrl: "", resourceName: "media" });
+export class MediaRepository {
+  async getAll(_params?: { limit?: number; search?: string }): Promise<{ success: boolean; data: MediaItem[] }> {
+    return { success: true, data: [] };
   }
-
-  protected searchFields: (keyof MediaEntity)[] = ["name", "tags", "category", "folder"];
-
-  protected generateMockData(): MediaEntity[] {
-    return MOCK_MEDIA.map((m) => ({ ...m, _id: m.id }));
+  async getById(_id: string): Promise<{ success: boolean; data: MediaItem }> {
+    throw new Error("Not found");
   }
-
-  async toggleFavorite(id: string): Promise<MediaEntity> {
-    const result = await this.getById(id);
-    const updated = { ...result.data, favorite: !result.data.favorite };
-    return updated;
+  async toggleFavorite(_id: string): Promise<MediaItem> {
+    throw new Error("Not found");
   }
-
-  async bulkDeleteByIds(ids: string[]): Promise<number> {
-    await this.delay();
-    return ids.length;
+  async bulkDelete(_ids: string[]): Promise<{ success: boolean; data: { deleted: number } }> {
+    return { success: true, data: { deleted: 0 } };
   }
 }
 

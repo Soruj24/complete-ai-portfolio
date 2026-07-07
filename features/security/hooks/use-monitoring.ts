@@ -1,13 +1,18 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { securityService } from "../services/security-service";
 import type { AuditLog, SecurityAlert } from "../types";
 
 export function useMonitoring() {
-  const [alerts] = useState<SecurityAlert[]>(() => securityService.getAlerts());
-  const [auditLogs] = useState<AuditLog[]>(() => securityService.getAuditLogs());
+  const [alerts, setAlerts] = useState<SecurityAlert[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    securityService.getAlerts().then(setAlerts);
+    securityService.getAuditLogs().then(setAuditLogs);
+  }, []);
 
   const filteredLogs = useMemo(() => {
     if (!searchQuery.trim()) return auditLogs;

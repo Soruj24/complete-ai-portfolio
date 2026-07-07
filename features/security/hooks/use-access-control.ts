@@ -1,15 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { securityService } from "../services/security-service";
 import type { IPEntry, RateLimit, PasswordPolicy, Role } from "../types";
 
 export function useAccessControl() {
-  const [whitelist] = useState<IPEntry[]>(() => securityService.getIPWhitelist());
-  const [blacklist] = useState<IPEntry[]>(() => securityService.getIPBlacklist());
-  const [rateLimits] = useState<RateLimit[]>(() => securityService.getRateLimits());
-  const [policy, setPolicy] = useState<PasswordPolicy>(() => securityService.getPasswordPolicy());
-  const [roles] = useState<Role[]>(() => securityService.getRoles());
+  const [whitelist, setWhitelist] = useState<IPEntry[]>([]);
+  const [blacklist, setBlacklist] = useState<IPEntry[]>([]);
+  const [rateLimits, setRateLimits] = useState<RateLimit[]>([]);
+  const [policy, setPolicy] = useState<PasswordPolicy | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
+
+  useEffect(() => {
+    securityService.getIPWhitelist().then(setWhitelist);
+    securityService.getIPBlacklist().then(setBlacklist);
+    securityService.getRateLimits().then(setRateLimits);
+    securityService.getPasswordPolicy().then(setPolicy);
+    securityService.getRoles().then(setRoles);
+  }, []);
 
   return {
     whitelist, blacklist, rateLimits, policy, setPolicy, roles,

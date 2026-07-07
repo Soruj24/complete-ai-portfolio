@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, GraduationCap, BookOpen, MapPin, Award, Calendar } from "lucide-react";
 import { useEducation } from "../hooks/use-education";
+import { toastSuccess } from "@/shared/utils/swal";
 import { DEGREE_LABELS } from "../types";
 import type { DegreeType } from "../types";
 import { EducationFormDialog } from "./education-form-dialog";
@@ -127,7 +128,7 @@ export function EducationPage() {
           ))}
         </div>
       )}
-      <EducationFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addEntry(d); }} />
+      <EducationFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addEntry(d); toastSuccess("Created!", "Education entry has been created."); }} />
     </div>
   );
 }

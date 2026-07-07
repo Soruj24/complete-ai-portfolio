@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Award, Star, TrendingUp, ExternalLink } from "lucide-react";
 import { useAchievements } from "../hooks/use-achievements";
+import { toastSuccess } from "@/shared/utils/swal";
 import { AchievementFormDialog } from "./achievement-form-dialog";
 
 export function AchievementsPage() {
@@ -110,7 +111,7 @@ export function AchievementsPage() {
           ))}
         </div>
       )}
-      <AchievementFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addAchievement(d); }} />
+      <AchievementFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addAchievement(d); toastSuccess("Created!", "Achievement has been created."); }} />
     </div>
   );
 }
