@@ -116,7 +116,12 @@ export function Navbar() {
             })}
             <div className="ml-2 pl-2 border-l border-border flex items-center gap-2">
               <ModeToggle />
-              <Button asChild variant="ghost" size="sm" className="gap-1.5 text-sm">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-sm"
+              >
                 <Link href="/admin/dashboard">
                   <LayoutDashboard className="h-4 w-4" />
                   Dashboard
@@ -178,7 +183,7 @@ export function Navbar() {
                     onClick={() => setMobileOpen(false)}
                   >
                     <LayoutDashboard className="h-4 w-4" />
-                    Admin Dashboard
+                    Admin Dashboards
                   </Link>
                 </Button>
               </div>
