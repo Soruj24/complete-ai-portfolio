@@ -8,11 +8,70 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, ArrowUpRight, ArrowDownRight, Globe, Monitor, ExternalLink, FileText, Download, MousePointerClick } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  countries, cities, sources, referrers, topPages, projects, generateEngagementData,
-  type CountryData, type CityData, type SourceData, type ReferrerData,
-  type PageData, type ProjectData, type EngagementData,
-} from "./data";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+
+interface CountryData {
+  code: string;
+  name: string;
+  flag: string;
+  visitors: number;
+  percentage: number;
+  change: number;
+}
+
+interface CityData {
+  name: string;
+  country: string;
+  visitors: number;
+  duration: string;
+}
+
+interface SourceData {
+  name: string;
+  visitors: number;
+  percentage: number;
+  trend: number;
+}
+
+interface ReferrerData {
+  domain: string;
+  visitors: number;
+  percentage: number;
+  bounce: string;
+}
+
+interface PageData {
+  title: string;
+  path: string;
+  views: number;
+  avgDuration: string;
+  bounceRate: string;
+}
+
+interface ProjectData {
+  name: string;
+  views: number;
+  downloads: number;
+  trend: number;
+}
+
+interface EngagementData {
+  label: string;
+  count: number;
+  change: number;
+  previous: number;
+}
+
+function generateEngagementData(): EngagementData[] {
+  return [];
+}
+
+const EMPTY_COUNTRIES: never[] = [];
+const EMPTY_CITIES: never[] = [];
+const EMPTY_SOURCES: never[] = [];
+const EMPTY_REFERRERS: never[] = [];
+const EMPTY_TOP_PAGES: never[] = [];
+const EMPTY_PROJECTS: never[] = [];
 
 const COLORS_BAR = ["var(--color-accent)", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4"];
 
@@ -147,6 +206,14 @@ export function TablesSection() {
   const [geoSearch, setGeoSearch] = useState("");
   const [trafficTab, setTrafficTab] = useState("sources");
   const [contentTab, setContentTab] = useState("pages");
+  const { data: tablesResponse } = useGetAdminResourceQuery({ resource: "analytics/tables" });
+  const tablesData = (tablesResponse?.data || {}) as Record<string, any>;
+  const countries = (tablesData.countries || EMPTY_COUNTRIES) as any[];
+  const cities = (tablesData.cities || EMPTY_CITIES) as any[];
+  const sources = (tablesData.sources || EMPTY_SOURCES) as any[];
+  const referrers = (tablesData.referrers || EMPTY_REFERRERS) as any[];
+  const topPages = (tablesData.topPages || EMPTY_TOP_PAGES) as any[];
+  const projects = (tablesData.projects || EMPTY_PROJECTS) as any[];
 
   const engagementData = generateEngagementData();
 

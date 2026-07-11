@@ -1,25 +1,55 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Plus, RefreshCw, LayoutGrid, List } from "lucide-react";
-import { useBlogs } from "../hooks/use-blogs";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { STATUS_OPTIONS } from "../constants";
 import { BlogStats } from "./blog-stats";
 import { BlogCard } from "./blog-card";
 import { BlogFormDialog } from "./blog-form-dialog";
+import { BLOG_STATUS_LABELS } from "../types";
+import type { BlogPost, BlogCategory, BlogStats as BlogStatsType } from "../types";
 
 export function BlogsPage() {
-  const { filtered, stats, categories, loading, error, search, setSearch, status, setStatus, category, setCategory, refresh, addPost } = useBlogs();
+  const { data: postsRes, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "blogs" });
+  const { data: catsRes } = useGetAdminResourceQuery({ resource: "blog-categories" });
+
+  const posts: BlogPost[] = useMemo(() => (postsRes?.data ?? []) as BlogPost[], [postsRes]);
+  const categories: BlogCategory[] = useMemo(() => (catsRes?.data ?? []) as BlogCategory[], [catsRes]);
+
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<string>("all");
+  const [category, setCategory] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [view, setView] = useState<"grid" | "list">("grid");
+
+  const filtered = useMemo(() => {
+    return posts.filter((post: BlogPost) => {
+      if (search && !post.title.toLowerCase().includes(search.toLowerCase()) && !post.excerpt.toLowerCase().includes(search.toLowerCase())) return false;
+      if (status !== "all" && post.status !== status) return false;
+      if (category && post.category !== category) return false;
+      return true;
+    });
+  }, [posts, search, status, category]);
+
+  const stats: BlogStatsType = useMemo(() => ({
+    total: posts.length,
+    published: posts.filter((p: BlogPost) => p.status === "published").length,
+    draft: posts.filter((p: BlogPost) => p.status === "draft").length,
+    review: posts.filter((p: BlogPost) => p.status === "review").length,
+    archived: posts.filter((p: BlogPost) => p.status === "archived").length,
+    featured: posts.filter((p: BlogPost) => p.featured).length,
+    totalViews: posts.reduce((s: number, p: BlogPost) => s + (p.views ?? 0), 0),
+    totalComments: posts.reduce((s: number, p: BlogPost) => s + (p.comments ?? 0), 0),
+  }), [posts]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load blogs</p>
-      <p className="mt-1 text-sm">{error}</p>
-      <button onClick={refresh} className="mt-4 flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <p className="mt-1 text-sm">{String(error)}</p>
+      <button onClick={() => refetch()} className="mt-4 flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -31,7 +61,7 @@ export function BlogsPage() {
           <p className="text-sm text-text-tertiary">Manage your blog content</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -40,7 +70,7 @@ export function BlogsPage() {
         </div>
       </div>
 
-      <BlogStats stats={stats} loading={loading} />
+      <BlogStats stats={stats} loading={isLoading} />
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border-primary bg-surface-primary p-4">
         <div className="relative flex-1 min-w-[200px] max-w-md">
@@ -55,7 +85,7 @@ export function BlogsPage() {
         <select value={category} onChange={(e) => setCategory(e.target.value)}
           className="rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent">
           <option value="">All Categories</option>
-          {categories.map((c) => (<option key={c.id} value={c.name}>{c.name}</option>))}
+          {categories.map((c: BlogCategory) => (<option key={c.id} value={c.name}>{c.name}</option>))}
         </select>
         <div className="flex rounded-lg border border-border-primary p-0.5">
           {[{ value: "grid", icon: LayoutGrid }, { value: "list", icon: List }].map((opt) => (
@@ -67,9 +97,9 @@ export function BlogsPage() {
         </div>
       </div>
 
-      {loading && filtered.length === 0 ? (
+      {isLoading && filtered.length === 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-36 animate-pulse rounded-xl bg-surface-hover" />)}
+          {Array.from({ length: 6 }).map((_: unknown, i: number) => <div key={i} className="h-36 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
@@ -78,7 +108,7 @@ export function BlogsPage() {
         </div>
       ) : view === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((post, i) => <BlogCard key={post.id} post={post} index={i} />)}
+          {filtered.map((post: BlogPost, i: number) => <BlogCard key={post.id} post={post} index={i} />)}
         </div>
       ) : (
         <div className="rounded-xl border border-border-primary bg-surface-primary overflow-x-auto">
@@ -93,7 +123,7 @@ export function BlogsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((post) => (
+              {filtered.map((post: BlogPost) => (
                 <tr key={post.id} className="border-b border-border-primary transition-colors hover:bg-surface-hover">
                   <td className="px-4 py-3">
                     <p className="font-medium text-text-primary">{post.title}</p>
@@ -116,9 +146,7 @@ export function BlogsPage() {
           </table>
         </div>
       )}
-      <BlogFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addPost(d); toastSuccess("Created!", "Blog post has been created."); }} />
+      <BlogFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/blogs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Blog post has been created."); refetch(); }} />
     </div>
   );
 }
-
-import { BLOG_STATUS_LABELS } from "../types";

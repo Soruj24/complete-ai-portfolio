@@ -19,4 +19,6 @@ export const STAT_CARDS = [
   { key: "totalComments", label: "Comments", icon: MessageSquare },
 ] as const;
 
-export { MOCK_BLOG_POSTS, CATEGORIES, TAGS } from "./mock-data";
+export const CATEGORIES: string[] = [];
+export const TAGS: string[] = [];
+

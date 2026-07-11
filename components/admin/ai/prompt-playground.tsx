@@ -72,7 +72,7 @@ export function PromptPlayground() {
       for (let i = 0; i < chunk.length; i++) {
         setOutput((prev) => prev + chunk[i]);
         setTokenCount((prev) => prev + 1);
-        await new Promise((r) => setTimeout(r, 15 + Math.random() * 20));
+        await new Promise((r) => setTimeout(r, 20));
       }
     }
 

@@ -6,19 +6,12 @@ import { ProgressWidget } from "@/components/admin/widgets/progress-widget";
 import { StatusWidget } from "@/components/admin/widgets/status-widget";
 import { RealtimeWidget } from "@/components/admin/widgets/realtime-widget";
 import {
-  Brain, Sparkles, Activity, Clock, DollarSign, TrendingUp,
-  Zap, Server, Database, Cpu, Wifi, BookOpen,
+  Brain, Sparkles, Activity, Clock, TrendingUp,
+  Zap, Server, Wifi,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-
-function generateDays(n: number) {
-  return Array.from({ length: n }, (_, i) => ({
-    date: new Date(Date.now() - (n - 1 - i) * 86400000).toISOString(),
-    label: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][i%7],
-    value: Math.floor(Math.random() * 300) + 100,
-  }));
-}
+import { useGetAdminStatsQuery, useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
 const quickActions = [
   { label: "Test a Prompt", href: "/admin/ai/playground", icon: Zap, color: "text-accent", bg: "bg-accent/10" },
@@ -27,16 +20,27 @@ const quickActions = [
   { label: "Workflows", href: "/admin/ai/workflows", icon: Activity, color: "text-amber-500", bg: "bg-amber-500/10" },
 ];
 
-const statsData = [
-  { label: "Total Requests", value: "284,502", trend: 12.5, icon: Activity, color: "text-accent" },
-  { label: "Active Models", value: "8", trend: 0, icon: Brain, color: "text-purple-500" },
-  { label: "Avg Latency", value: "342ms", trend: -8.2, icon: Clock, color: "text-amber-500", invert: true },
-  { label: "Monthly Cost", value: "$1,284", trend: 5.3, icon: DollarSign, color: "text-success" },
-  { label: "Tokens Today", value: "1.2M", trend: 18.7, icon: TrendingUp, color: "text-accent" },
-  { label: "Prompts Stored", value: "156", trend: 8, icon: BookOpen, color: "text-info" },
-];
-
 export function AIOverviewDashboard() {
+  const { data: statsResponse, isLoading: statsLoading } = useGetAdminStatsQuery();
+  const { data: metricsResponse, isLoading: metricsLoading } = useGetAdminResourceQuery({ resource: "ai/metrics" });
+  const { data: statusResponse, isLoading: statusLoading } = useGetAdminResourceQuery({ resource: "ai/status" });
+  const { data: resourcesResponse, isLoading: resourcesLoading } = useGetAdminResourceQuery({ resource: "ai/resources" });
+
+  const stats = statsResponse?.data?.stats;
+  const chartData = metricsResponse?.data ?? [];
+  const serviceStatus = statusResponse?.data ?? [];
+  const resources = resourcesResponse?.data ?? [];
+
+  const statsData = stats
+    ? [
+        { label: "Total Visitors", value: stats.visitors?.toLocaleString() ?? "0", trend: stats.visitorsChange ?? 0, icon: Activity, color: "text-accent" },
+        { label: "Resume Downloads", value: stats.resumeDownloads?.toLocaleString() ?? "0", trend: stats.resumeDownloadsChange ?? 0, icon: TrendingUp, color: "text-success" },
+        { label: "Contact Messages", value: stats.contactMessages?.toLocaleString() ?? "0", trend: stats.contactMessagesChange ?? 0, icon: Clock, color: "text-amber-500" },
+        { label: "GitHub Contributions", value: stats.githubContributions?.toLocaleString() ?? "0", trend: stats.githubContributionsChange ?? 0, icon: Brain, color: "text-purple-500" },
+        { label: "Project Views", value: stats.projectViews?.toLocaleString() ?? "0", trend: stats.projectViewsChange ?? 0, icon: Sparkles, color: "text-info" },
+      ]
+    : [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -61,47 +65,45 @@ export function AIOverviewDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {statsData.map((stat) => (
-          <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl border border-border-subtle bg-surface"
-          >
-            <div className="flex items-center justify-between mb-2">
-              <stat.icon className={cn("h-4 w-4", stat.color)} />
-              <span className={cn(
-                "text-[10px] font-semibold rounded-full px-1.5 py-0.5",
-                stat.trend >= 0 ? "text-success bg-success/10" : "text-error bg-error/10",
-              )}>
-                {stat.trend >= 0 ? "+" : ""}{stat.trend}%
-              </span>
-            </div>
-            <p className="text-lg font-bold text-text-primary">{stat.value}</p>
-            <p className="text-[10px] text-text-tertiary mt-0.5">{stat.label}</p>
-          </motion.div>
-        ))}
-      </div>
+      {statsLoading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-24 rounded-xl bg-surface animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {statsData.map((stat) => (
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              className="p-4 rounded-xl border border-border-subtle bg-surface"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <stat.icon className={cn("h-4 w-4", stat.color)} />
+                <span className={cn(
+                  "text-[10px] font-semibold rounded-full px-1.5 py-0.5",
+                  stat.trend >= 0 ? "text-success bg-success/10" : "text-error bg-error/10",
+                )}>
+                  {stat.trend >= 0 ? "+" : ""}{stat.trend}%
+                </span>
+              </div>
+              <p className="text-lg font-bold text-text-primary">{stat.value}</p>
+              <p className="text-[10px] text-text-tertiary mt-0.5">{stat.label}</p>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AreaChartWidget title="Token Usage" description="Daily token consumption" data={generateDays(14)} trend={12.3} trendLabel="vs last week" color="var(--color-accent)" height={180} />
-        <AreaChartWidget title="API Latency" description="Average response time (ms)" data={generateDays(14)} trend={-8.2} trendLabel="improvement" color="#10b981" height={180} />
+        <AreaChartWidget title="Token Usage" description="Daily token consumption" data={chartData} loading={metricsLoading} trend={12.3} trendLabel="vs last week" color="var(--color-accent)" height={180} />
+        <AreaChartWidget title="API Latency" description="Average response time (ms)" data={chartData} loading={metricsLoading} trend={-8.2} trendLabel="improvement" color="#10b981" height={180} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <StatusWidget title="Service Status" description="AI infrastructure health" layout="list"
-          data={[
-            { label: "OpenAI API", status: "healthy", uptime: "99.9%", responseTime: "124ms" },
-            { label: "Anthropic API", status: "healthy", uptime: "99.8%", responseTime: "210ms" },
-            { label: "Ollama (Local)", status: "warning", uptime: "97.2%", responseTime: "890ms" },
-            { label: "Vector DB", status: "healthy", uptime: "100%", responseTime: "8ms" },
-          ]}
+          data={serviceStatus} loading={statusLoading}
         />
         <ProgressWidget title="Resource Usage" description="System resource consumption" layout="grid"
-          data={[
-            { label: "GPU", used: 72, total: 100, unit: "%", color: "var(--color-accent)" },
-            { label: "VRAM", used: 18, total: 24, unit: "GB", color: "#10b981" },
-            { label: "Context Cache", used: 3.2, total: 10, unit: "GB", color: "#f59e0b" },
-            { label: "Rate Limit", used: 42, total: 100, unit: "%", color: "#8b5cf6" },
-          ]}
+          data={resources} loading={resourcesLoading}
         />
         <RealtimeWidget title="Active Requests" description="Real-time API calls" />
       </div>

@@ -9,7 +9,42 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Activity, AlertTriangle, ShieldAlert, User, Globe, Info, CheckCircle2, Clock, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AUDIT_LOGS, SECURITY_ALERTS, getAlertColor, type AuditLog, type SecurityAlert } from "./data";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+
+interface AuditLog {
+  id: string;
+  action: string;
+  user: string;
+  resource: string;
+  details: string;
+  severity: "info" | "warning" | "critical";
+  ip: string;
+  timestamp: string;
+}
+
+interface SecurityAlert {
+  id: string;
+  title: string;
+  description: string;
+  severity: "low" | "medium" | "high" | "critical";
+  status: "open" | "investigating" | "resolved";
+  source: string;
+  timestamp: string;
+}
+
+function getAlertColor(severity: string) {
+  const colors: Record<string, string> = {
+    critical: "text-error bg-error/10 border-error/20",
+    high: "text-warning bg-warning/10 border-warning/20",
+    medium: "text-accent bg-accent/10 border-accent/20",
+    low: "text-info bg-info/10 border-info/20",
+    info: "text-text-tertiary bg-surface-hover border-border-subtle",
+  };
+  return colors[severity] || colors.info;
+}
+
+const EMPTY_AUDIT: never[] = [];
+const EMPTY_ALERTS: never[] = [];
 
 const severityConfig = {
   info: { icon: Info, color: "text-accent", bg: "bg-accent/10" },
@@ -61,6 +96,10 @@ function AuditLogRow({ log }: { log: AuditLog }) {
 export function MonitoringTab() {
   const [auditSearch, setAuditSearch] = useState("");
   const [filterSeverity, setFilterSeverity] = useState<string>("all");
+  const { data: auditResponse } = useGetAdminResourceQuery({ resource: "audit" });
+  const { data: alertsResponse } = useGetAdminResourceQuery({ resource: "security/alerts" });
+  const AUDIT_LOGS = (auditResponse?.data || EMPTY_AUDIT) as any[];
+  const SECURITY_ALERTS = (alertsResponse?.data || EMPTY_ALERTS) as any[];
 
   const filteredAudit = AUDIT_LOGS.filter((l) => {
     if (filterSeverity !== "all" && l.severity !== filterSeverity) return false;
@@ -80,9 +119,9 @@ export function MonitoringTab() {
           <CardDescription>Active and resolved security incidents</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          {SECURITY_ALERTS.map((alert, i) => {
-            const sev = alertSeverityConfig[alert.severity];
-            const status = alertStatusConfig[alert.status];
+          {SECURITY_ALERTS.map((alert: any, i: number) => {
+            const sev = alertSeverityConfig[alert.severity as keyof typeof alertSeverityConfig] || alertSeverityConfig.low;
+            const status = alertStatusConfig[alert.status as keyof typeof alertStatusConfig] || alertStatusConfig.open;
             return (
               <motion.div key={alert.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                 className={cn(

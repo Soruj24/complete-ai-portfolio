@@ -1,5 +1,3 @@
-export { MOCK_MESSAGES, MOCK_CONTACT_REQUESTS } from "./mock-data";
-
 import { Mail, Flag, MessageSquare, TrendingUp, Users } from "lucide-react";
 import type { MessageStatus, MessageSource } from "../types";
 

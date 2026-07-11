@@ -10,7 +10,30 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Key, Eye, EyeOff, Copy, Check, RotateCcw, Plus, Trash2, Shield, Clock, Server, FileKey, Variable, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { API_KEYS, ENV_VARS, type APIKey, type EnvVar } from "./data";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+
+interface APIKey {
+  id: string;
+  name: string;
+  key: string;
+  status: "active" | "expired" | "revoked";
+  permissions: string[];
+  created: string;
+  expires?: string;
+  lastUsed: string;
+}
+
+interface EnvVar {
+  id: string;
+  key: string;
+  value: string;
+  environment: string;
+  sensitive: boolean;
+  lastRotated: string;
+}
+
+const EMPTY_API_KEYS: never[] = [];
+const EMPTY_ENV_VARS: never[] = [];
 
 const statusConfig = {
   active: { color: "text-success bg-success/10", label: "Active" },
@@ -124,6 +147,10 @@ function EnvVarRow({ envVar }: { envVar: EnvVar }) {
 
 export function SecretsTab() {
   const [secretsTab, setSecretsTab] = useState("api-keys");
+  const { data: keysResponse } = useGetAdminResourceQuery({ resource: "api-keys" });
+  const { data: envResponse } = useGetAdminResourceQuery({ resource: "environment" });
+  const API_KEYS = (keysResponse?.data || EMPTY_API_KEYS) as any[];
+  const ENV_VARS = (envResponse?.data || EMPTY_ENV_VARS) as any[];
 
   return (
     <Tabs value={secretsTab} onValueChange={setSecretsTab} className="space-y-4">

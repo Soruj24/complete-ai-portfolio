@@ -2,59 +2,10 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Users, Eye, ArrowRight, Clock, Globe } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Eye, ArrowRight, Clock, Globe, Loader2 } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Area, AreaChart } from "recharts";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import type { TrafficDay, TrafficSource, TopPage, TrafficStats } from "../types";
-
-const DAYS: TrafficDay[] = Array.from({ length: 30 }, (_, i) => {
-  const date = new Date(Date.now() - (29 - i) * 86400000);
-  return {
-    date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    visitors: 200 + Math.floor(Math.random() * 800) + (i > 20 ? 100 : 0),
-    pageViews: 400 + Math.floor(Math.random() * 2000) + (i > 20 ? 300 : 0),
-    bounceRate: +(30 + Math.random() * 30).toFixed(1),
-    avgSessionDuration: Math.floor(120 + Math.random() * 180),
-  };
-});
-
-const SOURCES: TrafficSource[] = [
-  { source: "Organic Search", visitors: 8450, percentage: 38, color: "#3b82f6" },
-  { source: "Direct", visitors: 4200, percentage: 19, color: "#10b981" },
-  { source: "Social Media", visitors: 3800, percentage: 17, color: "#8b5cf6" },
-  { source: "Referral", visitors: 2900, percentage: 13, color: "#f59e0b" },
-  { source: "Email", visitors: 1800, percentage: 8, color: "#06b6d4" },
-  { source: "Other", visitors: 1100, percentage: 5, color: "#ec4899" },
-];
-
-const TOP_PAGES: TopPage[] = [
-  { path: "/", title: "Home", views: 42300, avgTime: 185, bounceRate: 32 },
-  { path: "/projects", title: "Projects", views: 28900, avgTime: 245, bounceRate: 28 },
-  { path: "/blog", title: "Blog", views: 21500, avgTime: 310, bounceRate: 22 },
-  { path: "/about", title: "About", views: 12400, avgTime: 175, bounceRate: 38 },
-  { path: "/contact", title: "Contact", views: 8900, avgTime: 120, bounceRate: 45 },
-  { path: "/admin", title: "Admin", views: 5600, avgTime: 420, bounceRate: 15 },
-];
-
-const currentVisitors = DAYS[DAYS.length - 1].visitors;
-const prevVisitors = DAYS[DAYS.length - 2].visitors;
-const currentPageViews = DAYS[DAYS.length - 1].pageViews;
-const prevPageViews = DAYS[DAYS.length - 2].pageViews;
-
-const STATS: TrafficStats = {
-  totalVisitors: currentVisitors,
-  totalPageViews: currentPageViews,
-  avgBounceRate: +(DAYS.reduce((s, d) => s + d.bounceRate, 0) / DAYS.length).toFixed(1),
-  avgSessionDuration: Math.floor(DAYS.reduce((s, d) => s + d.avgSessionDuration, 0) / DAYS.length),
-  visitorsTrend: +((currentVisitors - prevVisitors) / prevVisitors * 100).toFixed(1),
-  pageViewsTrend: +((currentPageViews - prevPageViews) / prevPageViews * 100).toFixed(1),
-};
-
-const statCards = [
-  { label: "Visitors", value: STATS.totalVisitors.toLocaleString(), trend: STATS.visitorsTrend, icon: Users, format: "number" as const },
-  { label: "Page Views", value: STATS.totalPageViews.toLocaleString(), trend: STATS.pageViewsTrend, icon: Eye, format: "number" as const },
-  { label: "Bounce Rate", value: `${STATS.avgBounceRate}%`, trend: -2.1, icon: ArrowRight, format: "percent" as const },
-  { label: "Avg Session", value: `${Math.floor(STATS.avgSessionDuration / 60)}m ${STATS.avgSessionDuration % 60}s`, trend: 5.3, icon: Clock, format: "time" as const },
-];
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
@@ -67,8 +18,60 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function TrafficPage() {
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "analytics/traffic" });
+  const items = response?.data ?? [];
+
+  const DAYS: TrafficDay[] = items.length > 0 ? items : [];
+  const SOURCES: TrafficSource[] = items.length > 0 ? (items[0]?.sources ?? []) : [];
+  const TOP_PAGES: TopPage[] = items.length > 0 ? (items[0]?.topPages ?? []) : [];
+
   const [period, setPeriod] = useState<"7d" | "30d">("30d");
-  const chartData = useMemo(() => period === "7d" ? DAYS.slice(-7) : DAYS, [period]);
+  const chartData = useMemo(() => period === "7d" ? DAYS.slice(-7) : DAYS, [period, DAYS]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  if (DAYS.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-text-primary">Traffic Analytics</h1>
+            <p className="text-sm text-text-tertiary">Detailed website traffic data and trends</p>
+          </div>
+        </div>
+        <div className="flex h-64 items-center justify-center rounded-xl border border-border-primary bg-surface-primary">
+          <p className="text-sm text-text-tertiary">No traffic data available</p>
+        </div>
+      </div>
+    );
+  }
+
+  const currentVisitors = DAYS[DAYS.length - 1].visitors;
+  const prevVisitors = DAYS[DAYS.length - 2].visitors;
+  const currentPageViews = DAYS[DAYS.length - 1].pageViews;
+  const prevPageViews = DAYS[DAYS.length - 2].pageViews;
+
+  const STATS: TrafficStats = {
+    totalVisitors: currentVisitors,
+    totalPageViews: currentPageViews,
+    avgBounceRate: +(DAYS.reduce((s, d) => s + d.bounceRate, 0) / DAYS.length).toFixed(1),
+    avgSessionDuration: Math.floor(DAYS.reduce((s, d) => s + d.avgSessionDuration, 0) / DAYS.length),
+    visitorsTrend: +((currentVisitors - prevVisitors) / prevVisitors * 100).toFixed(1),
+    pageViewsTrend: +((currentPageViews - prevPageViews) / prevPageViews * 100).toFixed(1),
+  };
+
+  const statCards = [
+    { label: "Visitors", value: STATS.totalVisitors.toLocaleString(), trend: STATS.visitorsTrend, icon: Users, format: "number" as const },
+    { label: "Page Views", value: STATS.totalPageViews.toLocaleString(), trend: STATS.pageViewsTrend, icon: Eye, format: "number" as const },
+    { label: "Bounce Rate", value: `${STATS.avgBounceRate}%`, trend: -2.1, icon: ArrowRight, format: "percent" as const },
+    { label: "Avg Session", value: `${Math.floor(STATS.avgSessionDuration / 60)}m ${STATS.avgSessionDuration % 60}s`, trend: 5.3, icon: Clock, format: "time" as const },
+  ];
 
   return (
     <div className="space-y-6">

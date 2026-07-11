@@ -13,10 +13,39 @@ import {
   Star, StarOff, Copy, Trash2, Download, MoreHorizontal,
   Edit3, RotateCcw, Clock, FolderOpen,
 } from "lucide-react";
-import {
-  ALL_MEDIA, FOLDERS, formatSize, getTypeColor,
-  type MediaItem, type MediaType,
-} from "./data";
+import type { MediaItem, MediaType } from "@/features/media/types";
+
+function formatSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+
+function getTypeColor(type: string): string {
+  const colors: Record<string, string> = {
+    image: "bg-accent/10 text-accent",
+    video: "bg-purple-500/10 text-purple-500",
+    pdf: "bg-error/10 text-error",
+    document: "bg-info/10 text-info",
+    icon: "bg-amber-500/10 text-amber-500",
+    svg: "bg-amber-500/10 text-amber-500",
+    audio: "bg-pink-500/10 text-pink-500",
+  };
+  return colors[type] || "bg-surface-hover text-text-tertiary";
+}
+
+interface FolderItem {
+  id: string;
+  name: string;
+  parent: string | null;
+  count: number;
+  icon: string;
+}
+
+const ALL_MEDIA: MediaItem[] = [];
+const EMPTY_FOLDERS: FolderItem[] = [];
 
 const FILE_TYPE_OPTIONS: { label: string; value: MediaType | "all"; icon: React.ElementType }[] = [
   { label: "All", value: "all", icon: FolderOpen },
@@ -148,10 +177,10 @@ export function MediaGrid({ selectedFolder, selectedTag, selectedCategory, searc
   const [sortBy, setSortBy] = useState<"name" | "date" | "size">("date");
   const [typeFilter, setTypeFilter] = useState<MediaType | "all">("all");
 
-  const folder = FOLDERS.find((f) => f.id === selectedFolder);
-  const folderPath = folder ? [folder.id, ...FOLDERS.filter((f) => {
+  const folder = EMPTY_FOLDERS.find((f) => f.id === selectedFolder);
+  const folderPath = folder ? [folder.id, ...EMPTY_FOLDERS.filter((f) => {
     let p = folder.parent;
-    while (p) { const pf = FOLDERS.find((ff) => ff.id === p); if (pf) { p = pf.parent; } else break; }
+    while (p) { const pf = EMPTY_FOLDERS.find((ff) => ff.id === p); if (pf) { p = pf.parent; } else break; }
     return false;
   }).map((f) => f.id)] : [];
 
@@ -159,7 +188,7 @@ export function MediaGrid({ selectedFolder, selectedTag, selectedCategory, searc
     let items = [...ALL_MEDIA];
     if (typeFilter !== "all") items = items.filter((i) => i.type === typeFilter);
     if (selectedFolder !== "root") {
-      const folderObj = FOLDERS.find((f) => f.id === selectedFolder);
+      const folderObj = EMPTY_FOLDERS.find((f) => f.id === selectedFolder);
       if (folderObj) items = items.filter((i) => i.folder === folderObj.name.toLowerCase().replace(/ & /g, "-"));
     }
     if (selectedTag) items = items.filter((i) => i.tags.includes(selectedTag));

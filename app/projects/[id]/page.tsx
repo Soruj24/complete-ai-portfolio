@@ -7,7 +7,6 @@ import { Footer } from "@/components/layout/footer";
 import { dbConnect } from "@/config/db";
 import { Project } from "@/models/Project";
 import { notFound } from "next/navigation";
-import { projects as initialProjects } from "@/data/projects";
 import type { IProject } from "@/types";
 import { ProjectContent } from "@/components/projects/project-content";
 import { ProjectSidebar } from "@/components/projects/project-sidebar";
@@ -15,8 +14,7 @@ import { ProjectSidebar } from "@/components/projects/project-sidebar";
 async function getProject(id: string) {
   try {
     await dbConnect();
-    let project = await Project.findById(id).catch(() => null);
-    if (!project) project = initialProjects.find(p => p.id === id);
+    const project = await Project.findById(id).catch(() => null);
     return project;
   } catch {
     return null;

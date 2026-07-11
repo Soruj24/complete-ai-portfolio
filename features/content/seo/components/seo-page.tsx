@@ -2,37 +2,10 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, FileText, Globe, AlertTriangle, CheckCircle2, XCircle, Info, RefreshCw, Save, Code } from "lucide-react";
+import { Search, FileText, Globe, AlertTriangle, CheckCircle2, XCircle, Info, RefreshCw, Save, Code, Loader2 } from "lucide-react";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import type { SitemapEntry } from "../types";
-import type { SeoPage, SeoStats } from "../types";
-
-const MOCK_PAGES: SeoPage[] = [
-  { path: "/", title: "Home", metaTitle: "John Doe - Full Stack Developer | Portfolio", metaDescription: "Experienced full stack developer specializing in React, Next.js, and Node.js. View my portfolio and get in touch.", score: 92, issues: [], lastCrawled: "2026-07-05" },
-  { path: "/projects", title: "Projects", metaTitle: "Projects - John Doe", metaDescription: "Explore my portfolio of web development projects including AI tools, dashboards, and full-stack applications.", score: 88, issues: [{ type: "warning", message: "Meta description is 158 characters (should be 150-160)", fix: "Trim meta description to 155 characters" }], lastCrawled: "2026-07-04" },
-  { path: "/blog", title: "Blog", metaTitle: "Blog - John Doe", metaDescription: "Read articles about web development, AI, TypeScript, and software engineering best practices.", score: 85, issues: [{ type: "warning", message: "Missing Open Graph image tag", fix: "Add og:image meta tag" }], lastCrawled: "2026-07-03" },
-  { path: "/about", title: "About", metaTitle: "About Me - John Doe", metaDescription: "Learn about my background in software engineering, my skills, and my approach to building great products.", score: 76, issues: [
-    { type: "error", message: "Missing h1 tag", fix: "Add an h1 heading to the page" },
-    { type: "warning", message: "Meta description is 120 characters (should be 150-160)", fix: "Expand meta description" },
-  ], lastCrawled: "2026-07-02" },
-  { path: "/contact", title: "Contact", metaTitle: "Contact - John Doe", metaDescription: "Get in touch with me for freelance projects, collaborations, or job opportunities.", score: 71, issues: [
-    { type: "error", message: "Duplicate meta title tag found", fix: "Remove duplicate title tag" },
-    { type: "warning", message: "No internal links found", fix: "Add internal links to related pages" },
-    { type: "info", message: "Form missing aria labels", fix: "Add aria-label attributes to form fields" },
-  ], lastCrawled: "2026-07-01" },
-  { path: "/admin", title: "Admin", metaTitle: "Admin - John Doe Portfolio", metaDescription: "", score: 45, issues: [
-    { type: "error", message: "Missing meta description", fix: "Add meta description tag" },
-    { type: "error", message: "Page not indexed (noindex tag)", fix: "Remove noindex if this should be indexed" },
-    { type: "warning", message: "Missing canonical URL", fix: "Add canonical link tag" },
-  ], lastCrawled: "2026-06-28" },
-];
-
-const STATS: SeoStats = {
-  totalPages: MOCK_PAGES.length,
-  averageScore: +(MOCK_PAGES.reduce((s, p) => s + p.score, 0) / MOCK_PAGES.length).toFixed(1),
-  errors: MOCK_PAGES.reduce((s, p) => s + p.issues.filter((i) => i.type === "error").length, 0),
-  warnings: MOCK_PAGES.reduce((s, p) => s + p.issues.filter((i) => i.type === "warning").length, 0),
-  pagesWithIssues: MOCK_PAGES.filter((p) => p.issues.length > 0).length,
-};
+import type { SeoPage } from "../types";
 
 const SITEMAP: SitemapEntry[] = [
   { path: "/", priority: 1.0, changefreq: "weekly", lastModified: "2026-07-05" },
@@ -57,8 +30,18 @@ export function SeoPage() {
   const [tab, setTab] = useState<"pages" | "sitemap" | "robots">("pages");
   const [search, setSearch] = useState("");
   const [robotsContent, setRobotsContent] = useState(ROBOTS_TXT);
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "seo" });
+  const pages: SeoPage[] = response?.data ?? [];
 
-  const filtered = MOCK_PAGES.filter((p) => p.path.includes(search) || p.title.toLowerCase().includes(search.toLowerCase()));
+  const stats = {
+    totalPages: pages.length,
+    averageScore: pages.length > 0 ? +(pages.reduce((s, p) => s + p.score, 0) / pages.length).toFixed(1) : 0,
+    errors: pages.reduce((s, p) => s + p.issues.filter((i) => i.type === "error").length, 0),
+    warnings: pages.reduce((s, p) => s + p.issues.filter((i) => i.type === "warning").length, 0),
+    pagesWithIssues: pages.filter((p) => p.issues.length > 0).length,
+  };
+
+  const filtered = pages.filter((p) => p.path.includes(search) || p.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="space-y-6">
@@ -74,10 +57,10 @@ export function SeoPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Pages Analyzed", value: STATS.totalPages, icon: Globe, color: "text-accent" },
-          { label: "Average Score", value: `${STATS.averageScore}%`, icon: CheckCircle2, color: scoreColor(STATS.averageScore) },
-          { label: "Errors Found", value: STATS.errors, icon: XCircle, color: "text-error" },
-          { label: "Pages with Issues", value: STATS.pagesWithIssues, icon: AlertTriangle, color: "text-warning" },
+          { label: "Pages Analyzed", value: stats.totalPages, icon: Globe, color: "text-accent" },
+          { label: "Average Score", value: `${stats.averageScore}%`, icon: CheckCircle2, color: scoreColor(stats.averageScore) },
+          { label: "Errors Found", value: stats.errors, icon: XCircle, color: "text-error" },
+          { label: "Pages with Issues", value: stats.pagesWithIssues, icon: AlertTriangle, color: "text-warning" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4"
@@ -105,6 +88,16 @@ export function SeoPage() {
 
       {tab === "pages" && (
         <div className="space-y-4">
+          {isLoading ? (
+            <div className="flex h-64 items-center justify-center">
+              <Loader2 size={24} className="animate-spin text-accent" />
+            </div>
+          ) : pages.length === 0 ? (
+            <div className="flex h-64 items-center justify-center rounded-xl border border-border-primary bg-surface-primary">
+              <p className="text-sm text-text-tertiary">No SEO data available</p>
+            </div>
+          ) : (
+          <>
           <div className="relative max-w-md">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
             <input type="text" placeholder="Search pages..." value={search} onChange={(e) => setSearch(e.target.value)}
@@ -145,6 +138,8 @@ export function SeoPage() {
               )}
             </motion.div>
           ))}
+          </>
+          )}
         </div>
       )}
 

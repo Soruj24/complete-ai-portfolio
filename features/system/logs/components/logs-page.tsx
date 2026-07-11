@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ScrollText, Search, Filter, Download, RefreshCw, Terminal, AlertTriangle, XCircle, Info } from "lucide-react";
+import { ScrollText, Search, Filter, Download, RefreshCw, Terminal, AlertTriangle, XCircle, Info, Loader2 } from "lucide-react";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
 type LogLevel = "info" | "warn" | "error" | "debug";
 type LogSource = "system" | "api" | "database" | "auth" | "cron" | "email";
@@ -18,37 +19,6 @@ interface LogEntry {
   userId?: string;
 }
 
-const generateLogs = (): LogEntry[] => {
-  const messages: Record<LogSource, string[]> = {
-    system: ["Server health check passed", "Memory usage: 4.2/16 GB (26%)", "CPU load: 0.45 (idle)", "Process restarted: pm2", "Node.js v20.11.0 detected", "Backup cron job initialized"],
-    api: ["GET /api/projects 200 45ms", "POST /api/messages 201 120ms", "GET /api/users 401 Unauthorized", "PUT /api/settings 200 30ms", "DELETE /api/blogs 204 15ms", "Rate limit exceeded for IP 192.168.1.100"],
-    database: ["Query executed: SELECT * FROM projects (12ms)", "Connection pool: 3/10 active", "Slow query detected: 2.3s (projects table)", "PostgreSQL 16.2 connected", "Migration 042 completed successfully", "Index rebuild on projects.status"],
-    auth: ["User login successful: admin@example.com", "Failed login attempt: unknown@test.com", "Session created: user_8472", "Token refreshed: user_4231", "Password reset requested: user_7843", "2FA verification passed: user_8472"],
-    cron: ["Daily backup started", "Weekly report generated", "Cache purge completed", "Sitemap regenerated", "Email digest sent to 142 subscribers", "Stale sessions cleaned (23 removed)"],
-    email: ["Contact form submitted by Alice Johnson", "Newsletter sent: 1,234 delivered, 12 bounces", "Password reset email sent to user@example.com", "Welcome email queued for new user", "Email delivery failed: invalid domain", "Weekly digest prepared"],
-  };
-  const entries: LogEntry[] = [];
-  const levels: LogLevel[] = ["info", "info", "info", "warn", "error", "debug"];
-  const sources = ["system", "api", "database", "auth", "cron", "email"] as LogSource[];
-
-  for (let i = 0; i < 120; i++) {
-    const source = sources[i % sources.length];
-    const msgs = messages[source];
-    entries.push({
-      id: `log-${i + 1}`,
-      timestamp: new Date(Date.now() - i * 300000 - Math.random() * 300000).toISOString(),
-      level: levels[i % levels.length],
-      source,
-      message: msgs[i % msgs.length],
-      ip: i % 3 === 0 ? `192.168.1.${Math.floor(Math.random() * 255)}` : undefined,
-      userId: i % 4 === 0 ? `user_${Math.floor(Math.random() * 9000 + 1000)}` : undefined,
-    });
-  }
-  return entries;
-};
-
-const ALL_LOGS = generateLogs();
-
 const LEVEL_CONFIG: Record<LogLevel, { icon: typeof Info; color: string; bg: string }> = {
   info: { icon: Info, color: "text-accent", bg: "bg-accent/10" },
   warn: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10" },
@@ -63,25 +33,35 @@ export function LogsPage() {
   const [levelFilter, setLevelFilter] = useState<LogLevel | "all">("all");
   const [sourceFilter, setSourceFilter] = useState<LogSource | "all">("all");
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "logs" });
+  const items = response?.data ?? [];
 
   const filtered = useMemo(() => {
-    let result = ALL_LOGS;
+    let result = items;
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter((l) => l.message.toLowerCase().includes(q) || l.id.includes(q));
+      result = result.filter((l: LogEntry) => l.message.toLowerCase().includes(q) || l.id.includes(q));
     }
-    if (levelFilter !== "all") result = result.filter((l) => l.level === levelFilter);
-    if (sourceFilter !== "all") result = result.filter((l) => l.source === sourceFilter);
+    if (levelFilter !== "all") result = result.filter((l: LogEntry) => l.level === levelFilter);
+    if (sourceFilter !== "all") result = result.filter((l: LogEntry) => l.source === sourceFilter);
     return result;
-  }, [search, levelFilter, sourceFilter]);
+  }, [items, search, levelFilter, sourceFilter]);
 
-  const errorCount = ALL_LOGS.filter((l) => l.level === "error").length;
-  const warnCount = ALL_LOGS.filter((l) => l.level === "warn").length;
+  const errorCount = items.filter((l: LogEntry) => l.level === "error").length;
+  const warnCount = items.filter((l: LogEntry) => l.level === "warn").length;
 
   const formatTime = (iso: string) => {
     const d = new Date(iso);
     return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -131,46 +111,55 @@ export function LogsPage() {
       </div>
 
       <div className="rounded-xl border border-border-primary bg-surface-primary overflow-hidden">
-        <div className="max-h-[600px] overflow-y-auto">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-surface-primary">
-              <tr className="border-b border-border-primary text-left text-xs text-text-tertiary">
-                <th className="px-4 py-3 font-medium w-20">Level</th>
-                <th className="px-4 py-3 font-medium w-36">Timestamp</th>
-                <th className="px-4 py-3 font-medium w-24">Source</th>
-                <th className="px-4 py-3 font-medium">Message</th>
-                <th className="px-4 py-3 font-medium w-32">Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.slice(0, 200).map((log, i) => {
-                const cfg = LEVEL_CONFIG[log.level];
-                return (
-                  <motion.tr key={log.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.003 }}
-                    className="border-b border-border-primary transition-colors hover:bg-surface-hover font-mono text-xs">
-                    <td className="px-4 py-2">
-                      <span className={`flex w-fit items-center gap-1 rounded px-1.5 py-0.5 font-medium ${cfg.bg} ${cfg.color}`}>
-                        <cfg.icon size={10} />{log.level.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-text-tertiary whitespace-nowrap">{formatTime(log.timestamp)}</td>
-                    <td className="px-4 py-2">
-                      <span className="rounded bg-surface-hover px-1.5 py-0.5 text-text-secondary">{log.source}</span>
-                    </td>
-                    <td className="px-4 py-2 text-text-primary">{log.message}</td>
-                    <td className="px-4 py-2 text-text-tertiary">
-                      {log.ip && <span className="mr-2">IP: {log.ip}</span>}
-                      {log.userId && <span>User: {log.userId}</span>}
-                    </td>
-                  </motion.tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <div className="border-t border-border-primary px-4 py-2 text-xs text-text-tertiary">
-          Showing {Math.min(filtered.length, 200)} of {filtered.length} entries
-        </div>
+        {items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
+            <ScrollText size={40} className="mb-3 opacity-40" />
+            <p className="font-medium">No logs found</p>
+          </div>
+        ) : (
+          <>
+            <div className="max-h-[600px] overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-surface-primary">
+                  <tr className="border-b border-border-primary text-left text-xs text-text-tertiary">
+                    <th className="px-4 py-3 font-medium w-20">Level</th>
+                    <th className="px-4 py-3 font-medium w-36">Timestamp</th>
+                    <th className="px-4 py-3 font-medium w-24">Source</th>
+                    <th className="px-4 py-3 font-medium">Message</th>
+                    <th className="px-4 py-3 font-medium w-32">Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.slice(0, 200).map((log: LogEntry, i: number) => {
+                    const cfg = LEVEL_CONFIG[log.level];
+                    return (
+                      <motion.tr key={log.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.003 }}
+                        className="border-b border-border-primary transition-colors hover:bg-surface-hover font-mono text-xs">
+                        <td className="px-4 py-2">
+                          <span className={`flex w-fit items-center gap-1 rounded px-1.5 py-0.5 font-medium ${cfg.bg} ${cfg.color}`}>
+                            <cfg.icon size={10} />{log.level.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-text-tertiary whitespace-nowrap">{formatTime(log.timestamp)}</td>
+                        <td className="px-4 py-2">
+                          <span className="rounded bg-surface-hover px-1.5 py-0.5 text-text-secondary">{log.source}</span>
+                        </td>
+                        <td className="px-4 py-2 text-text-primary">{log.message}</td>
+                        <td className="px-4 py-2 text-text-tertiary">
+                          {log.ip && <span className="mr-2">IP: {log.ip}</span>}
+                          {log.userId && <span>User: {log.userId}</span>}
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="border-t border-border-primary px-4 py-2 text-xs text-text-tertiary">
+              Showing {Math.min(filtered.length, 200)} of {filtered.length} entries
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

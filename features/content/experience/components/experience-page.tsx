@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Briefcase, Building2, Calendar, MapPin, Clock } from "lucide-react";
-import { useExperience } from "../hooks/use-experience";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { EMPLOYMENT_LABELS } from "../types";
-import type { EmploymentType } from "../types";
+import type { EmploymentType, Experience } from "../types";
 import { ExperienceFormDialog } from "./experience-form-dialog";
 
 const TYPE_OPTIONS: { value: EmploymentType | "all"; label: string }[] = [
@@ -15,13 +15,34 @@ const TYPE_OPTIONS: { value: EmploymentType | "all"; label: string }[] = [
 ];
 
 export function ExperiencePage() {
-  const { filtered, loading, error, search, setSearch, typeFilter, setTypeFilter, totalYears, refresh, addEntry } = useExperience();
+  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "experience" });
+  const entries: Experience[] = useMemo(() => (response?.data ?? []) as Experience[], [response]);
+
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<EmploymentType | "all">("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    return entries.filter((e: Experience) => {
+      if (search && !e.company.toLowerCase().includes(search.toLowerCase()) && !e.position.toLowerCase().includes(search.toLowerCase())) return false;
+      if (typeFilter !== "all" && e.employmentType !== typeFilter) return false;
+      return true;
+    });
+  }, [entries, search, typeFilter]);
+
+  const totalYears = useMemo(() => {
+    return filtered.reduce((sum: number, e: Experience) => {
+      const start = new Date(e.startDate);
+      const end = e.current ? new Date() : e.endDate ? new Date(e.endDate) : new Date();
+      const years = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 365);
+      return sum + Math.max(0, years);
+    }, 0).toFixed(1);
+  }, [filtered]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load experience</p>
-      <button onClick={refresh} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -33,7 +54,7 @@ export function ExperiencePage() {
           <p className="text-sm text-text-tertiary">Manage your work history</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -45,9 +66,9 @@ export function ExperiencePage() {
       <div className="grid gap-4 sm:grid-cols-4">
         {[
           { label: "Positions", value: filtered.length, icon: Briefcase },
-          { label: "Current", value: filtered.filter((e) => e.current).length, icon: Building2 },
+          { label: "Current", value: filtered.filter((e: Experience) => e.current).length, icon: Building2 },
           { label: "Total Years", value: totalYears, icon: Calendar },
-          { label: "Companies", value: [...new Set(filtered.map((e) => e.company))].length, icon: MapPin },
+          { label: "Companies", value: [...new Set(filtered.map((e: Experience) => e.company))].length, icon: MapPin },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -75,9 +96,9 @@ export function ExperiencePage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-4">
-          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-36 animate-pulse rounded-xl bg-surface-hover" />)}
+          {Array.from({ length: 4 }).map((_: unknown, i: number) => <div key={i} className="h-36 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
@@ -86,7 +107,7 @@ export function ExperiencePage() {
         </div>
       ) : (
         <div className="relative space-y-6 before:absolute before:left-[19px] before:top-0 before:h-full before:w-px before:bg-border-primary">
-          {filtered.map((exp, i) => (
+          {filtered.map((exp: Experience, i: number) => (
             <motion.div key={exp.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
               className="relative pl-12"
             >
@@ -111,13 +132,13 @@ export function ExperiencePage() {
                 <p className="text-sm text-text-tertiary mb-3">{exp.description}</p>
 
                 <div className="mb-3 flex flex-wrap gap-1.5">
-                  {exp.techStack.map((t) => (
+                  {exp.techStack.map((t: string) => (
                     <span key={t} className="rounded-md bg-surface-hover px-2 py-0.5 text-xs text-text-secondary">{t}</span>
                   ))}
                 </div>
 
                 <ul className="mb-3 space-y-1">
-                  {exp.highlights.map((h, j) => (
+                  {exp.highlights.map((h: string, j: number) => (
                     <li key={j} className="flex items-start gap-2 text-xs text-text-secondary">
                       <span className="mt-0.5 h-1 w-1 shrink-0 rounded-full bg-accent" />
                       {h}
@@ -134,7 +155,7 @@ export function ExperiencePage() {
           ))}
         </div>
       )}
-      <ExperienceFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addEntry(d); toastSuccess("Created!", "Experience entry has been created."); }} />
+      <ExperienceFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/experience", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Experience entry has been created."); refetch(); }} />
     </div>
   );
 }

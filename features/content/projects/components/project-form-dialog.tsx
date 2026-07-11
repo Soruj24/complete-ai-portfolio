@@ -88,7 +88,7 @@ export function ProjectFormDialog({ open, onClose, onSubmit, project }: Props) {
                   <select value={form.category} onChange={(e) => update("category", e.target.value)}
                     className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent">
                     <option value="">Select category</option>
-                    {CATEGORIES.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select></div>
                 <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Priority</label>
                   <select value={form.priority} onChange={(e) => update("priority", e.target.value as Project["priority"])}

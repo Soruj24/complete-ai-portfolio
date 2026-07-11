@@ -10,15 +10,39 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Shield, Database, HardDrive, RefreshCw, CheckCircle2, XCircle, AlertTriangle, Clock, RotateCcw, Copy, Check, Download, FileKey, Lock, Unlock, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BACKUP_STATUS, RECOVERY_CODES } from "./data";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+
+const EMPTY_BACKUP = {
+  status: "healthy",
+  lastBackup: "-",
+  lastBackupSize: "-",
+  totalBackups: 0,
+  schedule: "-",
+  nextBackup: "-",
+  databases: [],
+};
+const EMPTY_RECOVERY: never[] = [];
 
 export function DataProtectionTab() {
   const [dataTab, setDataTab] = useState("backup");
   const [showCodes, setShowCodes] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [encryptionEnabled, setEncryptionEnabled] = useState(true);
+  const { data: backupResponse } = useGetAdminResourceQuery({ resource: "backups" });
+  const { data: recoveryResponse } = useGetAdminResourceQuery({ resource: "security/recovery" });
+  const backupData = (backupResponse?.data || EMPTY_BACKUP) as Record<string, any>;
+  const BACKUP_STATUS = {
+    status: backupData.status ?? "healthy",
+    lastBackup: backupData.lastBackup ?? "-",
+    lastBackupSize: backupData.lastBackupSize ?? "-",
+    totalBackups: backupData.totalBackups ?? 0,
+    schedule: backupData.schedule ?? "-",
+    nextBackup: backupData.nextBackup ?? "-",
+    databases: backupData.databases ?? [],
+  };
+  const RECOVERY_CODES = (recoveryResponse?.data || EMPTY_RECOVERY) as any[];
 
-  const storagePercent = (BACKUP_STATUS.databases.reduce((s, d) => {
+  const storagePercent = (BACKUP_STATUS.databases.reduce((s: number, d: any) => {
     const num = parseFloat(d.size);
     return s + (d.size.includes("GB") ? num * 1024 : num);
   }, 0) / (200 * 1024)) * 100;
@@ -101,7 +125,7 @@ export function DataProtectionTab() {
             <CardDescription>Per-database backup status</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            {BACKUP_STATUS.databases.map((db, i) => (
+            {BACKUP_STATUS.databases.map((db: any, i: number) => (
               <motion.div key={db.name} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                 className="flex items-center justify-between p-3 rounded-xl bg-surface-hover border border-border-subtle"
               >

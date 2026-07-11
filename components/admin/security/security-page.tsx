@@ -13,8 +13,22 @@ import {
   Gauge, Smartphone, Monitor, Globe, Database, Variable,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SECURITY_SCORE, SECURITY_ALERTS, getAlertColor } from "./data";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { AuthenticationTab } from "./security-authentication";
+
+function getAlertColor(severity: string) {
+  const colors: Record<string, string> = {
+    critical: "text-error bg-error/10 border-error/20",
+    high: "text-warning bg-warning/10 border-warning/20",
+    medium: "text-accent bg-accent/10 border-accent/20",
+    low: "text-info bg-info/10 border-info/20",
+    info: "text-text-tertiary bg-surface-hover border-border-subtle",
+  };
+  return colors[severity] || colors.info;
+}
+
+const EMPTY_SCORE = { overall: 0, categories: [], findings: [] };
+const EMPTY_ALERTS: never[] = [];
 import { AccessControlTab } from "./security-access";
 import { MonitoringTab } from "./security-monitoring";
 import { SecretsTab } from "./security-secrets";
@@ -28,6 +42,11 @@ const SCORE_COLOR = (score: number) => {
 
 export function SecurityPage() {
   const [tab, setTab] = useState("overview");
+  const { data: scoreResponse } = useGetAdminResourceQuery({ resource: "security/score" });
+  const { data: alertsResponse } = useGetAdminResourceQuery({ resource: "security/alerts" });
+  const scoreData = (scoreResponse?.data || EMPTY_SCORE) as Record<string, any>;
+  const SECURITY_SCORE = { overall: scoreData.overall ?? 0, categories: scoreData.categories ?? [], findings: scoreData.findings ?? [] };
+  const SECURITY_ALERTS = (alertsResponse?.data || EMPTY_ALERTS) as any[];
   const scoreMeta = SCORE_COLOR(SECURITY_SCORE.overall);
 
   const tabs = [
@@ -93,7 +112,7 @@ export function SecurityPage() {
                    SECURITY_SCORE.overall >= 60 ? "Moderate risk" : "Critical improvements needed"}
                 </p>
                 <div className="flex items-center justify-center gap-1 mt-3">
-                  {SECURITY_SCORE.findings.map((f) => (
+                  {SECURITY_SCORE.findings.map((f: any) => (
                     <Badge key={f.severity} className={cn(
                       "text-[7px] px-1 py-0 rounded border-0 font-medium",
                       f.severity === "critical" ? "bg-error/10 text-error" :
@@ -115,7 +134,7 @@ export function SecurityPage() {
                   <CardTitle className="text-sm font-semibold text-text-primary">Score Breakdown</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {SECURITY_SCORE.categories.map((cat) => (
+                  {SECURITY_SCORE.categories.map((cat: any) => (
                     <div key={cat.name}>
                       <div className="flex items-center justify-between text-[10px] mb-1">
                         <span className="text-text-primary font-medium">{cat.name}</span>

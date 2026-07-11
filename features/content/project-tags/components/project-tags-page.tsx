@@ -1,20 +1,38 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Tags, Pencil, Trash2 } from "lucide-react";
-import { useProjectTags } from "../hooks/use-project-tags";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { ProjectTagFormDialog } from "./project-tag-form-dialog";
 
+interface ProjectTag {
+  id: string;
+  name: string;
+  slug: string;
+  color: string;
+  projectCount: number;
+}
+
 export function ProjectTagsPage() {
-  const { filtered, loading, error, search, setSearch, refresh, addTag } = useProjectTags();
+  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "project-tags" });
+  const tags: ProjectTag[] = useMemo(() => (response?.data ?? []) as ProjectTag[], [response]);
+
+  const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    return tags.filter((tag: ProjectTag) => {
+      if (search && !tag.name.toLowerCase().includes(search.toLowerCase()) && !tag.slug.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
+  }, [tags, search]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load tags</p>
-      <button onClick={refresh} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -26,7 +44,7 @@ export function ProjectTagsPage() {
           <p className="text-sm text-text-tertiary">Manage technology tags for projects</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -41,9 +59,9 @@ export function ProjectTagsPage() {
           className="w-full rounded-lg border border-border-primary bg-surface-secondary py-2 pl-9 pr-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent" />
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="flex flex-wrap gap-3">
-          {Array.from({ length: 15 }).map((_, i) => <div key={i} className="h-20 w-40 animate-pulse rounded-xl bg-surface-hover" />)}
+          {Array.from({ length: 15 }).map((_: unknown, i: number) => <div key={i} className="h-20 w-40 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
@@ -52,7 +70,7 @@ export function ProjectTagsPage() {
         </div>
       ) : (
         <div className="flex flex-wrap gap-3">
-          {filtered.map((tag, i) => (
+          {filtered.map((tag: ProjectTag, i: number) => (
             <motion.div key={tag.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.02 }}
               className="group flex items-center gap-3 rounded-xl border border-border-primary bg-surface-primary px-4 py-3 transition-colors hover:border-accent/30"
             >
@@ -72,7 +90,7 @@ export function ProjectTagsPage() {
           ))}
         </div>
       )}
-      <ProjectTagFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addTag(d); toastSuccess("Created!", "Tag has been created."); }} />
+      <ProjectTagFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/project-tags", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Tag has been created."); refetch(); }} />
     </div>
   );
 }

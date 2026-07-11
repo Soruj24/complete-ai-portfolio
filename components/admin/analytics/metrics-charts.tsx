@@ -12,12 +12,26 @@ import {
 } from "recharts";
 import { Users, Eye, TrendingUp, Clock, LineChart as LineChartIcon, AreaChart as AreaChartIcon, BarChart3 as BarChartIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { visitorsData, pageviewsData, sessionDurations, bounceRates, devices, browsers, operatingSystems } from "./data";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+
+const EMPTY_CHART_DATA: never[] = [];
+const EMPTY_DEVICES: never[] = [];
+const EMPTY_BROWSERS: never[] = [];
+const EMPTY_OS: never[] = [];
 
 const COLORS_PIE = ["var(--color-accent)", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4", "#ec4899"];
 
 export function MetricsChartsSection() {
   const [chartTab, setChartTab] = useState("visitors");
+  const { data: chartsResponse } = useGetAdminResourceQuery({ resource: "analytics/charts" });
+  const chartsData = (chartsResponse?.data || {}) as Record<string, any>;
+  const visitorsData = (chartsData.visitorsData || EMPTY_CHART_DATA) as any[];
+  const pageviewsData = (chartsData.pageviewsData || EMPTY_CHART_DATA) as any[];
+  const sessionDurations = (chartsData.sessionDurations || EMPTY_CHART_DATA) as any[];
+  const bounceRates = (chartsData.bounceRates || EMPTY_CHART_DATA) as any[];
+  const devices = (chartsData.devices || EMPTY_DEVICES) as any[];
+  const browsers = (chartsData.browsers || EMPTY_BROWSERS) as any[];
+  const operatingSystems = (chartsData.operatingSystems || EMPTY_OS) as any[];
 
   const totalVisitors = visitorsData.reduce((s, d) => s + d.value, 0);
   const totalPageviews = pageviewsData.reduce((s, d) => s + d.value, 0);

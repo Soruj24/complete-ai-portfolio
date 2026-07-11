@@ -1,20 +1,44 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Award, Star, TrendingUp, ExternalLink } from "lucide-react";
-import { useAchievements } from "../hooks/use-achievements";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { AchievementFormDialog } from "./achievement-form-dialog";
+interface Achievement {
+  id: string;
+  title: string;
+  issuer: string;
+  date: string;
+  description: string;
+  category: string;
+  featured: boolean;
+  url?: string;
+}
 
 export function AchievementsPage() {
-  const { filtered, loading, error, search, setSearch, category, setCategory, categories, refresh, addAchievement } = useAchievements();
+  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "achievements" });
+  const achievements: Achievement[] = useMemo(() => (response?.data ?? []) as Achievement[], [response]);
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const categories = useMemo(() => [...new Set(achievements.map((a: Achievement) => a.category))], [achievements]);
+
+  const filtered = useMemo(() => {
+    return achievements.filter((a: Achievement) => {
+      if (search && !a.title.toLowerCase().includes(search.toLowerCase()) && !a.issuer.toLowerCase().includes(search.toLowerCase())) return false;
+      if (category !== "all" && a.category !== category) return false;
+      return true;
+    });
+  }, [achievements, search, category]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load achievements</p>
-      <button onClick={refresh} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -26,7 +50,7 @@ export function AchievementsPage() {
           <p className="text-sm text-text-tertiary">Showcase your accomplishments and recognition</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -38,9 +62,9 @@ export function AchievementsPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         {[
           { label: "Total", value: filtered.length, icon: Award, color: "text-accent" },
-          { label: "Featured", value: filtered.filter((a) => a.featured).length, icon: Star, color: "text-warning" },
-          { label: "Categories", value: [...new Set(filtered.map((a) => a.category))].length, icon: TrendingUp, color: "text-success" },
-          { label: "With Links", value: filtered.filter((a) => a.url).length, icon: ExternalLink, color: "text-accent" },
+          { label: "Featured", value: filtered.filter((a: Achievement) => a.featured).length, icon: Star, color: "text-warning" },
+          { label: "Categories", value: [...new Set(filtered.map((a: Achievement) => a.category))].length, icon: TrendingUp, color: "text-success" },
+          { label: "With Links", value: filtered.filter((a: Achievement) => a.url).length, icon: ExternalLink, color: "text-accent" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -61,16 +85,16 @@ export function AchievementsPage() {
         <div className="flex flex-wrap gap-1 rounded-lg border border-border-primary bg-surface-primary p-1">
           <button onClick={() => setCategory("all")}
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${category === "all" ? "bg-accent text-white" : "text-text-secondary hover:text-text-primary"}`}>All</button>
-          {categories.map((c) => (
+          {categories.map((c: string) => (
             <button key={c} onClick={() => setCategory(c)}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${category === c ? "bg-accent text-white" : "text-text-secondary hover:text-text-primary"}`}>{c}</button>
           ))}
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-4">
-          {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-28 animate-pulse rounded-xl bg-surface-hover" />)}
+          {Array.from({ length: 8 }).map((_: unknown, i: number) => <div key={i} className="h-28 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
@@ -79,7 +103,7 @@ export function AchievementsPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {filtered.map((ach, i) => (
+          {filtered.map((ach: Achievement, i: number) => (
             <motion.div key={ach.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
               className="group rounded-xl border border-border-primary bg-surface-primary p-5 transition-colors hover:border-accent/30"
             >
@@ -111,7 +135,7 @@ export function AchievementsPage() {
           ))}
         </div>
       )}
-      <AchievementFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addAchievement(d); toastSuccess("Created!", "Achievement has been created."); }} />
+      <AchievementFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/achievements", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Achievement has been created."); refetch(); }} />
     </div>
   );
 }

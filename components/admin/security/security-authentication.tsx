@@ -11,7 +11,51 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Shield, Smartphone, Monitor, Globe, Key, CheckCircle2, AlertTriangle, Clock, LogOut, History, XCircle, Terminal, Laptop, Tablet, QrCode, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SESSIONS, DEVICES, FAILED_LOGINS, type Session, type Device, type LoginEntry, RECOVERY_CODES } from "./data";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+
+interface Session {
+  id: string;
+  device: string;
+  browser: string;
+  os: string;
+  ip: string;
+  location: string;
+  isCurrent: boolean;
+  isTrusted: boolean;
+  lastActive: string;
+  createdAt: string;
+}
+
+interface Device {
+  id: string;
+  name: string;
+  type: string;
+  os: string;
+  browser: string;
+  ip: string;
+  trusted: boolean;
+}
+
+interface LoginEntry {
+  id: string;
+  location: string;
+  ip: string;
+  device: string;
+  browser: string;
+  status: "success" | "failed";
+  reason?: string;
+  timestamp: string;
+}
+
+interface RecoveryCode {
+  code: string;
+  used: boolean;
+}
+
+const EMPTY_SESSIONS: never[] = [];
+const EMPTY_DEVICES: never[] = [];
+const EMPTY_FAILED_LOGINS: never[] = [];
+const EMPTY_RECOVERY: RecoveryCode[] = [];
 
 function SessionRow({ session }: { session: Session }) {
   return (
@@ -109,6 +153,14 @@ export function AuthenticationTab() {
   const [showRecovery, setShowRecovery] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [authTab, setAuthTab] = useState("sessions");
+  const { data: sessionsResponse } = useGetAdminResourceQuery({ resource: "sessions" });
+  const { data: loginResponse } = useGetAdminResourceQuery({ resource: "login-history" });
+  const { data: recoveryResponse } = useGetAdminResourceQuery({ resource: "security/recovery" });
+  const sessionData = (sessionsResponse?.data || {}) as Record<string, any>;
+  const SESSIONS = (sessionData.sessions || EMPTY_SESSIONS) as any[];
+  const DEVICES = (sessionData.devices || EMPTY_DEVICES) as any[];
+  const FAILED_LOGINS = (loginResponse?.data || EMPTY_FAILED_LOGINS) as any[];
+  const RECOVERY_CODES = (recoveryResponse?.data || EMPTY_RECOVERY) as any[];
 
   const copyCode = async (code: string) => {
     await navigator.clipboard.writeText(code);

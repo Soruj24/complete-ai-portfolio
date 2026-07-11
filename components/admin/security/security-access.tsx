@@ -12,11 +12,44 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldCheck, ShieldX, Gauge, KeyRound, Users, Grid3X3, Plus, Trash2, Clock, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  IP_WHITELIST, IP_BLACKLIST, RATE_LIMITS, PASSWORD_POLICY, ROLES,
-  PERMISSION_ACTIONS, PERMISSION_RESOURCES,
-  type IPEntry, type Role,
-} from "./data";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+
+interface IPEntry {
+  id: string;
+  address: string;
+  status: "active" | "inactive";
+  reason: string;
+  addedBy: string;
+  expiresAt?: string;
+}
+
+interface Role {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  users: number;
+  permissions: string[];
+}
+
+const EMPTY_IP_WHITELIST: never[] = [];
+const EMPTY_IP_BLACKLIST: never[] = [];
+const EMPTY_RATE_LIMITS: never[] = [];
+const EMPTY_ROLES: never[] = [];
+const PERMISSION_ACTIONS = ["create", "read", "update", "delete"] as const;
+const PERMISSION_RESOURCES = ["users", "projects", "skills", "certifications", "settings"] as const;
+
+const PASSWORD_POLICY_DEFAULT = {
+  minLength: 12,
+  expirationDays: 90,
+  requireUppercase: true,
+  requireLowercase: true,
+  requireNumbers: true,
+  requireSymbols: true,
+  historyCount: 5,
+  maxAttempts: 5,
+  lockoutDuration: 30,
+};
 
 function IPTable({ items, type }: { items: IPEntry[]; type: "whitelist" | "blacklist" }) {
   const Icon = type === "whitelist" ? ShieldCheck : ShieldX;
@@ -66,8 +99,14 @@ function PermissionCell({ granted }: { granted: boolean }) {
 }
 
 export function AccessControlTab() {
-  const [policy, setPolicy] = useState(PASSWORD_POLICY);
+  const [policy, setPolicy] = useState(PASSWORD_POLICY_DEFAULT);
   const [accessTab, setAccessTab] = useState("ip");
+  const { data: accessResponse } = useGetAdminResourceQuery({ resource: "security/access" });
+  const accessData = (accessResponse?.data || {}) as Record<string, any>;
+  const IP_WHITELIST = (accessData.whitelist || EMPTY_IP_WHITELIST) as any[];
+  const IP_BLACKLIST = (accessData.blacklist || EMPTY_IP_BLACKLIST) as any[];
+  const RATE_LIMITS = (accessData.rateLimits || EMPTY_RATE_LIMITS) as any[];
+  const ROLES = (accessData.roles || EMPTY_ROLES) as any[];
 
   return (
     <Tabs value={accessTab} onValueChange={setAccessTab} className="space-y-4">
@@ -275,7 +314,7 @@ export function AccessControlTab() {
                       </div>
                     </td>
                     {PERMISSION_RESOURCES.map((res) => {
-                      const hasPerm = role.permissions.includes("all") || role.permissions.some((p) => p.startsWith(res));
+                      const hasPerm = role.permissions.includes("all") || role.permissions.some((p: string) => p.startsWith(res));
                       return (
                         <td key={res} className="text-center py-2 px-1">
                           <PermissionCell granted={hasPerm} />

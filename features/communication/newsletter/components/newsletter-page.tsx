@@ -2,25 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Users, Mail, MousePointerClick, AlertTriangle, Send, Plus, Trash2 } from "lucide-react";
+import { Search, Users, Mail, MousePointerClick, AlertTriangle, Send, Plus, Trash2, Loader2 } from "lucide-react";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import type { Subscriber, Campaign } from "../types";
-
-const SUBSCRIBERS: Subscriber[] = Array.from({ length: 25 }, (_, i) => ({
-  id: `sub-${i + 1}`, email: `user${i + 1}@example.com`,
-  name: i % 3 === 0 ? undefined : `User ${i + 1}`,
-  status: i < 18 ? "active" : i < 21 ? "unsubscribed" : i < 23 ? "bounced" : "spam",
-  source: ["Contact Form", "Blog", "Landing Page", "Referral", "Manual"][i % 5],
-  subscribedAt: new Date(2026, 0, 1 + i * 7).toISOString(),
-  campaignsReceived: Math.floor(Math.random() * 10),
-  lastOpenedAt: i % 3 !== 0 ? new Date(2026, 6, 1 + i).toISOString() : undefined,
-}));
-
-const CAMPAIGNS: Campaign[] = [
-  { id: "cmp-1", subject: "Monthly Newsletter - July 2026", sentAt: "2026-07-01T10:00:00Z", recipients: 245, opened: 182, clicked: 67, bounced: 3, status: "sent" },
-  { id: "cmp-2", subject: "New Projects & Updates", sentAt: "2026-06-15T10:00:00Z", recipients: 238, opened: 164, clicked: 55, bounced: 2, status: "sent" },
-  { id: "cmp-3", subject: "Summer Tech Roundup", sentAt: "2026-06-01T10:00:00Z", recipients: 230, opened: 171, clicked: 72, bounced: 1, status: "sent" },
-  { id: "cmp-4", subject: "Coming Soon: AI Features", sentAt: "", recipients: 250, opened: 0, clicked: 0, bounced: 0, status: "draft" },
-];
 
 const STATUS_BADGE: Record<string, string> = {
   active: "bg-success/10 text-success", unsubscribed: "bg-warning/10 text-warning",
@@ -31,15 +15,20 @@ export function NewsletterPage() {
   const [tab, setTab] = useState<"subscribers" | "campaigns">("subscribers");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "newsletter" });
+  const items = response?.data ?? [];
+  const subscribers: Subscriber[] = items.filter((i: Record<string, unknown>) => "email" in i && "status" in i) as Subscriber[];
+  const campaigns: Campaign[] = items.filter((i: Record<string, unknown>) => "subject" in i && "recipients" in i) as Campaign[];
 
-  const filteredSubscribers = SUBSCRIBERS.filter((s) => {
+  const filteredSubscribers = subscribers.filter((s) => {
     if (search && !s.email.toLowerCase().includes(search.toLowerCase()) && !(s.name || "").toLowerCase().includes(search.toLowerCase())) return false;
     if (filter !== "all" && s.status !== filter) return false;
     return true;
   });
 
-  const activeCount = SUBSCRIBERS.filter((s) => s.status === "active").length;
-  const avgOpenRate = Math.round(CAMPAIGNS.filter(c => c.status === "sent").reduce((a, c) => a + c.opened / c.recipients, 0) / 3 * 100);
+  const activeCount = subscribers.filter((s) => s.status === "active").length;
+  const sentCampaigns = campaigns.filter(c => c.status === "sent");
+  const avgOpenRate = sentCampaigns.length > 0 ? Math.round(sentCampaigns.reduce((a, c) => a + c.opened / c.recipients, 0) / sentCampaigns.length * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -53,10 +42,10 @@ export function NewsletterPage() {
 
       <div className="grid gap-4 sm:grid-cols-4">
         {[
-          { label: "Total Subscribers", value: SUBSCRIBERS.length, icon: Users, color: "text-accent" },
+          { label: "Total Subscribers", value: subscribers.length, icon: Users, color: "text-accent" },
           { label: "Active", value: activeCount, icon: Mail, color: "text-success" },
           { label: "Avg. Open Rate", value: `${avgOpenRate}%`, icon: MousePointerClick, color: "text-accent" },
-          { label: "Bounced/Spam", value: SUBSCRIBERS.filter((s) => s.status === "bounced" || s.status === "spam").length, icon: AlertTriangle, color: "text-error" },
+          { label: "Bounced/Spam", value: subscribers.filter((s) => s.status === "bounced" || s.status === "spam").length, icon: AlertTriangle, color: "text-error" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -75,7 +64,11 @@ export function NewsletterPage() {
         ))}
       </div>
 
-      {tab === "subscribers" ? (
+      {isLoading ? (
+        <div className="flex h-64 items-center justify-center">
+          <Loader2 size={24} className="animate-spin text-accent" />
+        </div>
+      ) : tab === "subscribers" ? (
         <>
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[200px] max-w-md">
@@ -112,7 +105,7 @@ export function NewsletterPage() {
         </>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
-          {CAMPAIGNS.map((c, i) => (
+          {campaigns.map((c, i) => (
             <motion.div key={c.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               className="rounded-xl border border-border-primary bg-surface-primary p-4">
               <div className="flex items-start justify-between mb-3">

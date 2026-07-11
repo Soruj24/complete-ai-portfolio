@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, FolderKanban } from "lucide-react";
 import type { ProjectCategory } from "../types";
-import { COLORS } from "../constants/mock-data";
+
+const COLORS: string[] = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#ec4899", "#f97316"];
 
 interface Props {
   open: boolean;

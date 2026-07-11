@@ -1,12 +1,21 @@
 "use client";
 
-import { experiences } from "@/data/experience";
+import { useState, useEffect } from "react";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { GlassCard } from "@/components/ui/glass-card";
 import { CheckCircle2 } from "lucide-react";
 
 export function Experience() {
+  const [experiences, setExperiences] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/experience")
+      .then((res) => res.json())
+      .then((data) => setExperiences(data.data ?? []))
+      .catch(() => setExperiences([]));
+  }, []);
+
   return (
     <Section id="experience" variant="alt">
       <div className="container">
@@ -20,8 +29,8 @@ export function Experience() {
           <div className="absolute left-[19px] md:left-[23px] top-0 bottom-0 w-px bg-gradient-to-b from-accent/60 via-accent/20 to-transparent" />
 
           <div className="space-y-6 md:space-y-8">
-            {experiences.map((exp, i) => (
-              <AnimatedSection key={exp.period} delay={i * 0.12}>
+            {experiences.map((exp: any, i: number) => (
+              <AnimatedSection key={exp.period ?? exp._id} delay={i * 0.12}>
                 <div className="relative pl-12 md:pl-14">
                   <div className="absolute left-2.5 md:left-3 top-2 w-3.5 h-3.5 md:w-4 md:h-4 rounded-full bg-accent ring-[3px] ring-background">
                     <div className="absolute inset-0.5 rounded-full bg-background" />
@@ -42,7 +51,7 @@ export function Experience() {
                     </p>
                     {exp.highlights && exp.highlights.length > 0 && (
                       <ul className="space-y-1.5 mb-3">
-                        {exp.highlights.map((h, j) => (
+                        {exp.highlights.map((h: string, j: number) => (
                           <li key={j} className="flex items-start gap-2 text-sm text-text-secondary">
                             <CheckCircle2 className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" />
                             <span>{h}</span>
@@ -51,7 +60,7 @@ export function Experience() {
                       </ul>
                     )}
                     <div className="flex flex-wrap gap-1.5">
-                      {exp.technologies.map((tech) => (
+                      {exp.technologies.map((tech: string) => (
                         <span
                           key={tech}
                           className="px-2.5 py-1 text-[11px] font-medium rounded-full bg-accent/10 text-accent border border-accent/15"

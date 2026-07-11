@@ -2,30 +2,42 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Link2, Wifi, WifiOff, AlertTriangle, RefreshCw, Github, Cloud, Mail, Database, MessageCircle, FileText, Camera } from "lucide-react";
+import { Search, Link2, Wifi, WifiOff, AlertTriangle, RefreshCw, Github, Cloud, Mail, Database, MessageCircle, FileText, Camera, Loader2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Integration } from "../types";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
 const ICON_MAP: Record<string, LucideIcon> = { Github, Cloud, Mail, Database, MessageCircle, FileText, Camera };
-
-const MOCK: Integration[] = [
-  { id: "int-1", name: "GitHub", description: "Sync repositories and commits", icon: "Github", category: "Development", status: "connected", lastSync: "2026-07-05 14:30", color: "#333" },
-  { id: "int-2", name: "Google Analytics", description: "Track website traffic and metrics", icon: "Mail", category: "Analytics", status: "connected", lastSync: "2026-07-05 14:25", color: "#4285f4" },
-  { id: "int-3", name: "Mailchimp", description: "Email newsletter campaigns", icon: "Mail", category: "Marketing", status: "connected", lastSync: "2026-07-04 10:00", color: "#ffe01b" },
-  { id: "int-4", name: "Supabase", description: "Database and authentication", icon: "Database", category: "Backend", status: "connected", lastSync: "2026-07-05 14:28", color: "#3ecf8e" },
-  { id: "int-5", name: "Slack", description: "Notifications and alerts", icon: "MessageCircle", category: "Communication", status: "disconnected", color: "#4a154b" },
-  { id: "int-6", name: "Sentry", description: "Error tracking and monitoring", icon: "AlertTriangle", category: "Monitoring", status: "error", lastSync: "2026-07-04 08:15", color: "#fb5f40" },
-  { id: "int-7", name: "Cloudinary", description: "Media upload and optimization", icon: "Camera", category: "Media", status: "connected", lastSync: "2026-07-05 13:00", color: "#3448c5" },
-  { id: "int-8", name: "OpenAI", description: "AI models and embeddings", icon: "Database", category: "AI", status: "connected", lastSync: "2026-07-05 14:29", color: "#10a37f" },
-];
 
 const STATUS_STYLE: Record<string, string> = { connected: "bg-success/10 text-success", disconnected: "bg-surface-hover text-text-tertiary", error: "bg-error/10 text-error" };
 const STATUS_ICON: Record<string, LucideIcon> = { connected: Wifi, disconnected: WifiOff, error: AlertTriangle };
 
 export function IntegrationsPage() {
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "integrations" });
+  const items = (response?.data ?? []) as Integration[];
   const [search, setSearch] = useState("");
 
-  const filtered = MOCK.filter((i) => !search || i.name.toLowerCase().includes(search.toLowerCase()) || i.description.toLowerCase().includes(search.toLowerCase()));
+  const filtered = items.filter((i) => !search || i.name.toLowerCase().includes(search.toLowerCase()) || i.description.toLowerCase().includes(search.toLowerCase()));
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <Loader2 size={32} className="animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div className="text-center text-text-tertiary">
+          <Link2 size={48} className="mx-auto mb-3 opacity-40" />
+          <p className="font-medium">No integrations</p>
+          <p className="text-xs">Integrations will appear here once configured</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

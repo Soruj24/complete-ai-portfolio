@@ -12,7 +12,49 @@ import {
   ChevronDown, ChevronRight, Tag, Layers, HardDrive, Search as SearchIcon,
   Plus,
 } from "lucide-react";
-import { FOLDERS, TAGS, CATEGORIES, STORAGE_STATS, formatSize } from "./data";
+function formatSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+
+interface FolderItem {
+  id: string;
+  name: string;
+  parent: string | null;
+  count: number;
+  icon: string;
+}
+
+interface TagItem {
+  id: string;
+  name: string;
+  count: number;
+  color: string;
+}
+
+interface CategoryItem {
+  id: string;
+  name: string;
+  count: number;
+}
+
+interface StorageStatsData {
+  total: number;
+  used: number;
+  images: number;
+  videos: number;
+  documents: number;
+  icons: number;
+  audio: number;
+}
+
+const EMPTY_FOLDERS: FolderItem[] = [];
+const EMPTY_TAGS: TagItem[] = [];
+const EMPTY_CATEGORIES: CategoryItem[] = [];
+const EMPTY_STORAGE: StorageStatsData = { total: 0, used: 0, images: 0, videos: 0, documents: 0, icons: 0, audio: 0 };
 
 const folderIcons: Record<string, React.ElementType> = {
   Folder, Image, Video, FileText, Shapes, Upload,
@@ -31,10 +73,10 @@ const tagColors: Record<string, string> = {
 };
 
 function FolderTreeNode({ folder, depth = 0, selected, onSelect }: {
-  folder: typeof FOLDERS[0]; depth: number; selected: string; onSelect: (id: string) => void;
+  folder: FolderItem; depth: number; selected: string; onSelect: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
-  const children = FOLDERS.filter((f) => f.parent === folder.id);
+  const children = EMPTY_FOLDERS.filter((f) => f.parent === folder.id);
   const hasChildren = children.length > 0;
   const Icon = folderIcons[folder.icon] || Folder;
   const isSelected = selected === folder.id;
@@ -78,7 +120,8 @@ export function MediaSidebar({
   selectedTag: string | null; onSelectTag: (name: string | null) => void;
   selectedCategory: string | null; onSelectCategory: (name: string | null) => void;
 }) {
-  const usedPercent = (STORAGE_STATS.used / STORAGE_STATS.total) * 100;
+  const STORAGE_STATS = EMPTY_STORAGE;
+  const usedPercent = STORAGE_STATS.total > 0 ? (STORAGE_STATS.used / STORAGE_STATS.total) * 100 : 0;
 
   return (
     <div className="w-64 shrink-0 space-y-4">
@@ -91,7 +134,7 @@ export function MediaSidebar({
           </button>
         </div>
         <div className="space-y-0.5">
-          {FOLDERS.filter((f) => f.parent === null).map((folder) => (
+          {EMPTY_FOLDERS.filter((f) => f.parent === null).map((folder) => (
             <FolderTreeNode key={folder.id} folder={folder} depth={0} selected={selectedFolder} onSelect={onSelectFolder} />
           ))}
         </div>
@@ -101,7 +144,7 @@ export function MediaSidebar({
       <div className="rounded-xl border border-border-subtle bg-surface p-3">
         <h3 className="text-[10px] font-semibold text-text-tertiary uppercase tracking-wider mb-2">Tags</h3>
         <div className="flex flex-wrap gap-1.5">
-          {TAGS.map((tag) => (
+          {EMPTY_TAGS.map((tag) => (
             <button
               key={tag.id}
               onClick={() => onSelectTag(selectedTag === tag.name ? null : tag.name)}
@@ -124,7 +167,7 @@ export function MediaSidebar({
       <div className="rounded-xl border border-border-subtle bg-surface p-3">
         <h3 className="text-[10px] font-semibold text-text-tertiary uppercase tracking-wider mb-2">Categories</h3>
         <div className="space-y-0.5">
-          {CATEGORIES.map((cat) => (
+          {EMPTY_CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => onSelectCategory(selectedCategory === cat.name ? null : cat.name)}

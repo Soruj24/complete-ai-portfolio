@@ -2,25 +2,17 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Palette, Check, Sun, Moon, Monitor } from "lucide-react";
+import { Check, Sun, Moon } from "lucide-react";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import type { ThemeConfig } from "../types";
 
-const THEMES: ThemeConfig[] = [
-  { id: "default", name: "Default", description: "Clean light theme with blue accent", preview: "linear-gradient(135deg, #3b82f6, #8b5cf6)", accent: "#3b82f6", mode: "light", popular: true },
-  { id: "dark", name: "Dark Mode", description: "Dark theme with purple accent", preview: "linear-gradient(135deg, #1e1e2e, #11111b)", accent: "#8b5cf6", mode: "dark", popular: true },
-  { id: "ocean", name: "Ocean", description: "Calm blue-green tones", preview: "linear-gradient(135deg, #0ea5e9, #14b8a6)", accent: "#0ea5e9", mode: "light", popular: false },
-  { id: "sunset", name: "Sunset", description: "Warm orange-red tones", preview: "linear-gradient(135deg, #f97316, #ef4444)", accent: "#f97316", mode: "light", popular: false },
-  { id: "forest", name: "Forest", description: "Natural green tones", preview: "linear-gradient(135deg, #22c55e, #15803d)", accent: "#22c55e", mode: "light", popular: false },
-  { id: "midnight", name: "Midnight", description: "Deep dark blue theme", preview: "linear-gradient(135deg, #1e293b, #0f172a)", accent: "#6366f1", mode: "dark", popular: false },
-  { id: "crimson", name: "Crimson", description: "Bold red-dark theme", preview: "linear-gradient(135deg, #dc2626, #7c3aed)", accent: "#dc2626", mode: "dark", popular: false },
-  { id: "emerald", name: "Emerald", description: "Premium green theme", preview: "linear-gradient(135deg, #10b981, #059669)", accent: "#10b981", mode: "light", popular: false },
-];
-
 export function ThemesPage() {
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "themes" });
+  const themes: ThemeConfig[] = response?.data ?? [];
   const [active, setActive] = useState("default");
   const [mode, setMode] = useState<"light" | "dark">("light");
 
-  const filtered = THEMES.filter((t) => t.mode === mode);
+  const filtered = themes.filter((t) => t.mode === mode);
 
   return (
     <div className="space-y-6">
@@ -38,23 +30,42 @@ export function ThemesPage() {
         ))}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {filtered.map((t, i) => (
-          <motion.button key={t.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-            onClick={() => setActive(t.id)}
-            className={`group relative rounded-xl border p-1 text-left transition-all ${active === t.id ? "border-accent ring-1 ring-accent" : "border-border-primary hover:border-border-hover"}`}>
-            <div className="mb-2 h-24 rounded-lg" style={{ background: t.preview }} />
-            <div className="p-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-text-primary">{t.name}</p>
-                {active === t.id && <Check size={14} className="text-accent" />}
+      {isLoading ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-border-primary bg-surface-primary p-1 animate-pulse">
+              <div className="mb-2 h-24 rounded-lg bg-surface-hover" />
+              <div className="p-2 space-y-2">
+                <div className="h-4 bg-surface-hover rounded w-1/2" />
+                <div className="h-3 bg-surface-hover rounded w-3/4" />
               </div>
-              <p className="text-xs text-text-tertiary mt-0.5">{t.description}</p>
-              {t.popular && <span className="mt-1 inline-block rounded-md bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">Popular</span>}
             </div>
-          </motion.button>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
+          <p className="text-lg font-medium">No themes available</p>
+          <p className="text-sm">No {mode} themes found.</p>
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {filtered.map((t, i) => (
+            <motion.button key={t.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+              onClick={() => setActive(t.id)}
+              className={`group relative rounded-xl border p-1 text-left transition-all ${active === t.id ? "border-accent ring-1 ring-accent" : "border-border-primary hover:border-border-hover"}`}>
+              <div className="mb-2 h-24 rounded-lg" style={{ background: t.preview }} />
+              <div className="p-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-text-primary">{t.name}</p>
+                  {active === t.id && <Check size={14} className="text-accent" />}
+                </div>
+                <p className="text-xs text-text-tertiary mt-0.5">{t.description}</p>
+                {t.popular && <span className="mt-1 inline-block rounded-md bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent">Popular</span>}
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

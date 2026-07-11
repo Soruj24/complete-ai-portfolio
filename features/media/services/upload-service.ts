@@ -27,7 +27,7 @@ export class UploadService {
 
     const steps = 20;
     for (let i = 1; i <= steps; i++) {
-      await new Promise((r) => setTimeout(r, 100 + Math.random() * 200));
+      await new Promise((r) => setTimeout(r, 150));
       const progress = Math.round((i / steps) * 100);
       onProgress(upload.id, progress);
     }

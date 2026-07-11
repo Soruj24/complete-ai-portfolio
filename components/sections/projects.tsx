@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Github, ImageOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { projects } from "@/data/projects";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -14,6 +13,14 @@ const categories = ["All", "AI", "Full Stack", "Frontend"] as const;
 
 export function Projects() {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [projects, setProjects] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/projects?limit=100")
+      .then((res) => res.json())
+      .then((data) => setProjects(data.data ?? []))
+      .catch(() => setProjects([]));
+  }, []);
 
   const filtered = projects.filter(
     (p) => activeCategory === "All" || p.category === activeCategory
@@ -56,8 +63,8 @@ export function Projects() {
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5"
           >
             {filtered.map((project, i) => (
-              <AnimatedSection key={project.id} delay={i * 0.04}>
-                <a href={`/projects/${project.id}`} className="block group">
+              <AnimatedSection key={project._id ?? project.id} delay={i * 0.04}>
+                <a href={`/projects/${project._id ?? project.id}`} className="block group">
                   <GlassCard variant="interactive" className="overflow-hidden">
                     <div className="relative aspect-[16/10] overflow-hidden bg-surface">
                       <ProjectImage src={project.image} alt={project.title} />
@@ -87,7 +94,7 @@ export function Projects() {
                       <TechStack technologies={project.technologies} limit={4} />
                       {project.caseStudy?.results && (
                         <div className="mt-3 pt-3 border-t border-border grid grid-cols-2 gap-2">
-                          {project.caseStudy.results.slice(0, 2).map((r) => (
+                          {project.caseStudy.results.slice(0, 2).map((r: any) => (
                             <div key={r.metric} className="text-center">
                               <div className="text-xs font-semibold text-accent">{r.value}</div>
                               <div className="text-[10px] text-text-tertiary">{r.metric}</div>

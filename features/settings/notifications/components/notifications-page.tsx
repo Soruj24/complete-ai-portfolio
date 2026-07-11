@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, CheckCheck, X, Info, AlertTriangle, CheckCircle2, AlertOctagon, Inbox, RefreshCw, Settings2, MoreHorizontal } from "lucide-react";
+import { CheckCheck, X, Info, AlertTriangle, CheckCircle2, AlertOctagon, Inbox, Settings2 } from "lucide-react";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
 type NotificationType = "info" | "success" | "warning" | "error";
 type NotificationSource = "system" | "security" | "analytics" | "social" | "content";
@@ -17,40 +18,40 @@ interface Notification {
   read: boolean;
 }
 
-const ALL: Notification[] = [
-  { id: "n1", type: "info", source: "system", title: "Database backup completed", message: "Weekly backup of all databases finished successfully. Size: 2.4 GB.", time: "2 min ago", read: false },
-  { id: "n2", type: "warning", source: "security", title: "Unusual login attempt detected", message: "Failed login attempt from IP 203.0.113.42. 2 more attempts before account lock.", time: "15 min ago", read: false },
-  { id: "n3", type: "success", source: "content", title: "New blog post published", message: "Your article 'Building Scalable Microservices' has been published and is live.", time: "1 hour ago", read: false },
-  { id: "n4", type: "info", source: "analytics", title: "Traffic spike detected", message: "Your portfolio received 2,847 visits in the last hour — 340% above average.", time: "2 hours ago", read: false },
-  { id: "n5", type: "error", source: "system", title: "SSL certificate expiring", message: "SSL certificate for johndoe.dev expires in 7 days. Renew immediately.", time: "3 hours ago", read: false },
-  { id: "n6", type: "info", source: "social", title: "New GitHub star", message: "Your project 'portfolio-cms' received 5 new stars. Total: 342 stars.", time: "5 hours ago", read: true },
-  { id: "n7", type: "success", source: "security", title: "Security scan completed", message: "Full security audit completed. 0 critical, 2 medium vulnerabilities found.", time: "8 hours ago", read: true },
-  { id: "n8", type: "warning", source: "system", title: "Disk space warning", message: "Server disk usage at 85%. Consider cleaning up old logs and backups.", time: "1 day ago", read: true },
-  { id: "n9", type: "info", source: "analytics", title: "Monthly report ready", message: "June 2026 analytics report is ready to view. 45.2K total visits.", time: "2 days ago", read: true },
-  { id: "n10", type: "info", source: "content", title: "New contact request", message: "Alice Johnson submitted a contact form regarding a freelance project opportunity.", time: "2 days ago", read: true },
-];
-
 const TYPE_ICONS: Record<NotificationType, typeof Info> = { info: Info, success: CheckCircle2, warning: AlertTriangle, error: AlertOctagon };
 const TYPE_COLORS: Record<NotificationType, string> = { info: "text-accent bg-accent/10", success: "text-success bg-success/10", warning: "text-warning bg-warning/10", error: "text-error bg-error/10" };
 const SOURCE_FILTERS = ["all", "system", "security", "analytics", "content", "social"];
 
 export function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>(ALL);
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "notification-templates" });
+  const allNotifications: Notification[] = response?.data ?? [];
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState<NotificationType | "all">("all");
 
+  const allItems = notifications.length > 0 ? notifications : allNotifications;
+
   const filtered = useMemo(() => {
-    let result = notifications;
+    let result = allItems;
     if (filter !== "all") result = result.filter((n) => n.source === filter);
     if (typeFilter !== "all") result = result.filter((n) => n.type === typeFilter);
     return result;
-  }, [notifications, filter, typeFilter]);
+  }, [allItems, filter, typeFilter]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = allItems.filter((n) => !n.read).length;
 
-  const markRead = (id: string) => setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
-  const markAllRead = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  const deleteNotification = (id: string) => setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const markRead = (id: string) => setNotifications((prev) => {
+    const current = prev.length > 0 ? prev : allNotifications;
+    return current.map((n) => n.id === id ? { ...n, read: true } : n);
+  });
+  const markAllRead = () => setNotifications((prev) => {
+    const current = prev.length > 0 ? prev : allNotifications;
+    return current.map((n) => ({ ...n, read: true }));
+  });
+  const deleteNotification = (id: string) => setNotifications((prev) => {
+    const current = prev.length > 0 ? prev : allNotifications;
+    return current.filter((n) => n.id !== id);
+  });
 
   return (
     <div className="space-y-6">
@@ -91,7 +92,19 @@ export function NotificationsPage() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex gap-4 rounded-xl border border-border-primary bg-surface-primary p-4 animate-pulse">
+              <div className="h-9 w-9 rounded-lg bg-surface-hover shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-surface-hover rounded w-1/3" />
+                <div className="h-3 bg-surface-hover rounded w-2/3" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
           <Inbox size={48} className="mb-4 opacity-40" />
           <p className="text-lg font-medium">No notifications</p>

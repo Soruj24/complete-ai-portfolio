@@ -2,24 +2,27 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { RefreshCw, Database, Clock, CheckCircle, AlertTriangle, RotateCcw, Search } from "lucide-react";
+import { RefreshCw, Database, Clock, CheckCircle, AlertTriangle, RotateCcw, Search, Loader2 } from "lucide-react";
 import type { RestorePoint } from "../types";
-
-const MOCK: RestorePoint[] = [
-  { id: "rst-1", backup: "full-backup-2026-07-05", size: "2.4 GB", createdAt: "2026-07-05 02:15", type: "full", verified: true },
-  { id: "rst-2", backup: "inc-backup-2026-07-05", size: "245 MB", createdAt: "2026-07-05 06:08", type: "incremental", verified: true },
-  { id: "rst-3", backup: "inc-backup-2026-07-05", size: "210 MB", createdAt: "2026-07-05 12:07", type: "incremental", verified: true },
-  { id: "rst-4", backup: "full-backup-2026-07-04", size: "2.3 GB", createdAt: "2026-07-04 02:14", type: "full", verified: false },
-  { id: "rst-5", backup: "full-backup-2026-07-03", size: "2.3 GB", createdAt: "2026-07-03 02:16", type: "full", verified: true },
-];
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
 export function RestorePage() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "restore-points" });
+  const items = response?.data ?? [];
 
-  const filtered = MOCK.filter((r) => !search || r.backup.toLowerCase().includes(search.toLowerCase()));
+  const filtered = items.filter((r: RestorePoint) => !search || r.backup.toLowerCase().includes(search.toLowerCase()));
 
-  const selectedPoint = filtered.find((r) => r.id === selected);
+  const selectedPoint = filtered.find((r: RestorePoint) => r.id === selected);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -29,10 +32,10 @@ export function RestorePage() {
 
       <div className="grid gap-4 sm:grid-cols-4">
         {[
-          { label: "Available", value: MOCK.length.toString(), icon: Database, color: "text-accent" },
-          { label: "Verified", value: MOCK.filter((r) => r.verified).length.toString(), icon: CheckCircle, color: "text-success" },
-          { label: "Full Backups", value: MOCK.filter((r) => r.type === "full").length.toString(), icon: RefreshCw, color: "text-accent" },
-          { label: "Latest", value: new Date(MOCK[0].createdAt).toLocaleDateString(), icon: Clock, color: "text-warning" },
+          { label: "Available", value: items.length.toString(), icon: Database, color: "text-accent" },
+          { label: "Verified", value: items.filter((r: RestorePoint) => r.verified).length.toString(), icon: CheckCircle, color: "text-success" },
+          { label: "Full Backups", value: items.filter((r: RestorePoint) => r.type === "full").length.toString(), icon: RefreshCw, color: "text-accent" },
+          { label: "Latest", value: items.length > 0 ? new Date(items[0].createdAt).toLocaleDateString() : "—", icon: Clock, color: "text-warning" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -52,21 +55,28 @@ export function RestorePage() {
               className="w-full rounded-lg border border-border-primary bg-surface-secondary py-2 pl-9 pr-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent" />
           </div>
           <div className="rounded-xl border border-border-primary bg-surface-primary overflow-hidden">
-            <table className="w-full text-sm"><thead><tr className="border-b border-border-primary bg-surface-secondary text-left text-xs text-text-tertiary">
-              <th className="p-3 font-medium">Backup</th><th className="p-3 font-medium">Type</th><th className="p-3 font-medium">Size</th><th className="p-3 font-medium">Verified</th><th className="p-3 font-medium">Date</th>
-            </tr></thead><tbody>
-              {filtered.map((r, i) => (
-                <motion.tr key={r.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
-                  onClick={() => setSelected(r.id)}
-                  className={`border-b border-border-primary last:border-0 hover:bg-surface-hover transition-colors cursor-pointer ${selected === r.id ? "bg-accent/5" : ""}`}>
-                  <td className="p-3 font-medium text-text-primary font-mono text-xs">{r.backup}</td>
-                  <td className="p-3"><span className={`rounded-md px-2 py-0.5 text-[10px] font-medium capitalize ${r.type === "full" ? "bg-accent/10 text-accent" : "bg-surface-hover text-text-secondary"}`}>{r.type}</span></td>
-                  <td className="p-3 text-xs text-text-secondary">{r.size}</td>
-                  <td className="p-3">{r.verified ? <CheckCircle size={14} className="text-success" /> : <AlertTriangle size={14} className="text-warning" />}</td>
-                  <td className="p-3 text-xs text-text-tertiary">{new Date(r.createdAt).toLocaleString()}</td>
-                </motion.tr>
-              ))}
-            </tbody></table>
+            {items.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
+                <Database size={40} className="mb-3 opacity-40" />
+                <p className="font-medium">No restore points found</p>
+              </div>
+            ) : (
+              <table className="w-full text-sm"><thead><tr className="border-b border-border-primary bg-surface-secondary text-left text-xs text-text-tertiary">
+                <th className="p-3 font-medium">Backup</th><th className="p-3 font-medium">Type</th><th className="p-3 font-medium">Size</th><th className="p-3 font-medium">Verified</th><th className="p-3 font-medium">Date</th>
+              </tr></thead><tbody>
+                {filtered.map((r: RestorePoint, i: number) => (
+                  <motion.tr key={r.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+                    onClick={() => setSelected(r.id)}
+                    className={`border-b border-border-primary last:border-0 hover:bg-surface-hover transition-colors cursor-pointer ${selected === r.id ? "bg-accent/5" : ""}`}>
+                    <td className="p-3 font-medium text-text-primary font-mono text-xs">{r.backup}</td>
+                    <td className="p-3"><span className={`rounded-md px-2 py-0.5 text-[10px] font-medium capitalize ${r.type === "full" ? "bg-accent/10 text-accent" : "bg-surface-hover text-text-secondary"}`}>{r.type}</span></td>
+                    <td className="p-3 text-xs text-text-secondary">{r.size}</td>
+                    <td className="p-3">{r.verified ? <CheckCircle size={14} className="text-success" /> : <AlertTriangle size={14} className="text-warning" />}</td>
+                    <td className="p-3 text-xs text-text-tertiary">{new Date(r.createdAt).toLocaleString()}</td>
+                  </motion.tr>
+                ))}
+              </tbody></table>
+            )}
           </div>
         </div>
 

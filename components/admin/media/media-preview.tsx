@@ -14,10 +14,46 @@ import {
   Clock, HardDrive, Maximize2, Split, Shrink, History,
   Check, AlertCircle, FileSymlink, ExternalLink,
 } from "lucide-react";
-import {
-  formatSize, getTypeColor,
-  type MediaItem, FOLDERS, TAGS,
-} from "./data";
+import type { MediaItem } from "@/features/media/types";
+
+function formatSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+
+function getTypeColor(type: string): string {
+  const colors: Record<string, string> = {
+    image: "bg-accent/10 text-accent",
+    video: "bg-purple-500/10 text-purple-500",
+    pdf: "bg-error/10 text-error",
+    document: "bg-info/10 text-info",
+    icon: "bg-amber-500/10 text-amber-500",
+    svg: "bg-amber-500/10 text-amber-500",
+    audio: "bg-pink-500/10 text-pink-500",
+  };
+  return colors[type] || "bg-surface-hover text-text-tertiary";
+}
+
+interface FolderItem {
+  id: string;
+  name: string;
+  parent: string | null;
+  count: number;
+  icon: string;
+}
+
+interface TagItem {
+  id: string;
+  name: string;
+  count: number;
+  color: string;
+}
+
+const EMPTY_FOLDERS: FolderItem[] = [];
+const EMPTY_TAGS: TagItem[] = [];
 
 const fileTypeLabels: Record<string, string> = {
   image: "Image", video: "Video", pdf: "PDF", document: "Document",
@@ -151,7 +187,7 @@ export function MediaPreviewPanel({ item, onClose }: { item: MediaItem | null; o
             { label: "Dimensions", value: item.dimensions || "-", icon: Maximize2 },
             { label: "Created", value: new Date(item.createdAt).toLocaleDateString(), icon: Clock },
             { label: "Modified", value: new Date(item.modifiedAt).toLocaleDateString(), icon: Clock },
-            { label: "Folder", value: FOLDERS.find((f) => f.id === item.folder)?.name || item.folder, icon: Folder },
+            { label: "Folder", value: EMPTY_FOLDERS.find((f) => f.id === item.folder)?.name || item.folder, icon: Folder },
           ].map((field) => (
             <div key={field.label} className="flex items-center justify-between py-1.5">
               <div className="flex items-center gap-2 text-[10px] text-text-tertiary">
@@ -171,7 +207,7 @@ export function MediaPreviewPanel({ item, onClose }: { item: MediaItem | null; o
             </p>
             <div className="flex flex-wrap gap-1">
               {item.tags.length > 0 ? item.tags.map((tag) => {
-                const tagDef = TAGS.find((t) => t.name === tag);
+                const tagDef = EMPTY_TAGS.find((t) => t.name === tag);
                 return (
                   <Badge key={tag} variant="outline" className="text-[8px] px-1.5 py-0 rounded-full border-border-subtle text-text-tertiary">
                     {tag}

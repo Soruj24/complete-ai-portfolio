@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ShieldAlert, Activity, Key, Database, AlertTriangle, Shield } from "lucide-react";
-import { MOCK_SCORE, MOCK_ALERTS } from "../constants/mock-data";
+const EMPTY_SCORE = { overall: 0, categories: [], findings: [] };
+const EMPTY_ALERTS: never[] = [];
 import type { SecurityScore, SecurityAlert } from "../types";
 
 const SCORE_COLOR = (score: number) => {

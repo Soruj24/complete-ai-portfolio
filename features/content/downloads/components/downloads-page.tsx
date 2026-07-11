@@ -1,23 +1,51 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Download, FileText, Archive, Image, Eye, EyeOff, BarChart3 } from "lucide-react";
-import { useDownloads } from "../hooks/use-downloads";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { DownloadFormDialog } from "./download-form-dialog";
 
 const CATEGORIES = ["all", "resume", "code", "document", "presentation", "other"];
 const VISIBILITY_OPTS = ["all", "visible", "hidden"];
 
+interface DownloadItem {
+  id: string;
+  name: string;
+  description: string;
+  fileType: string;
+  fileSize: string;
+  category: string;
+  downloads: number;
+  visible: boolean;
+  featured: boolean;
+  url: string;
+}
+
 export function DownloadsPage() {
-  const { filtered, loading, error, search, setSearch, category, setCategory, visibility, setVisibility, refresh, addDownload } = useDownloads();
+  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "downloads" });
+  const downloads: DownloadItem[] = useMemo(() => (response?.data ?? []) as DownloadItem[], [response]);
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [visibility, setVisibility] = useState<"all" | "visible" | "hidden">("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    return downloads.filter((d: DownloadItem) => {
+      if (search && !d.name.toLowerCase().includes(search.toLowerCase()) && !d.description.toLowerCase().includes(search.toLowerCase())) return false;
+      if (category !== "all" && d.category !== category) return false;
+      if (visibility === "visible" && !d.visible) return false;
+      if (visibility === "hidden" && d.visible) return false;
+      return true;
+    });
+  }, [downloads, search, category, visibility]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load downloads</p>
-      <button onClick={refresh} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -29,7 +57,7 @@ export function DownloadsPage() {
           <p className="text-sm text-text-tertiary">Manage downloadable files and resources</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -41,9 +69,9 @@ export function DownloadsPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         {[
           { label: "Total Files", value: filtered.length, icon: Download, color: "text-accent" },
-          { label: "Visible", value: filtered.filter((d) => d.visible).length, icon: Eye, color: "text-success" },
-          { label: "Hidden", value: filtered.filter((d) => !d.visible).length, icon: EyeOff, color: "text-error" },
-          { label: "Total Downloads", value: filtered.reduce((s, d) => s + d.downloads, 0).toLocaleString(), icon: BarChart3, color: "text-warning" },
+          { label: "Visible", value: filtered.filter((d: DownloadItem) => d.visible).length, icon: Eye, color: "text-success" },
+          { label: "Hidden", value: filtered.filter((d: DownloadItem) => !d.visible).length, icon: EyeOff, color: "text-error" },
+          { label: "Total Downloads", value: filtered.reduce((s: number, d: DownloadItem) => s + d.downloads, 0).toLocaleString(), icon: BarChart3, color: "text-warning" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -75,9 +103,9 @@ export function DownloadsPage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-3">
-          {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-20 animate-pulse rounded-xl bg-surface-hover" />)}
+          {Array.from({ length: 6 }).map((_: unknown, i: number) => <div key={i} className="h-20 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
@@ -86,7 +114,7 @@ export function DownloadsPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((dl, i) => (
+          {filtered.map((dl: DownloadItem, i: number) => (
             <motion.div key={dl.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }}
               className="group flex items-center gap-4 rounded-xl border border-border-primary bg-surface-primary p-4 transition-colors hover:border-accent/30"
             >
@@ -116,7 +144,7 @@ export function DownloadsPage() {
           ))}
         </div>
       )}
-      <DownloadFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addDownload(d); toastSuccess("Created!", "Download has been created."); }} />
+      <DownloadFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/downloads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Download has been created."); refetch(); }} />
     </div>
   );
 }

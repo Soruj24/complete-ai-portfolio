@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { GlassCard } from "@/components/ui/glass-card";
-import { skillCategories } from "@/data/skills";
 
 const categoryIcons: Record<string, string> = {
   "AI & LangChain Specialist": "🤖",
@@ -16,6 +15,25 @@ const categoryIcons: Record<string, string> = {
 
 export function Skills() {
   const [activeCategory, setActiveCategory] = useState(0);
+  const [skillCategories, setSkillCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/skills")
+      .then((res) => res.json())
+      .then((data) => {
+        const skills = data.data ?? [];
+        const grouped: Record<string, any[]> = {};
+        for (const s of skills) {
+          const cat = s.category || "Other";
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(s);
+        }
+        setSkillCategories(
+          Object.entries(grouped).map(([title, skills]) => ({ title, skills }))
+        );
+      })
+      .catch(() => setSkillCategories([]));
+  }, []);
 
   return (
     <Section id="skills" variant="alt">
@@ -39,7 +57,7 @@ export function Skills() {
               )}
               style={activeCategory === i ? { background: "var(--accent)" } : undefined}
             >
-              {categoryIcons[cat.title]} {cat.title}
+              {categoryIcons[cat.title] ?? "💻"} {cat.title}
             </button>
           ))}
         </div>
@@ -53,7 +71,7 @@ export function Skills() {
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
           >
-            {skillCategories[activeCategory].skills.map((skill, i) => (
+            {skillCategories[activeCategory]?.skills.map((skill: any, i: number) => (
               <AnimatedSection key={skill.name} delay={i * 0.04}>
                 <GlassCard variant="interactive" className="p-4">
                   <div className="flex items-center gap-3">

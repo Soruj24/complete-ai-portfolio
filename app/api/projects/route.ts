@@ -2,7 +2,6 @@ import { getSession } from "@/lib/auth/session";
 import { portfolioService } from "@/lib/services";
 import { projectSchema } from "@/lib/schemas";
 import { createApiResponse, createErrorResponse, handleApiError } from "@/lib/utils/api-response";
-import { projects as initialProjects } from "@/data/projects";
 
 export async function GET(request: Request) {
   try {
@@ -13,19 +12,6 @@ export async function GET(request: Request) {
     const featured = searchParams.get("featured") === "true" || undefined;
 
     const result = await portfolioService.getProjects({ page, limit, category, featured });
-
-    if (result.data.length === 0 && page === 1) {
-      const skip = (page - 1) * limit;
-      const paginatedInitial = initialProjects.slice(skip, skip + limit);
-      return createApiResponse(paginatedInitial, {
-        pagination: {
-          page, limit, total: initialProjects.length,
-          totalPages: Math.ceil(initialProjects.length / limit),
-          hasNext: page < Math.ceil(initialProjects.length / limit),
-          hasPrev: page > 1,
-        },
-      });
-    }
 
     return createApiResponse(result.data, { pagination: result.pagination });
   } catch (error) {

@@ -6,7 +6,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Upload, X, File, Image, Video, FileText, Shapes, Music, Check, AlertCircle, Loader2 } from "lucide-react";
-import { formatSize } from "./data";
+
+function formatSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
 
 interface UploadFile {
   id: string;
@@ -60,7 +67,7 @@ export function MediaUploader({ open, onClose }: { open: boolean; onClose: () =>
     setIsUploading(true);
     let progress = 0;
     const interval = setInterval(() => {
-      progress += Math.floor(Math.random() * 15) + 5;
+      progress += 10;
       if (progress >= 100) {
         progress = 100;
         clearInterval(interval);

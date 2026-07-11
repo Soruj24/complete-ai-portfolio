@@ -2,21 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, RefreshCw, MessageCircle, TrendingUp, Users, DollarSign, CheckCircle2, XCircle, AlertTriangle, ArrowUpRight, Mail } from "lucide-react";
+import { Search, RefreshCw, MessageCircle, TrendingUp, Users, DollarSign, CheckCircle2, XCircle, AlertTriangle, ArrowUpRight, Mail, Loader2 } from "lucide-react";
 import type { ContactRequest } from "../types";
-
-const MOCK: ContactRequest[] = [
-  { id: "cr-1", name: "Alice Johnson", email: "alice@techcorp.com", phone: "+1-555-1234", company: "TechCorp Inc.", budget: "$50-100k", message: "We are looking for a senior full-stack developer for a 6-month contract building a customer analytics platform. Your portfolio aligns well with our needs.", status: "new", priority: "high", source: "Contact Form", createdAt: "2026-07-05T10:30:00Z" },
-  { id: "cr-2", name: "Bob Smith", email: "bob@startup.io", company: "Startup.io", budget: "$20-50k", message: "Interested in discussing a potential collaboration on our MVP. We need a React + Node.js developer for approximately 3 months.", status: "new", priority: "medium", source: "Contact Form", createdAt: "2026-07-04T14:20:00Z" },
-  { id: "cr-3", name: "Carol Davis", email: "carol@agency.com", phone: "+1-555-5678", company: "Digital Agency Co.", message: "We have several client projects that need your expertise. Looking for a long-term partnership arrangement.", status: "contacted", priority: "high", source: "LinkedIn", createdAt: "2026-07-02T09:15:00Z", respondedAt: "2026-07-03T11:00:00Z" },
-  { id: "cr-4", name: "David Wilson", email: "david@enterprise.com", company: "Enterprise Solutions", budget: "$100k+", message: "Enterprise-level project requiring architectural consultation and implementation of a microservices migration.", status: "qualified", priority: "high", source: "Referral", createdAt: "2026-06-28T16:45:00Z" },
-  { id: "cr-5", name: "Eve Martinez", email: "eve@growth.co", company: "Growth Co.", budget: "$10-20k", message: "Need help optimizing our Next.js application for better performance and SEO improvements.", status: "converted", priority: "medium", source: "Contact Form", createdAt: "2026-06-25T08:30:00Z", respondedAt: "2026-06-26T10:00:00Z" },
-  { id: "cr-6", name: "Frank Lee", email: "frank@devshop.io", phone: "+1-555-9012", message: "Looking for a freelance developer for a short-term project building a landing page and basic CMS.", status: "closed", priority: "low", source: "Upwork", createdAt: "2026-06-20T11:00:00Z", respondedAt: "2026-06-21T09:00:00Z" },
-  { id: "cr-7", name: "Grace Kim", email: "grace@ai-startup.com", company: "AI Startup Inc.", budget: "$50-100k", message: "We're building an AI-powered code assistant and need expertise in LangChain and vector databases.", status: "new", priority: "high", source: "GitHub", createdAt: "2026-07-05T07:00:00Z" },
-  { id: "cr-8", name: "Henry Brown", email: "henry@edu.org", company: "University Research Lab", message: "Seeking consultation on setting up our research lab's data pipeline and visualization dashboard.", status: "contacted", priority: "medium", source: "Email", createdAt: "2026-06-30T13:00:00Z", respondedAt: "2026-07-01T15:00:00Z" },
-  { id: "cr-9", name: "Iris Chang", email: "iris@market.co", company: "Marketing Co.", budget: "$5-10k", message: "Would like to hire you for a small website redesign project. Timeline is flexible.", status: "qualified", priority: "low", source: "Contact Form", createdAt: "2026-06-22T10:30:00Z" },
-  { id: "cr-10", name: "Jack Taylor", email: "jack@scaleup.com", company: "ScaleUp Ltd.", budget: "$100k+", message: "Enterprise digital transformation project. Need a lead developer to architect and implement new platform.", status: "new", priority: "high", source: "LinkedIn", createdAt: "2026-07-05T12:00:00Z" },
-];
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
   new: { color: "text-accent", bg: "bg-accent/10" },
@@ -33,7 +21,8 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 export function ContactRequestsPage() {
-  const [requests, setRequests] = useState(MOCK);
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "contact-requests" });
+  const requests = (response?.data ?? []) as ContactRequest[];
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
@@ -45,6 +34,26 @@ export function ContactRequestsPage() {
   }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const selectedReq = selected ? requests.find((r) => r.id === selected) : null;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <Loader2 size={32} className="animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  if (requests.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div className="text-center text-text-tertiary">
+          <Mail size={48} className="mx-auto mb-3 opacity-40" />
+          <p className="font-medium">No contact requests</p>
+          <p className="text-xs">Contact requests will appear here once submitted</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

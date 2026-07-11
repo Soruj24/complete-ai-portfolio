@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, GraduationCap, BookOpen, MapPin, Award, Calendar } from "lucide-react";
-import { useEducation } from "../hooks/use-education";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { DEGREE_LABELS } from "../types";
-import type { DegreeType } from "../types";
+import type { DegreeType, Education } from "../types";
 import { EducationFormDialog } from "./education-form-dialog";
 
 const DEG_OPTIONS: { value: DegreeType | "all"; label: string }[] = [
@@ -15,13 +15,25 @@ const DEG_OPTIONS: { value: DegreeType | "all"; label: string }[] = [
 ];
 
 export function EducationPage() {
-  const { filtered, loading, error, search, setSearch, degreeFilter, setDegreeFilter, refresh, addEntry } = useEducation();
+  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "education" });
+  const entries: Education[] = useMemo(() => (response?.data ?? []) as Education[], [response]);
+
+  const [search, setSearch] = useState("");
+  const [degreeFilter, setDegreeFilter] = useState<DegreeType | "all">("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    return entries.filter((e: Education) => {
+      if (search && !e.institution.toLowerCase().includes(search.toLowerCase()) && !e.degree.toLowerCase().includes(search.toLowerCase()) && !e.field.toLowerCase().includes(search.toLowerCase())) return false;
+      if (degreeFilter !== "all" && e.degreeType !== degreeFilter) return false;
+      return true;
+    });
+  }, [entries, search, degreeFilter]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load education</p>
-      <button onClick={refresh} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -33,7 +45,7 @@ export function EducationPage() {
           <p className="text-sm text-text-tertiary">Manage your academic background</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -45,9 +57,9 @@ export function EducationPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         {[
           { label: "Entries", value: filtered.length, icon: GraduationCap },
-          { label: "In Progress", value: filtered.filter((e) => e.current).length, icon: BookOpen },
-          { label: "Completed", value: filtered.filter((e) => !e.current).length, icon: Award },
-          { label: "Institutions", value: [...new Set(filtered.map((e) => e.institution))].length, icon: MapPin },
+          { label: "In Progress", value: filtered.filter((e: Education) => e.current).length, icon: BookOpen },
+          { label: "Completed", value: filtered.filter((e: Education) => !e.current).length, icon: Award },
+          { label: "Institutions", value: [...new Set(filtered.map((e: Education) => e.institution))].length, icon: MapPin },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -75,9 +87,9 @@ export function EducationPage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-32 animate-pulse rounded-xl bg-surface-hover" />)}
+          {Array.from({ length: 3 }).map((_: unknown, i: number) => <div key={i} className="h-32 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
@@ -86,7 +98,7 @@ export function EducationPage() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {filtered.map((edu, i) => (
+          {filtered.map((edu: Education, i: number) => (
             <motion.div key={edu.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               className="rounded-xl border border-border-primary bg-surface-primary p-5 transition-colors hover:border-accent/30"
             >
@@ -112,7 +124,7 @@ export function EducationPage() {
               <p className="mb-3 text-sm text-text-tertiary">{edu.description}</p>
 
               <ul className="mb-3 space-y-1">
-                {edu.highlights.map((h, j) => (
+                {edu.highlights.map((h: string, j: number) => (
                   <li key={j} className="flex items-start gap-2 text-xs text-text-secondary">
                     <span className="mt-0.5 h-1 w-1 shrink-0 rounded-full bg-accent" />
                     {h}
@@ -128,7 +140,7 @@ export function EducationPage() {
           ))}
         </div>
       )}
-      <EducationFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addEntry(d); toastSuccess("Created!", "Education entry has been created."); }} />
+      <EducationFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/education", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Education entry has been created."); refetch(); }} />
     </div>
   );
 }

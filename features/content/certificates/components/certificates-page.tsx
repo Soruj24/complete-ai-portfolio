@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Award, ExternalLink, Calendar, Clock, Shield } from "lucide-react";
-import { useCertificates } from "../hooks/use-certificates";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { PROVIDER_LABELS } from "../types";
-import type { CertProvider } from "../types";
+import type { CertProvider, Certificate } from "../types";
 import { CertificateFormDialog } from "./certificate-form-dialog";
 
 const PROV_OPTIONS: { value: CertProvider | "all"; label: string }[] = [
@@ -15,13 +15,25 @@ const PROV_OPTIONS: { value: CertProvider | "all"; label: string }[] = [
 ];
 
 export function CertificatesPage() {
-  const { filtered, loading, error, search, setSearch, provider, setProvider, refresh, addCertificate } = useCertificates();
+  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "certificates" });
+  const certificates: Certificate[] = useMemo(() => (response?.data ?? []) as Certificate[], [response]);
+
+  const [search, setSearch] = useState("");
+  const [provider, setProvider] = useState<CertProvider | "all">("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    return certificates.filter((c: Certificate) => {
+      if (search && !c.name.toLowerCase().includes(search.toLowerCase()) && !c.providerLabel.toLowerCase().includes(search.toLowerCase())) return false;
+      if (provider !== "all" && c.provider !== provider) return false;
+      return true;
+    });
+  }, [certificates, search, provider]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load certificates</p>
-      <button onClick={refresh} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -33,7 +45,7 @@ export function CertificatesPage() {
           <p className="text-sm text-text-tertiary">Manage your professional certifications</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -45,9 +57,9 @@ export function CertificatesPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         {[
           { label: "Total", value: filtered.length, icon: Award, color: "text-accent" },
-          { label: "Providers", value: [...new Set(filtered.map((c) => c.provider))].length, icon: Shield, color: "text-success" },
-          { label: "Active", value: filtered.filter((c) => !c.expiryDate || new Date(c.expiryDate) > new Date()).length, icon: Clock, color: "text-warning" },
-          { label: "Expired", value: filtered.filter((c) => c.expiryDate && new Date(c.expiryDate) <= new Date()).length, icon: Calendar, color: "text-error" },
+          { label: "Providers", value: [...new Set(filtered.map((c: Certificate) => c.provider))].length, icon: Shield, color: "text-success" },
+          { label: "Active", value: filtered.filter((c: Certificate) => !c.expiryDate || new Date(c.expiryDate) > new Date()).length, icon: Clock, color: "text-warning" },
+          { label: "Expired", value: filtered.filter((c: Certificate) => c.expiryDate && new Date(c.expiryDate) <= new Date()).length, icon: Calendar, color: "text-error" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -75,9 +87,9 @@ export function CertificatesPage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-40 animate-pulse rounded-xl bg-surface-hover" />)}
+          {Array.from({ length: 8 }).map((_: unknown, i: number) => <div key={i} className="h-40 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
@@ -86,7 +98,7 @@ export function CertificatesPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((cert, i) => (
+          {filtered.map((cert: Certificate, i: number) => (
             <motion.div key={cert.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
               className="group rounded-xl border border-border-primary bg-surface-primary p-5 transition-colors hover:border-accent/30"
             >
@@ -103,7 +115,7 @@ export function CertificatesPage() {
               <p className="mt-1 text-xs text-text-tertiary">{cert.providerLabel}</p>
               <p className="mt-1 line-clamp-2 text-xs text-text-tertiary">{cert.description}</p>
               <div className="mt-3 flex flex-wrap gap-1">
-                {cert.skills.slice(0, 3).map((s) => (
+                {cert.skills.slice(0, 3).map((s: string) => (
                   <span key={s} className="rounded bg-surface-hover px-1.5 py-0.5 text-[10px] text-text-secondary">{s}</span>
                 ))}
               </div>
@@ -115,7 +127,7 @@ export function CertificatesPage() {
           ))}
         </div>
       )}
-      <CertificateFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addCertificate(d); toastSuccess("Created!", "Certificate has been created."); }} />
+      <CertificateFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/certificates", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Certificate has been created."); refetch(); }} />
     </div>
   );
 }

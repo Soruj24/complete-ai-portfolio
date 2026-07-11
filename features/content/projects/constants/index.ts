@@ -39,4 +39,7 @@ export const STATUS_COLORS: Record<ProjectStatus, string> = {
   archived: "text-error bg-error/10",
 };
 
-export { MOCK_PROJECTS, CATEGORIES, TAGS, TECH_STACKS } from "./mock-data";
+export const CATEGORIES: string[] = [];
+export const TAGS: string[] = [];
+export const TECH_STACKS: string[] = [];
+

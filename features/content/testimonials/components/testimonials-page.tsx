@@ -1,20 +1,43 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, MessageSquare, Star, Quote, ExternalLink } from "lucide-react";
-import { useTestimonials } from "../hooks/use-testimonials";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { TestimonialFormDialog } from "./testimonial-form-dialog";
 
+interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  company: string;
+  content: string;
+  rating: number;
+  featured: boolean;
+  url?: string;
+}
+
 export function TestimonialsPage() {
-  const { filtered, loading, error, search, setSearch, rating, setRating, refresh, addTestimonial } = useTestimonials();
+  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "testimonials" });
+  const testimonials: Testimonial[] = useMemo(() => (response?.data ?? []) as Testimonial[], [response]);
+
+  const [search, setSearch] = useState("");
+  const [rating, setRating] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    return testimonials.filter((t: Testimonial) => {
+      if (search && !t.name.toLowerCase().includes(search.toLowerCase()) && !t.company.toLowerCase().includes(search.toLowerCase()) && !t.content.toLowerCase().includes(search.toLowerCase())) return false;
+      if (rating !== 0 && t.rating !== rating) return false;
+      return true;
+    });
+  }, [testimonials, search, rating]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load testimonials</p>
-      <button onClick={refresh} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -26,7 +49,7 @@ export function TestimonialsPage() {
           <p className="text-sm text-text-tertiary">Manage client and colleague recommendations</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -38,9 +61,9 @@ export function TestimonialsPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         {[
           { label: "Total", value: filtered.length, icon: MessageSquare, color: "text-accent" },
-          { label: "Featured", value: filtered.filter((t) => t.featured).length, icon: Star, color: "text-warning" },
-          { label: "5-Star", value: filtered.filter((t) => t.rating === 5).length, icon: Star, color: "text-success" },
-          { label: "Avg Rating", value: filtered.length ? (filtered.reduce((s, t) => s + t.rating, 0) / filtered.length).toFixed(1) : "0.0", icon: Quote, color: "text-accent" },
+          { label: "Featured", value: filtered.filter((t: Testimonial) => t.featured).length, icon: Star, color: "text-warning" },
+          { label: "5-Star", value: filtered.filter((t: Testimonial) => t.rating === 5).length, icon: Star, color: "text-success" },
+          { label: "Avg Rating", value: filtered.length ? (filtered.reduce((s: number, t: Testimonial) => s + t.rating, 0) / filtered.length).toFixed(1) : "0.0", icon: Quote, color: "text-accent" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -68,9 +91,9 @@ export function TestimonialsPage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
-          {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-40 animate-pulse rounded-xl bg-surface-hover" />)}
+          {Array.from({ length: 6 }).map((_: unknown, i: number) => <div key={i} className="h-40 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
@@ -79,14 +102,14 @@ export function TestimonialsPage() {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {filtered.map((t, i) => (
+          {filtered.map((t: Testimonial, i: number) => (
             <motion.div key={t.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
               className="group rounded-xl border border-border-primary bg-surface-primary p-5 transition-colors hover:border-accent/30"
             >
               <Quote size={20} className="mb-2 text-accent/30" />
               <p className="text-sm text-text-primary leading-relaxed line-clamp-4">&ldquo;{t.content}&rdquo;</p>
               <div className="mt-4 flex items-center gap-1">
-                {Array.from({ length: 5 }).map((_, j) => (
+                {Array.from({ length: 5 }).map((_: unknown, j: number) => (
                   <Star key={j} size={12} className={j < t.rating ? "text-warning fill-warning" : "text-text-tertiary"} />
                 ))}
               </div>
@@ -106,7 +129,7 @@ export function TestimonialsPage() {
           ))}
         </div>
       )}
-      <TestimonialFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addTestimonial(d); toastSuccess("Created!", "Testimonial has been created."); }} />
+      <TestimonialFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/testimonials", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Testimonial has been created."); refetch(); }} />
     </div>
   );
 }

@@ -2,28 +2,40 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Star, GitFork, GitCommit, Code2, ExternalLink } from "lucide-react";
+import { Search, Star, GitFork, GitCommit, Code2, ExternalLink, Loader2 } from "lucide-react";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import type { GithubRepo } from "../types";
-
-const MOCK: GithubRepo[] = [
-  { id: "gh-1", name: "portfolio-cms", stars: 342, forks: 89, issues: 5, language: "TypeScript", description: "Enterprise portfolio CMS with CRUD engine and AI Control Center", updatedAt: "2026-07-05" },
-  { id: "gh-2", name: "react-component-library", stars: 218, forks: 45, issues: 3, language: "TypeScript", description: "Reusable React component library with 50+ components", updatedAt: "2026-07-03" },
-  { id: "gh-3", name: "node-api-boilerplate", stars: 156, forks: 72, issues: 8, language: "TypeScript", description: "Production-ready Node.js API with authentication and routing", updatedAt: "2026-06-28" },
-  { id: "gh-4", name: "nextjs-starter", stars: 127, forks: 34, issues: 2, language: "TypeScript", description: "Next.js starter template with TypeScript, Tailwind, and ESLint", updatedAt: "2026-06-25" },
-  { id: "gh-5", name: "python-ml-toolkit", stars: 94, forks: 28, issues: 4, language: "Python", description: "Machine learning toolkit for data preprocessing and model training", updatedAt: "2026-06-20" },
-  { id: "gh-6", name: "docker-compose-templates", stars: 73, forks: 41, issues: 1, language: "Dockerfile", description: "Collection of Docker Compose templates for common stacks", updatedAt: "2026-06-18" },
-  { id: "gh-7", name: "rust-cli-utils", stars: 56, forks: 12, issues: 2, language: "Rust", description: "CLI utilities written in Rust for file processing", updatedAt: "2026-06-15" },
-  { id: "gh-8", name: "go-microservice", stars: 41, forks: 15, issues: 6, language: "Go", description: "Microservice example with gRPC and Kafka integration", updatedAt: "2026-06-10" },
-];
 
 const LANG_COLORS: Record<string, string> = { TypeScript: "#3178c6", Python: "#3572a5", Dockerfile: "#384d54", Rust: "#dea584", Go: "#00add8" };
 
 export function GithubPage() {
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "analytics/github" });
+  const repos: GithubRepo[] = response?.data ?? [];
+
   const [search, setSearch] = useState("");
 
-  const filtered = MOCK.filter((r) => !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.description.toLowerCase().includes(search.toLowerCase()));
-  const totalStars = MOCK.reduce((a, r) => a + r.stars, 0);
-  const totalForks = MOCK.reduce((a, r) => a + r.forks, 0);
+  const filtered = repos.filter((r) => !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.description.toLowerCase().includes(search.toLowerCase()));
+  const totalStars = repos.reduce((a, r) => a + r.stars, 0);
+  const totalForks = repos.reduce((a, r) => a + r.forks, 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  if (repos.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div><h1 className="text-2xl font-bold text-text-primary">GitHub Stats</h1><p className="text-sm text-text-tertiary">Repository performance and activity</p></div>
+        <div className="flex h-64 items-center justify-center rounded-xl border border-border-primary bg-surface-primary">
+          <p className="text-sm text-text-tertiary">No GitHub data available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -31,10 +43,10 @@ export function GithubPage() {
 
       <div className="grid gap-4 sm:grid-cols-4">
         {[
-          { label: "Repositories", value: MOCK.length.toString(), icon: Code2, color: "text-accent" },
+          { label: "Repositories", value: repos.length.toString(), icon: Code2, color: "text-accent" },
           { label: "Total Stars", value: totalStars.toLocaleString(), icon: Star, color: "text-warning" },
           { label: "Total Forks", value: totalForks.toLocaleString(), icon: GitFork, color: "text-accent" },
-          { label: "Total Issues", value: MOCK.reduce((a, r) => a + r.issues, 0).toString(), icon: GitCommit, color: "text-error" },
+          { label: "Total Issues", value: repos.reduce((a, r) => a + r.issues, 0).toString(), icon: GitCommit, color: "text-error" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">

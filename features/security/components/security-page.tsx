@@ -7,7 +7,8 @@ import {
 } from "lucide-react";
 import { useDataProtection } from "../hooks/use-data-protection";
 import { SecurityScoreGauge, ScoreBreakdown, ActiveAlerts, QuickActions } from "./overview-panel";
-import { MOCK_SCORE, MOCK_ALERTS } from "../constants/mock-data";
+const EMPTY_SCORE = { overall: 0, categories: [], findings: [] };
+const EMPTY_ALERTS: never[] = [];
 import { AuthenticationTab } from "./authentication/authentication-tab";
 import { AccessControlTab } from "./access-control/access-control-tab";
 import { MonitoringTab } from "./monitoring/monitoring-tab";
@@ -58,7 +59,7 @@ export function SecurityPage() {
             <SecurityScoreGauge score={securityScore} />
             <div className="lg:col-span-2 space-y-4">
               <ScoreBreakdown score={securityScore} />
-              <ActiveAlerts alerts={MOCK_ALERTS} onViewAll={() => setTab("monitoring")} />
+              <ActiveAlerts alerts={EMPTY_ALERTS} onViewAll={() => setTab("monitoring")} />
             </div>
           </div>
           <QuickActions onNavigate={setTab} />

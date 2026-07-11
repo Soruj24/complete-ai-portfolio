@@ -2,29 +2,41 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Brain, Cpu, DollarSign, Clock, AlertTriangle, Zap } from "lucide-react";
+import { Brain, Cpu, DollarSign, Clock, AlertTriangle, Zap, Loader2 } from "lucide-react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import type { AiMetric, AiDailyUsage } from "../types";
 
-const DAILY: AiDailyUsage[] = Array.from({ length: 14 }, (_, i) => ({
-  date: new Date(2026, 6, i + 1).toISOString().slice(0, 10),
-  calls: 80 + Math.floor(Math.random() * 200),
-  tokens: 15000 + Math.floor(Math.random() * 50000),
-}));
-
-const MODELS: AiMetric[] = [
-  { model: "GPT-4o", provider: "OpenAI", totalCalls: 12450, totalTokens: 2850000, avgLatency: 1240, cost: 285.40, errorRate: 0.8, color: "#10a37f" },
-  { model: "Claude 3.5 Sonnet", provider: "Anthropic", totalCalls: 8320, totalTokens: 1980000, avgLatency: 980, cost: 198.20, errorRate: 0.5, color: "#d97706" },
-  { model: "Gemini Pro", provider: "Google", totalCalls: 5610, totalTokens: 1420000, avgLatency: 1520, cost: 112.80, errorRate: 1.2, color: "#4285f4" },
-  { model: "Llama 3.1 70B", provider: "Meta", totalCalls: 3480, totalTokens: 890000, avgLatency: 2100, cost: 52.20, errorRate: 2.1, color: "#6b7280" },
-  { model: "Mistral Large", provider: "Mistral AI", totalCalls: 2150, totalTokens: 520000, avgLatency: 880, cost: 32.25, errorRate: 0.3, color: "#7c3aed" },
-];
-
-const totalCalls = MODELS.reduce((a, m) => a + m.totalCalls, 0);
-const totalCost = MODELS.reduce((a, m) => a + m.cost, 0);
-
 export function AiAnalyticsPage() {
+  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "analytics/ai" });
+  const items = response?.data ?? [];
+
+  const DAILY: AiDailyUsage[] = items.length > 0 ? (items[0]?.daily ?? []) : [];
+  const MODELS: AiMetric[] = items.length > 0 ? (items[0]?.models ?? []) : [];
+
   const [chart, setChart] = useState<"calls" | "tokens">("calls");
+
+  const totalCalls = MODELS.reduce((a, m) => a + m.totalCalls, 0);
+  const totalCost = MODELS.reduce((a, m) => a + m.cost, 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div><h1 className="text-2xl font-bold text-text-primary">AI Analytics</h1><p className="text-sm text-text-tertiary">AI model usage, cost, and performance metrics</p></div>
+        <div className="flex h-64 items-center justify-center rounded-xl border border-border-primary bg-surface-primary">
+          <p className="text-sm text-text-tertiary">No AI analytics data available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

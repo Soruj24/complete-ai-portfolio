@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Code2, BarChart3 } from "lucide-react";
-import { useSkills } from "../hooks/use-skills";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { SKILL_CATEGORY_LABELS } from "../types";
-import type { SkillCategory } from "../types";
+import type { SkillCategory, Skill } from "../types";
 import { SkillFormDialog } from "./skill-form-dialog";
 
 const CATEGORY_OPTIONS: { value: SkillCategory | "all"; label: string }[] = [
@@ -15,13 +15,40 @@ const CATEGORY_OPTIONS: { value: SkillCategory | "all"; label: string }[] = [
 ];
 
 export function SkillsPage() {
-  const { filtered, grouped, avgLevel, loading, error, search, setSearch, category, setCategory, refresh, addSkill } = useSkills();
+  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "skills" });
+  const skills: Skill[] = useMemo(() => (response?.data ?? []) as Skill[], [response]);
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<SkillCategory | "all">("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    return skills.filter((s: Skill) => {
+      if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (category !== "all" && s.category !== category) return false;
+      return true;
+    });
+  }, [skills, search, category]);
+
+  const grouped = useMemo(() => {
+    const map = new Map<SkillCategory, Skill[]>();
+    for (const s of filtered) {
+      const existing = map.get(s.category) ?? [];
+      existing.push(s);
+      map.set(s.category, existing);
+    }
+    return map;
+  }, [filtered]);
+
+  const avgLevel = useMemo(() => {
+    if (!filtered.length) return 0;
+    return Math.round(filtered.reduce((sum: number, s: Skill) => sum + s.level, 0) / filtered.length);
+  }, [filtered]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load skills</p>
-      <button onClick={refresh} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -33,7 +60,7 @@ export function SkillsPage() {
           <p className="text-sm text-text-tertiary">Manage your technical skills and proficiencies</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -47,7 +74,7 @@ export function SkillsPage() {
           { label: "Total Skills", value: filtered.length, icon: Code2 },
           { label: "Categories", value: grouped.size, icon: BarChart3 },
           { label: "Avg Proficiency", value: `${avgLevel}%`, icon: BarChart3 },
-          { label: "Top Category", value: [...grouped.entries()].sort((a, b) => b[1].length - a[1].length)[0]?.[0] ? SKILL_CATEGORY_LABELS[[...grouped.entries()].sort((a, b) => b[1].length - a[1].length)[0][0]] : "--", icon: Code2 },
+          { label: "Top Category", value: [...grouped.entries()].sort((a: [SkillCategory, Skill[]], b: [SkillCategory, Skill[]]) => b[1].length - a[1].length)[0]?.[0] ? SKILL_CATEGORY_LABELS[[...grouped.entries()].sort((a: [SkillCategory, Skill[]], b: [SkillCategory, Skill[]]) => b[1].length - a[1].length)[0][0]] : "--", icon: Code2 },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -75,13 +102,13 @@ export function SkillsPage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-6">
-          {Array.from({ length: 3 }).map((_, gi) => (
+          {Array.from({ length: 3 }).map((_: unknown, gi: number) => (
             <div key={gi}>
               <div className="mb-3 h-5 w-24 animate-pulse rounded bg-surface-hover" />
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-surface-hover" />)}
+                {Array.from({ length: 4 }).map((_: unknown, i: number) => <div key={i} className="h-24 animate-pulse rounded-xl bg-surface-hover" />)}
               </div>
             </div>
           ))}
@@ -93,11 +120,11 @@ export function SkillsPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          {[...grouped.entries()].map(([cat, skills], gi) => (
+          {[...grouped.entries()].map(([cat, catSkills], gi: number) => (
             <div key={cat}>
-              <h3 className="mb-3 text-sm font-semibold text-text-primary">{SKILL_CATEGORY_LABELS[cat]} ({skills.length})</h3>
+              <h3 className="mb-3 text-sm font-semibold text-text-primary">{SKILL_CATEGORY_LABELS[cat]} ({catSkills.length})</h3>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {skills.map((skill, i) => (
+                {catSkills.map((skill: Skill, i: number) => (
                   <motion.div key={skill.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
                     className="rounded-xl border border-border-primary bg-surface-primary p-4 transition-colors hover:border-accent/30"
                   >
@@ -120,7 +147,7 @@ export function SkillsPage() {
           ))}
         </div>
       )}
-      <SkillFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addSkill(d); toastSuccess("Created!", "Skill has been created."); }} />
+      <SkillFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/skills", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Skill has been created."); refetch(); }} />
     </div>
   );
 }

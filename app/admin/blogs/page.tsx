@@ -1,4 +1,4 @@
-import { BlogsPage } from "@/features/content/blogs";
+import { BlogsPage } from "@/features/content/blogs/components/blogs-page";
 
 export const metadata = { title: "Blog Posts - Admin", description: "Manage blog content" };
 

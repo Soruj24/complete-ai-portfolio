@@ -1,33 +1,76 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RefreshCw, Inbox, Users } from "lucide-react";
-import { useMessages } from "../hooks/use-messages";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { STATUS_OPTIONS, SOURCE_OPTIONS, STAT_CARDS } from "../constants";
 import { MessageList } from "./message-list";
 import { MessageDetail } from "./message-detail";
+import type { Message, ContactRequest, MessageFilterState } from "../types";
 
 export function MessagesPage() {
-  const {
-    filtered, stats, contacts, selectedMessage,
-    loading, error, filters, setFilters,
-    selectedId, setSelectedId,
-    markAsRead, toggleFlag, refresh,
-  } = useMessages();
+  const { data: messagesRes, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "messages" });
+  const { data: contactsRes } = useGetAdminResourceQuery({ resource: "contact-requests" });
+
+  const serverMessages: Message[] = useMemo(() => (messagesRes?.data ?? []) as Message[], [messagesRes]);
+  const contacts: ContactRequest[] = useMemo(() => (contactsRes?.data ?? []) as ContactRequest[], [contactsRes]);
+
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, Message["status"]>>({});
+
+  const messages = useMemo(() => {
+    return serverMessages.map((m: Message) => {
+      const override = statusOverrides[m.id];
+      return override ? { ...m, status: override } : m;
+    });
+  }, [serverMessages, statusOverrides]);
+
+  const [filters, setFilters] = useState<MessageFilterState>({ search: "", status: "all", source: "all", category: "" });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<"messages" | "contacts">("messages");
 
-  const handleSelect = (id: string) => {
+  const filtered = useMemo(() => {
+    return messages.filter((m: Message) => {
+      if (filters.search && !m.name.toLowerCase().includes(filters.search.toLowerCase()) && !m.subject.toLowerCase().includes(filters.search.toLowerCase()) && !m.email.toLowerCase().includes(filters.search.toLowerCase())) return false;
+      if (filters.status !== "all" && m.status !== filters.status) return false;
+      if (filters.source !== "all" && m.source !== filters.source) return false;
+      if (filters.category && m.category !== filters.category) return false;
+      return true;
+    });
+  }, [messages, filters]);
+
+  const stats = useMemo(() => ({
+    total: messages.length,
+    unread: messages.filter((m: Message) => m.status === "unread").length,
+    flagged: messages.filter((m: Message) => m.status === "flagged").length,
+    newLeads: contacts.filter((c: ContactRequest) => c.status === "new").length,
+    contacted: contacts.filter((c: ContactRequest) => c.status === "contacted").length,
+  }), [messages, contacts]);
+
+  const selectedMessage = useMemo(() => messages.find((m: Message) => m.id === selectedId) ?? null, [messages, selectedId]);
+
+  const markAsRead = useCallback((id: string) => {
+    setStatusOverrides((prev) => ({ ...prev, [id]: "read" }));
+  }, []);
+
+  const toggleFlag = useCallback((id: string) => {
+    setStatusOverrides((prev) => {
+      const current = messages.find((m: Message) => m.id === id)?.status;
+      const newStatus: Message["status"] = current === "flagged" ? "read" : "flagged";
+      return { ...prev, [id]: newStatus };
+    });
+  }, [messages]);
+
+  const handleSelect = useCallback((id: string) => {
     setSelectedId(id);
-    if (filtered.find((m) => m.id === id)?.status === "unread") markAsRead(id);
-  };
+    if (filtered.find((m: Message) => m.id === id)?.status === "unread") markAsRead(id);
+  }, [filtered, markAsRead]);
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
         <p className="text-lg font-medium text-error">Failed to load messages</p>
-        <p className="mt-1 text-sm">{error}</p>
-        <button onClick={refresh} className="mt-4 flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
+        <button onClick={() => refetch()} className="mt-4 flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
           <RefreshCw size={14} /> Retry
         </button>
       </div>
@@ -41,7 +84,7 @@ export function MessagesPage() {
           <h1 className="text-2xl font-bold text-text-primary">Messages</h1>
           <p className="text-sm text-text-tertiary">Manage communications and inquiries</p>
         </div>
-        <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+        <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
           <RefreshCw size={14} /> Refresh
         </button>
       </div>
@@ -61,7 +104,7 @@ export function MessagesPage() {
               <div>
                 <p className="text-xs text-text-tertiary">{card.label}</p>
                 <p className="text-lg font-semibold text-text-primary">
-                  {stats ? stats[card.key as keyof typeof stats] : "--"}
+                  {stats[card.key as keyof typeof stats] ?? "--"}
                 </p>
               </div>
             </div>
@@ -95,16 +138,16 @@ export function MessagesPage() {
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 className="flex-1 min-w-[200px] rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent"
               />
-              <select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value as never })}
+              <select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value as MessageFilterState["status"] })}
                 className="rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent">
                 {STATUS_OPTIONS.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
               </select>
-              <select value={filters.source} onChange={(e) => setFilters({ ...filters, source: e.target.value as never })}
+              <select value={filters.source} onChange={(e) => setFilters({ ...filters, source: e.target.value as MessageFilterState["source"] })}
                 className="rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent">
                 {SOURCE_OPTIONS.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
               </select>
             </div>
-            <MessageList messages={filtered} selectedId={selectedId} onSelect={handleSelect} onToggleFlag={toggleFlag} loading={loading} />
+            <MessageList messages={filtered} selectedId={selectedId} onSelect={handleSelect} onToggleFlag={toggleFlag} loading={isLoading} />
           </div>
 
           <AnimatePresence mode="wait">
@@ -147,7 +190,7 @@ export function MessagesPage() {
                 </tr>
               </thead>
               <tbody>
-                {contacts.map((c) => (
+                {contacts.map((c: ContactRequest) => (
                   <tr key={c.id} className="border-b border-border-primary transition-colors hover:bg-surface-hover">
                     <td className="px-4 py-3 font-medium text-text-primary">{c.name}</td>
                     <td className="px-4 py-3 text-text-secondary">{c.email}</td>

@@ -1,20 +1,38 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, BookOpen, Pencil, Trash2 } from "lucide-react";
-import { useBlogCategories } from "../hooks/use-blog-categories";
+import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { BlogCategoryFormDialog } from "./blog-category-form-dialog";
+interface BlogCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  color: string;
+  postCount: number;
+}
 
 export function BlogCategoriesPage() {
-  const { filtered, loading, error, search, setSearch, refresh, addCategory } = useBlogCategories();
+  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "blog-categories" });
+  const categories: BlogCategory[] = useMemo(() => (response?.data ?? []) as BlogCategory[], [response]);
+
+  const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const filtered = useMemo(() => {
+    return categories.filter((cat: BlogCategory) => {
+      if (search && !cat.name.toLowerCase().includes(search.toLowerCase()) && !cat.slug.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
+  }, [categories, search]);
 
   if (error) {
     return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
       <p className="text-lg font-medium text-error">Failed to load categories</p>
-      <button onClick={refresh} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
     </div>;
   }
 
@@ -26,7 +44,7 @@ export function BlogCategoriesPage() {
           <p className="text-sm text-text-tertiary">Organize blog posts into categories</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={refresh} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
+          <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
             <RefreshCw size={14} /> Refresh
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
@@ -41,9 +59,9 @@ export function BlogCategoriesPage() {
           className="w-full rounded-lg border border-border-primary bg-surface-secondary py-2 pl-9 pr-3 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent" />
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-28 animate-pulse rounded-xl bg-surface-hover" />)}
+          {Array.from({ length: 8 }).map((_: unknown, i: number) => <div key={i} className="h-28 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
         <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
@@ -52,7 +70,7 @@ export function BlogCategoriesPage() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((cat, i) => (
+          {filtered.map((cat: BlogCategory, i: number) => (
             <motion.div key={cat.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
               className="group rounded-xl border border-border-primary bg-surface-primary p-5 transition-colors hover:border-accent/30"
             >
@@ -75,7 +93,7 @@ export function BlogCategoriesPage() {
           ))}
         </div>
       )}
-      <BlogCategoryFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await addCategory(d); toastSuccess("Created!", "Category has been created."); }} />
+      <BlogCategoryFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/blog-categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Category has been created."); refetch(); }} />
     </div>
   );
 }

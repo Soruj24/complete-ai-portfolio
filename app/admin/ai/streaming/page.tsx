@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -46,7 +45,7 @@ export default function StreamingPage() {
         let count = 0;
         const interval = setInterval(() => {
           count++;
-          setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] Chunk ${count}: ${Math.floor(Math.random() * 512 + 64)} bytes`]);
+          setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] Chunk ${count}: ${config.bufferSize} bytes`]);
           if (count >= 5) { clearInterval(interval); setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] Stream complete`]); setIsStreaming(false); }
         }, 1000);
       }, 500);
@@ -110,9 +109,9 @@ export default function StreamingPage() {
             <CardContent className="p-4 space-y-3">
               {[
                 { label: "Active Streams", value: isStreaming ? "1" : "0", icon: Wifi, color: isStreaming ? "text-accent" : "text-text-tertiary" },
-                { label: "Bytes Received", value: "45.2 KB", icon: Activity, color: "text-success" },
-                { label: "Avg Chunk Size", value: "298 bytes", icon: BarChart3, color: "text-amber-500" },
-                { label: "Latency", value: "42ms", icon: Clock, color: "text-purple-500" },
+                { label: "Bytes Received", value: "--", icon: Activity, color: "text-success" },
+                { label: "Avg Chunk Size", value: "--", icon: BarChart3, color: "text-amber-500" },
+                { label: "Latency", value: "--", icon: Clock, color: "text-purple-500" },
               ].map((stat) => (
                 <div key={stat.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
