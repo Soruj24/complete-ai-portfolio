@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/config/db";
 import { AdminResource } from "@/models/AdminResource";
 import { PageView } from "@/models/PageView";
+import { Certificate } from "@/models/Certificate";
+import { Testimonial } from "@/models/Testimonial";
+import { Achievement } from "@/models/Achievement";
+import { Resume } from "@/models/Resume";
+import { SocialLink } from "@/models/SocialLink";
+
+type ModelType = typeof Certificate | typeof Testimonial | typeof Achievement | typeof Resume | typeof SocialLink | typeof AdminResource;
 
 function getResourceKey(pathname: string): string {
   const parts = pathname.replace(/^\/api\/admin\//, "").split("/").filter(Boolean);
@@ -11,7 +18,23 @@ function getResourceKey(pathname: string): string {
   return parts[0] || "";
 }
 
-const ANALYTICS_RESOURCES = ["analytics/traffic", "analytics/search", "analytics/visitors", "analytics/github", "analytics/ai"];
+const ANALYTICS_RESOURCES = ["analytics/traffic", "analytics/search", "analytics/visitors", "analytics/ai"];
+
+const DEDICATED_MODELS: Record<string, ModelType> = {
+  certificates: Certificate,
+  testimonials: Testimonial,
+  achievements: Achievement,
+  resume: Resume,
+  "social-links": SocialLink,
+};
+
+function getModel(key: string): ModelType {
+  return DEDICATED_MODELS[key] || AdminResource;
+}
+
+async function isDedicatedModel(key: string): Promise<boolean> {
+  return key in DEDICATED_MODELS;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,6 +88,37 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const usesDedicated = await isDedicatedModel(key);
+
+    if (usesDedicated) {
+      const model = getModel(key) as any;
+      const filter: Record<string, unknown> = {};
+      if (search) {
+        filter.$or = [
+          { name: { $regex: search, $options: "i" } },
+          { title: { $regex: search, $options: "i" } },
+        ];
+      }
+      const skip = (page - 1) * limit;
+      const [items, total] = await Promise.all([
+        model.find(filter).sort({ order: 1, createdAt: -1 }).skip(skip).limit(limit).lean(),
+        model.countDocuments(filter),
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        data: items,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+          hasNext: page * limit < total,
+          hasPrev: page > 1,
+        },
+      });
+    }
+
     const filter: Record<string, unknown> = { resource: key };
     if (search) {
       filter.$text = { $search: search };
@@ -107,6 +161,18 @@ export async function POST(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const key = getResourceKey(pathname);
 
+    const usesDedicated = await isDedicatedModel(key);
+
+    if (usesDedicated) {
+      const model = getModel(key) as any;
+      const doc = await model.create(body);
+      const obj = doc.toObject ? doc.toObject() : doc;
+      return NextResponse.json(
+        { success: true, data: obj, message: "Created successfully" },
+        { status: 201 }
+      );
+    }
+
     const resource = await AdminResource.create({
       resource: key,
       data: body,
@@ -134,6 +200,27 @@ export async function PUT(request: NextRequest) {
         { success: false, error: { message: "ID is required" } },
         { status: 400 }
       );
+    }
+
+    const pathname = request.nextUrl.pathname;
+    const key = getResourceKey(pathname);
+    const usesDedicated = await isDedicatedModel(key);
+
+    if (usesDedicated) {
+      const model = getModel(key) as any;
+      const { _id, ...updateData } = body;
+      const doc = await model.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true }).lean();
+      if (!doc) {
+        return NextResponse.json(
+          { success: false, error: { message: "Not found" } },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        data: doc,
+        message: "Updated successfully",
+      });
     }
 
     const { _id, ...updateData } = body;
@@ -168,18 +255,39 @@ export async function DELETE(request: NextRequest) {
     await dbConnect();
     const pathname = request.nextUrl.pathname;
     const parts = pathname.split("/").filter(Boolean);
+    const key = getResourceKey(pathname);
     const lastPart = parts[parts.length - 1];
 
     if (lastPart === "bulk") {
       const body = await request.json().catch(() => ({}));
       const ids: string[] = body.ids || [];
       if (ids.length > 0) {
-        await AdminResource.deleteMany({ _id: { $in: ids } });
+        const usesDedicated = await isDedicatedModel(key);
+        if (usesDedicated) {
+          const model = getModel(key) as any;
+          await model.deleteMany({ _id: { $in: ids } });
+        } else {
+          await AdminResource.deleteMany({ _id: { $in: ids } });
+        }
       }
       return NextResponse.json({ success: true, message: "Bulk delete completed" });
     }
 
     const id = lastPart;
+    const usesDedicated = await isDedicatedModel(key);
+
+    if (usesDedicated) {
+      const model = getModel(key) as any;
+      const doc = await model.findByIdAndDelete(id).lean();
+      if (!doc) {
+        return NextResponse.json(
+          { success: false, error: { message: "Not found" } },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ success: true, message: "Deleted successfully" });
+    }
+
     const resource = await AdminResource.findByIdAndDelete(id).lean();
     if (!resource) {
       return NextResponse.json(

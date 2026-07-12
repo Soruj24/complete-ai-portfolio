@@ -18,46 +18,46 @@ import { useGSAP } from "@gsap/react";
 import { useRef, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import profilePic from "@/public/soruj-DESKTOP-Q8KK3O8.jpg";
+import type { ISettings, ISocialLink } from "@/shared/types";
 
 export function Hero() {
   const { data: session } = useSession();
   const containerRef = useRef(null);
-  const [settings, setSettings] = useState<Record<string, unknown> | null>(
-    null,
-  );
+  const [settings, setSettings] = useState<ISettings | null>(null);
+  const [socialLinks, setSocialLinks] = useState<ISocialLink[]>([]);
   const [loading, setLoading] = useState(true);
 
   const isAdmin = session?.user?.role === "admin";
 
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/settings/public");
+        const [settingsRes, socialRes] = await Promise.all([
+          fetch("/api/settings/public"),
+          fetch("/api/social-links"),
+        ]);
 
-        // Check if response is JSON
-        const contentType = res.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          const text = await res.text();
-          console.error("Non-JSON response received:", text.substring(0, 100));
-          return;
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
+          if (data.success) setSettings(data.data);
         }
 
-        const data = await res.json();
-        if (data.success) {
-          setSettings(data.data);
+        if (socialRes.ok) {
+          const data = await socialRes.json();
+          if (data.success) setSocialLinks(data.data);
         }
-      } catch (error) {
-        console.error("Error fetching settings:", error);
+      } catch {
+        console.error("Error fetching hero data");
       } finally {
         setLoading(false);
       }
     };
-    fetchSettings();
+    fetchData();
   }, []);
 
   useGSAP(
     () => {
-      if (loading || !settings) return;
+      if (loading) return;
 
       const tl = gsap.timeline();
 
@@ -99,7 +99,7 @@ export function Hero() {
         stagger: 0.5,
       });
     },
-    { scope: containerRef, dependencies: [loading, settings] },
+    { scope: containerRef, dependencies: [loading] },
   );
 
   if (loading) {
@@ -110,13 +110,17 @@ export function Hero() {
     );
   }
 
-  const personal_info = settings || {
-    fullName: "Soruj Mahmud",
-    professionalTitle: "Aspiring Full-Stack Developer",
-    email: "sorujmahmudb2h@gmail.com",
-    githubUrl: "https://github.com/sorujmahmud",
-    linkedinUrl: "#",
-  };
+  const siteName = settings?.siteName || "Soruj Mahmud";
+  const fullName = settings?.fullName || "Soruj Mahmud";
+  const professionalTitle = settings?.professionalTitle || "Full-Stack Developer";
+  const email = settings?.contactEmail || "sorujmahmudb2h@gmail.com";
+  const githubUrl = settings?.githubUrl || "https://github.com/sorujmahmud";
+  const linkedinUrl = settings?.linkedinUrl || "#";
+
+  const socialFromLinks = socialLinks.length > 0 ? socialLinks : [];
+  const githubLink = socialFromLinks.find((l) => l.platform.toLowerCase() === "github")?.url || githubUrl;
+  const linkedinLink = socialFromLinks.find((l) => l.platform.toLowerCase() === "linkedin")?.url || linkedinUrl;
+  const emailLink = socialFromLinks.find((l) => l.platform.toLowerCase() === "email")?.url || `mailto:${email}`;
 
   return (
     <section
@@ -136,8 +140,7 @@ export function Hero() {
           <div className="inline-flex items-center gap-2 px-5 md:px-6 py-2 md:py-2.5 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm text-blue-600 dark:text-blue-400 text-xs md:text-sm font-black mb-6 md:mb-10 reveal-button">
             <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4 animate-pulse" />
             <span className="uppercase tracking-[0.2em]">
-              {(settings?.siteName as React.ReactNode) ||
-                "Big Company Ready Portfolio"}
+              {siteName}
             </span>
           </div>
 
@@ -153,9 +156,9 @@ export function Hero() {
           <p className="text-sm sm:text-base md:text-2xl lg:text-3xl text-gray-500 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed font-medium mb-8 md:mb-12 reveal-subtext px-4 sm:px-0">
             Hello, I&apos;m{" "}
             <span className="text-gray-900 dark:text-white font-black">
-              {personal_info.fullName as React.ReactNode}
+              {fullName}
             </span>
-            . A <>{personal_info.professionalTitle}</> dedicated to building
+            . A {professionalTitle} dedicated to building
             scalable, high-impact digital experiences.
           </p>
 
@@ -203,22 +206,9 @@ export function Hero() {
 
           <div className="flex items-center justify-center gap-6 md:gap-10 pt-12 md:pt-20 reveal-button">
             {[
-              {
-                icon: Github,
-                href:
-                  personal_info.githubUrl || "https://github.com/sorujmahmud",
-                label: "GitHub",
-              },
-              {
-                icon: Linkedin,
-                href: personal_info.linkedinUrl || "#",
-                label: "LinkedIn",
-              },
-              {
-                icon: Mail,
-                href: `mailto:${personal_info.contactEmail || "sorujmahmudb2h@gmail.com"}`,
-                label: "Email",
-              },
+              { icon: Github, href: githubLink, label: "GitHub" },
+              { icon: Linkedin, href: linkedinLink, label: "LinkedIn" },
+              { icon: Mail, href: emailLink, label: "Email" },
             ].map((social, i) => (
               <Link
                 key={i}

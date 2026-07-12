@@ -19,6 +19,7 @@ export type {
   ISkill,
   IExperience,
   ISettings,
+  ISocialLink,
   ProjectStats,
   DevelopmentHighlight,
   CaseStudyResult,

@@ -1,20 +1,60 @@
 "use client";
 
-import { ArrowUp, Mail, Github, Linkedin, Twitter } from "lucide-react";
-import { SOCIAL, SITE, NAV_ITEMS } from "@/lib/constants";
+import { useEffect, useState, useCallback } from "react";
+import { ArrowUp, Mail, Github, Linkedin, Twitter, Globe } from "lucide-react";
+import { NAV_ITEMS } from "@/lib/constants";
 import Link from "next/link";
+import type { ISettings, ISocialLink } from "@/shared/types";
 
-const iconMap = {
+const iconMap: Record<string, React.ElementType> = {
   github: Github,
   linkedin: Linkedin,
   twitter: Twitter,
   email: Mail,
-} as const;
+  website: Globe,
+};
 
 export function Footer() {
-  const scrollToTop = () => {
+  const [settings, setSettings] = useState<ISettings | null>(null);
+  const [socialLinks, setSocialLinks] = useState<ISocialLink[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [settingsRes, socialRes] = await Promise.all([
+          fetch("/api/settings/public"),
+          fetch("/api/social-links"),
+        ]);
+
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
+          if (data.success) setSettings(data.data);
+        }
+
+        if (socialRes.ok) {
+          const data = await socialRes.json();
+          if (data.success) setSocialLinks(data.data);
+        }
+      } catch {
+        // Graceful degradation
+      }
+    };
+    fetchData();
+  }, []);
+
+  const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }, []);
+
+  const siteName = settings?.siteName || "Soruj Mahmud";
+  const description = settings?.professionalTitle
+    ? `${settings.fullName || "Soruj Mahmud"} - ${settings.professionalTitle}`
+    : "AI Engineer & Full-Stack Developer";
+  const email = settings?.contactEmail || "sorujmahmudb2h@gmail.com";
+  const location = settings?.location || "Bangladesh";
+  const year = new Date().getFullYear();
+
+  const displaySocialLinks = socialLinks.length > 0 ? socialLinks : [];
 
   return (
     <footer id="footer" data-section className="relative border-t border-border bg-surface">
@@ -24,29 +64,35 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
           <div className="space-y-4">
             <Link href="/" className="text-xl font-semibold tracking-tight">
-              {SITE.name}
+              {siteName}
               <span className="text-accent">.</span>
             </Link>
             <p className="text-sm text-text-secondary leading-relaxed max-w-xs">
-              {SITE.description}
+              {description}
             </p>
             <div className="flex items-center gap-2">
-              {(Object.entries(SOCIAL) as [keyof typeof SOCIAL, typeof SOCIAL[keyof typeof SOCIAL]][]).map(
-                ([key, social]) => {
-                  const Icon = iconMap[key];
-                  return (
-                    <Link
-                      key={key}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-all"
-                      aria-label={social.label}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </Link>
-                  );
-                }
+              {displaySocialLinks.map((link) => {
+                const Icon = iconMap[link.platform.toLowerCase()];
+                if (!Icon) return null;
+                return (
+                  <Link
+                    key={link._id || link.platform}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-all"
+                    aria-label={link.label}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </Link>
+                );
+              })}
+              {displaySocialLinks.length === 0 && (
+                <>
+                  <Link href="https://github.com/Soruj24" target="_blank" className="p-2 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-all" aria-label="GitHub"><Github className="w-4 h-4" /></Link>
+                  <Link href="https://linkedin.com/in/soruj-mahmud" target="_blank" className="p-2 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-all" aria-label="LinkedIn"><Linkedin className="w-4 h-4" /></Link>
+                  <Link href={`mailto:${email}`} className="p-2 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-all" aria-label="Email"><Mail className="w-4 h-4" /></Link>
+                </>
               )}
             </div>
           </div>
@@ -76,14 +122,14 @@ export function Footer() {
             <ul className="space-y-2.5">
               <li>
                 <Link
-                  href={`mailto:${SITE.email}`}
+                  href={`mailto:${email}`}
                   className="text-sm text-text-secondary hover:text-text-primary transition-colors"
                 >
-                  {SITE.email}
+                  {email}
                 </Link>
               </li>
               <li>
-                <span className="text-sm text-text-secondary">{SITE.location}</span>
+                <span className="text-sm text-text-secondary">{location}</span>
               </li>
             </ul>
           </div>
@@ -91,7 +137,7 @@ export function Footer() {
 
         <div className="mt-12 md:mt-16 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-text-tertiary">
-            &copy; {new Date().getFullYear()} {SITE.name}. All rights reserved.
+            &copy; {year} {siteName}. All rights reserved.
           </p>
           <p className="text-[10px] text-text-disabled tracking-wider uppercase">
             Built with Next.js, Tailwind CSS &amp; Framer Motion

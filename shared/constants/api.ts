@@ -48,4 +48,16 @@ export const API_ENDPOINTS = {
   CLOUDINARY_SIGN: "/api/cloudinary/sign",
   HEALTH: "/api/health",
   SEED: "/api/seed",
+  GITHUB: {
+    STATS: "/api/github/stats",
+    REPOS: "/api/github/repos",
+    USER: "/api/github/user",
+    LANGUAGES: "/api/github/languages",
+    REPO: (repo: string) => `/api/github/repo/${repo}`,
+  },
+  CERTIFICATES: "/api/certificates",
+  TESTIMONIALS: "/api/testimonials",
+  ACHIEVEMENTS: "/api/achievements",
+  SOCIAL_LINKS: "/api/social-links",
+  RESUME: "/api/resume",
 } as const;

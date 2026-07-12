@@ -1,10 +1,19 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Github, Linkedin, Mail, ArrowRight, Download, Sparkle } from "lucide-react";
-import { SITE, SOCIAL } from "@/lib/constants";
+import { Github, Linkedin, Mail, ArrowRight, Download, Sparkle, Globe, Twitter } from "lucide-react";
+import { SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import type { ISettings, ISocialLink } from "@/shared/types";
+
+const iconMap: Record<string, React.ElementType> = {
+  github: Github,
+  linkedin: Linkedin,
+  twitter: Twitter,
+  email: Mail,
+  website: Globe,
+};
 
 function GradientOrbs() {
   return (
@@ -22,6 +31,56 @@ const scrollToSection = (id: string) => {
 
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [settings, setSettings] = useState<ISettings | null>(null);
+  const [socialLinks, setSocialLinks] = useState<ISocialLink[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [settingsRes, socialRes] = await Promise.all([
+          fetch("/api/settings/public"),
+          fetch("/api/social-links"),
+        ]);
+
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          if (settingsData.success) setSettings(settingsData.data);
+        }
+
+        if (socialRes.ok) {
+          const socialData = await socialRes.json();
+          if (socialData.success) setSocialLinks(socialData.data);
+        }
+      } catch {
+        // Silence errors - UI degrades gracefully
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+        <GradientOrbs />
+        <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+      </section>
+    );
+  }
+
+  const socialIcons = socialLinks.length > 0
+    ? socialLinks.map((link) => {
+        const Icon = iconMap[link.platform.toLowerCase()];
+        if (!Icon) return null;
+        return { icon: Icon, href: link.url, label: link.label };
+      }).filter(Boolean)
+    : [
+        { icon: Github, href: "https://github.com/Soruj24", label: "GitHub" },
+        { icon: Linkedin, href: "https://linkedin.com/in/soruj-mahmud", label: "LinkedIn" },
+        { icon: Mail, href: "mailto:sorujmahmudb2h@gmail.com", label: "Email" },
+      ];
 
   return (
     <section
@@ -41,7 +100,7 @@ export function Hero() {
           >
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium tracking-wide text-accent bg-accent/8 rounded-full ring-1 ring-accent/10">
               <Sparkle className="w-3 h-3" />
-              Available for opportunities
+              {settings?.professionalTitle?.includes("Available") ? "Available for opportunities" : "Open to opportunities"}
             </span>
           </motion.div>
 
@@ -51,9 +110,9 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
             className="text-[clamp(2.2rem,6vw,4.5rem)] font-semibold tracking-tight leading-[1.05]"
           >
-            <span className="text-text-primary">{SITE.name}</span>
+            <span className="text-text-primary">{settings?.fullName || "Soruj Mahmud"}</span>
             <span className="block mt-2 gradient-text text-[clamp(1.3rem,3.5vw,2.75rem)] font-medium">
-              AI Engineer & Full-Stack Developer
+              {settings?.professionalTitle || "AI Engineer & Full-Stack Developer"}
             </span>
           </motion.h1>
 
@@ -63,7 +122,7 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
             className="mt-6 text-[clamp(0.95rem,1.5vw,1.15rem)] text-text-secondary leading-relaxed max-w-lg mx-auto"
           >
-            I architect production-grade AI systems and full-stack applications with LangChain, MCP servers, and scalable infrastructure.
+            {settings?.bio || "I architect production-grade AI systems and full-stack applications with LangChain, MCP servers, and scalable infrastructure."}
           </motion.p>
 
           <motion.div
@@ -101,20 +160,16 @@ export function Hero() {
             transition={{ duration: 0.5, delay: 0.32 }}
             className="mt-10 flex items-center justify-center gap-3"
           >
-            {[
-              { icon: Github, href: SOCIAL.github.url, label: "GitHub" },
-              { icon: Linkedin, href: SOCIAL.linkedin.url, label: "LinkedIn" },
-              { icon: Mail, href: SOCIAL.email.url, label: "Email" },
-            ].map(({ icon: Icon, href, label }) => (
+            {socialIcons.map((item) => item && (
               <a
-                key={label}
-                href={href}
+                key={item.label}
+                href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2.5 rounded-xl text-text-tertiary hover:text-accent hover:bg-accent/8 transition-all"
-                aria-label={label}
+                aria-label={item.label}
               >
-                <Icon className="w-4 h-4" />
+                <item.icon className="w-4 h-4" />
               </a>
             ))}
           </motion.div>

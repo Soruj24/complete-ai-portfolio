@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Send, Mail, MapPin, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Send, Mail, MapPin, Loader2, CheckCircle2, AlertCircle, Github, Linkedin, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { SITE } from "@/lib/constants";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { GlassCard } from "@/components/ui/glass-card";
 import { cn } from "@/lib/utils";
+import type { ISettings, ISocialLink } from "@/shared/types";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -20,14 +20,66 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
-const contactMethods = [
-  { icon: Mail, label: "Email", value: SITE.email, href: `mailto:${SITE.email}` },
-  { icon: MapPin, label: "Location", value: SITE.location },
-];
+const methodIcons: Record<string, React.ElementType> = {
+  email: Mail,
+  github: Github,
+  linkedin: Linkedin,
+  website: Globe,
+  location: MapPin,
+};
 
 export function Contact() {
   const [submitState, setSubmitState] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [settings, setSettings] = useState<ISettings | null>(null);
+  const [socialLinks, setSocialLinks] = useState<ISocialLink[]>([]);
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [settingsRes, socialRes] = await Promise.all([
+          fetch("/api/settings/public"),
+          fetch("/api/social-links"),
+        ]);
+
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
+          if (data.success) setSettings(data.data);
+        }
+
+        if (socialRes.ok) {
+          const data = await socialRes.json();
+          if (data.success) setSocialLinks(data.data);
+        }
+      } catch {
+        // Graceful degradation
+      }
+    };
+    fetchData();
+  }, []);
+
+  const contactMethods = [];
+
+  if (settings?.contactEmail) {
+    contactMethods.push({ icon: Mail, label: "Email", value: settings.contactEmail, href: `mailto:${settings.contactEmail}` });
+  }
+  if (settings?.location) {
+    contactMethods.push({ icon: MapPin, label: "Location", value: settings.location });
+  }
+
+  socialLinks.forEach((link) => {
+    const Icon = methodIcons[link.platform.toLowerCase()];
+    if (Icon) {
+      contactMethods.push({ icon: Icon, label: link.label, value: link.handle || link.url, href: link.url });
+    }
+  });
+
+  if (contactMethods.length === 0) {
+    contactMethods.push(
+      { icon: Mail, label: "Email", value: "sorujmahmudb2h@gmail.com", href: "mailto:sorujmahmudb2h@gmail.com" },
+      { icon: MapPin, label: "Location", value: "Bangladesh" },
+    );
+  }
 
   const {
     register,

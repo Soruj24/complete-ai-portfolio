@@ -1,27 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, FileText, Globe, AlertTriangle, CheckCircle2, XCircle, Info, RefreshCw, Save, Code, Loader2 } from "lucide-react";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
-import type { SitemapEntry } from "../types";
-import type { SeoPage } from "../types";
-
-const SITEMAP: SitemapEntry[] = [
-  { path: "/", priority: 1.0, changefreq: "weekly", lastModified: "2026-07-05" },
-  { path: "/projects", priority: 0.9, changefreq: "weekly", lastModified: "2026-07-04" },
-  { path: "/blog", priority: 0.8, changefreq: "daily", lastModified: "2026-07-05" },
-  { path: "/about", priority: 0.7, changefreq: "monthly", lastModified: "2026-06-15" },
-  { path: "/contact", priority: 0.6, changefreq: "monthly", lastModified: "2026-06-10" },
-];
-
-const ROBOTS_TXT = `User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /api/
-Disallow: /_next/
-
-Sitemap: https://johndoe.dev/sitemap.xml`;
+import type { SeoPage, SitemapEntry } from "../types";
 
 const scoreColor = (score: number) => score >= 90 ? "text-success" : score >= 70 ? "text-warning" : "text-error";
 const scoreBg = (score: number) => score >= 90 ? "bg-success/10" : score >= 70 ? "bg-warning/10" : "bg-error/10";
@@ -29,9 +12,53 @@ const scoreBg = (score: number) => score >= 90 ? "bg-success/10" : score >= 70 ?
 export function SeoPage() {
   const [tab, setTab] = useState<"pages" | "sitemap" | "robots">("pages");
   const [search, setSearch] = useState("");
-  const [robotsContent, setRobotsContent] = useState(ROBOTS_TXT);
+  const [robotsContent, setRobotsContent] = useState("");
+  const [sitemapEntries, setSitemapEntries] = useState<SitemapEntry[]>([]);
+  const [loadingRobots, setLoadingRobots] = useState(true);
   const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "seo" });
   const pages: SeoPage[] = response?.data ?? [];
+
+  useEffect(() => {
+    const fetchRobots = async () => {
+      try {
+        const res = await fetch("/robots.txt");
+        if (res.ok) {
+          const text = await res.text();
+          setRobotsContent(text);
+        }
+      } catch {
+        setRobotsContent("User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\n\nSitemap: https://soruj-mahmud.dev/sitemap.xml");
+      } finally {
+        setLoadingRobots(false);
+      }
+    };
+    fetchRobots();
+  }, []);
+
+  useEffect(() => {
+    const generateSitemap = () => {
+      const baseUrl = "https://soruj-mahmud.dev";
+      const entries: SitemapEntry[] = [
+        { path: "/", priority: 1.0, changefreq: "weekly", lastModified: new Date().toISOString().split("T")[0] },
+        { path: "/projects", priority: 0.9, changefreq: "weekly", lastModified: new Date().toISOString().split("T")[0] },
+        { path: "/dashboard", priority: 0.7, changefreq: "monthly", lastModified: new Date().toISOString().split("T")[0] },
+      ];
+      if (pages.length > 0) {
+        pages.forEach((p) => {
+          if (p.path !== "/" && !entries.find((e) => e.path === p.path)) {
+            entries.push({
+              path: p.path,
+              priority: 0.8,
+              changefreq: "monthly",
+              lastModified: new Date().toISOString().split("T")[0],
+            });
+          }
+        });
+      }
+      setSitemapEntries(entries);
+    };
+    generateSitemap();
+  }, [pages]);
 
   const stats = {
     totalPages: pages.length,
@@ -147,7 +174,14 @@ export function SeoPage() {
         <div className="rounded-xl border border-border-primary bg-surface-primary">
           <div className="flex items-center justify-between border-b border-border-primary px-5 py-3">
             <h3 className="text-sm font-semibold text-text-primary">Sitemap Entries</h3>
-            <button className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs text-white transition-colors hover:bg-accent-hover">
+            <button onClick={() => {
+              const newEntries = [
+                { path: "/", priority: 1.0, changefreq: "weekly" as const, lastModified: new Date().toISOString().split("T")[0] },
+                { path: "/projects", priority: 0.9, changefreq: "weekly" as const, lastModified: new Date().toISOString().split("T")[0] },
+                { path: "/dashboard", priority: 0.7, changefreq: "monthly" as const, lastModified: new Date().toISOString().split("T")[0] },
+              ];
+              setSitemapEntries(newEntries);
+            }} className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-xs text-white transition-colors hover:bg-accent-hover">
               <RefreshCw size={12} /> Regenerate
             </button>
           </div>
@@ -158,7 +192,7 @@ export function SeoPage() {
                 <th className="px-5 py-3 font-medium">Change Freq</th><th className="px-5 py-3 font-medium">Last Modified</th>
               </tr></thead>
               <tbody>
-                {SITEMAP.map((entry) => (
+                {sitemapEntries.map((entry) => (
                   <tr key={entry.path} className="border-b border-border-primary transition-colors hover:bg-surface-hover">
                     <td className="px-5 py-3 font-mono text-xs text-accent">{entry.path}</td>
                     <td className="px-5 py-3 text-text-secondary">{entry.priority.toFixed(1)}</td>
@@ -180,13 +214,17 @@ export function SeoPage() {
               <Save size={12} /> Save
             </button>
           </div>
-          <textarea value={robotsContent} onChange={(e) => setRobotsContent(e.target.value)}
-            className="w-full h-48 rounded-lg border border-border-primary bg-surface-secondary p-4 text-xs font-mono text-text-primary outline-none focus:border-accent resize-none" />
+          {loadingRobots ? (
+            <div className="flex h-48 items-center justify-center">
+              <Loader2 size={20} className="animate-spin text-accent" />
+            </div>
+          ) : (
+            <textarea value={robotsContent} onChange={(e) => setRobotsContent(e.target.value)}
+              className="w-full h-48 rounded-lg border border-border-primary bg-surface-secondary p-4 text-xs font-mono text-text-primary outline-none focus:border-accent resize-none" />
+          )}
           <p className="mt-2 text-xs text-text-tertiary">This file tells search engines which pages to crawl and index.</p>
         </div>
       )}
     </div>
   );
 }
-
-

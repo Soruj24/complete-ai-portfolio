@@ -26,6 +26,11 @@ export const api = createApi({
     "Notifications",
     "Admin",
     "Activity",
+    "Certificates",
+    "Testimonials",
+    "Achievements",
+    "SocialLinks",
+    "Resume",
   ],
   endpoints: () => ({}),
 });

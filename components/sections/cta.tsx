@@ -1,12 +1,33 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkle } from "lucide-react";
 import { SITE } from "@/lib/constants";
 import { useInView } from "@/lib/hooks";
+import type { ISettings } from "@/shared/types";
 
 export function CTA() {
   const [ref, isVisible] = useInView();
+  const [settings, setSettings] = useState<ISettings | null>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/settings/public");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) setSettings(data.data);
+        }
+      } catch {
+        // Graceful degradation
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const email = settings?.contactEmail || "sorujmahmudb2h@gmail.com";
+  const resumeUrl = SITE.resumeUrl;
 
   return (
     <section className="relative py-24 md:py-32 overflow-hidden bg-surface">
@@ -34,14 +55,14 @@ export function CTA() {
           </p>
           <div className="mt-8 md:mt-10 flex flex-wrap items-center justify-center gap-3">
             <a
-              href={`mailto:${SITE.email}`}
+              href={`mailto:${email}`}
               className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-accent-foreground text-sm font-medium hover:brightness-110 transition-all active:scale-[0.98]"
             >
               Start a Conversation
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
             </a>
             <a
-              href={SITE.resumeUrl}
+              href={resumeUrl}
               download
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-text-secondary text-sm font-medium hover:bg-surface hover:text-text-primary transition-all active:scale-[0.98]"
             >

@@ -1,7 +1,11 @@
 import { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/footer";
-import { Hero, About, Skills, Projects, Experience, Contact, OpenSource, CTA } from "@/components/sections";
+import {
+  Hero, About, Skills, Projects, Experience,
+  Contact, Certificates, Achievements, Testimonials,
+  OpenSource, CTA,
+} from "@/components/sections";
 import { dbConnect } from "@/config/db";
 import Settings from "@/models/Settings";
 import { SITE } from "@/lib/constants";
@@ -37,6 +41,9 @@ export default async function PortfolioPage() {
       <Skills />
       <Projects />
       <Experience />
+      <Achievements />
+      <Certificates />
+      <Testimonials />
       <OpenSource />
       <CTA />
       <Contact />

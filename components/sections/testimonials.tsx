@@ -1,82 +1,88 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Star, GitFork, Code } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MessageSquare, Star, Quote, Loader2 } from "lucide-react";
 import { Section, SectionHeader } from "@/components/ui/section";
-import { GlassCard } from "@/components/ui/glass-card";
 import { AnimatedSection } from "@/components/ui/animated-section";
-import { GITHUB_USERNAME } from "@/lib/constants";
+import { GlassCard } from "@/components/ui/glass-card";
 
-interface GitHubRepo {
+interface Testimonial {
+  _id: string;
   name: string;
-  description: string | null;
-  stargazers_count: number;
-  forks_count: number;
-  language: string | null;
-  html_url: string;
+  role: string;
+  company: string;
+  avatar: string;
+  content: string;
+  rating: number;
+  featured: boolean;
+  source: string;
+  date: string;
 }
 
-export function OpenSource() {
-  const [repos, setRepos] = useState<GitHubRepo[]>([]);
-  const [error, setError] = useState(false);
+export function Testimonials() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=stars&per_page=6`, {
-      signal: controller.signal,
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setRepos(data);
-        else setError(true);
-      })
-      .catch(() => setError(true));
-    return () => controller.abort();
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/testimonials");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) setTestimonials(data.data);
+        }
+      } catch {
+        // Graceful degradation
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  if (error || repos.length === 0) return null;
+  if (loading) {
+    return (
+      <Section id="testimonials" variant="alt">
+        <div className="container flex items-center justify-center py-20">
+          <Loader2 className="w-6 h-6 animate-spin text-accent" />
+        </div>
+      </Section>
+    );
+  }
+
+  if (testimonials.length === 0) return null;
 
   return (
-    <Section id="open-source">
+    <Section id="testimonials" variant="alt">
+      <SectionHeader
+        label="Testimonials"
+        title="What People Say"
+        description="Feedback from colleagues, clients, and collaborators I've worked with."
+      />
       <div className="container">
-        <SectionHeader
-          label="Open Source"
-          title="GitHub Activity"
-          description="Top repositories by stars. Real code, real contributions."
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {repos.map((repo, i) => (
-            <AnimatedSection key={repo.name} delay={i * 0.04}>
-              <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                <GlassCard variant="interactive" className="p-5 h-full flex flex-col">
-                  <div className="flex items-start gap-2 mb-2">
-                    <Code className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                    <h3 className="text-sm font-semibold leading-tight line-clamp-1">{repo.name}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {testimonials.slice(0, 4).map((item, i) => (
+            <AnimatedSection key={item._id} delay={i * 0.05}>
+              <GlassCard variant="interactive" className="p-6 h-full">
+                <Quote className="w-6 h-6 text-accent/30 mb-3" />
+                <p className="text-sm text-text-secondary leading-relaxed line-clamp-4">
+                  &ldquo;{item.content}&rdquo;
+                </p>
+                <div className="flex items-center gap-1 mt-4">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Star key={j} size={12} className={j < item.rating ? "text-warning fill-warning" : "text-text-tertiary"} />
+                  ))}
+                </div>
+                <div className="flex items-center gap-3 mt-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/20 text-xs font-semibold text-accent">
+                    {item.name.charAt(0)}
                   </div>
-                  {repo.description && (
-                    <p className="text-xs text-text-secondary line-clamp-2 mb-3 leading-relaxed flex-1">
-                      {repo.description}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-3 text-xs text-text-tertiary mt-auto pt-2 border-t border-border">
-                    {repo.language && (
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-accent" />
-                        {repo.language}
-                      </span>
-                    )}
-                    <span className="flex items-center gap-1">
-                      <Star className="w-3 h-3" />
-                      {repo.stargazers_count}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <GitFork className="w-3 h-3" />
-                      {repo.forks_count}
-                    </span>
+                  <div>
+                    <p className="text-sm font-medium text-text-primary">{item.name}</p>
+                    <p className="text-xs text-text-tertiary">{item.role}{item.company ? `, ${item.company}` : ""}</p>
                   </div>
-                </GlassCard>
-              </a>
+                </div>
+              </GlassCard>
             </AnimatedSection>
           ))}
         </div>

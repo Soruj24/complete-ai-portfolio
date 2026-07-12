@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LayoutDashboard, User, LogIn } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS, SITE } from "@/lib/constants";
+import { NAV_ITEMS } from "@/lib/constants";
 import { useScrolledPast } from "@/lib/hooks";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,25 @@ export function Navbar() {
   const scrolled = useScrolledPast(50);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [siteName, setSiteName] = useState("Soruj");
   const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/settings/public");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data?.siteName) {
+            setSiteName(data.data.siteName);
+          }
+        }
+      } catch {
+        // Graceful degradation
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleNavClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -78,7 +96,7 @@ export function Navbar() {
             href="/"
             className="text-lg font-semibold tracking-tight text-text-primary hover:text-accent transition-colors"
           >
-            {SITE.name}
+            {siteName}
             <span className="text-accent">.</span>
           </Link>
 

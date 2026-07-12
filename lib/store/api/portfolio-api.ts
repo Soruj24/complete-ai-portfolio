@@ -1,5 +1,5 @@
 import { api } from "@/lib/store/api";
-import type { ApiResponse, IProject, ISkill, IExperience, ISettings } from "@/shared/types";
+import type { ApiResponse, IProject, ISkill, IExperience, ISettings, ISocialLink } from "@/shared/types";
 import { API_ENDPOINTS } from "@/shared/constants/api";
 
 export const portfolioApi = api.injectEndpoints({
@@ -125,6 +125,26 @@ export const portfolioApi = api.injectEndpoints({
       }),
       invalidatesTags: ["Settings"],
     }),
+
+    getCertificates: builder.query<ApiResponse<any[]>, void>({
+      query: () => API_ENDPOINTS.CERTIFICATES,
+    }),
+
+    getTestimonials: builder.query<ApiResponse<any[]>, void>({
+      query: () => API_ENDPOINTS.TESTIMONIALS,
+    }),
+
+    getAchievements: builder.query<ApiResponse<any[]>, void>({
+      query: () => API_ENDPOINTS.ACHIEVEMENTS,
+    }),
+
+    getSocialLinks: builder.query<ApiResponse<ISocialLink[]>, void>({
+      query: () => API_ENDPOINTS.SOCIAL_LINKS,
+    }),
+
+    getResume: builder.query<ApiResponse<any>, void>({
+      query: () => API_ENDPOINTS.RESUME,
+    }),
   }),
 });
 
@@ -145,4 +165,9 @@ export const {
   useGetSettingsQuery,
   useGetPublicSettingsQuery,
   useUpdateSettingsMutation,
+  useGetCertificatesQuery,
+  useGetTestimonialsQuery,
+  useGetAchievementsQuery,
+  useGetSocialLinksQuery,
+  useGetResumeQuery,
 } = portfolioApi;

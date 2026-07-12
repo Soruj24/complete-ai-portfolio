@@ -91,11 +91,14 @@ export interface ISkill {
   _id?: string;
   id?: string;
   name: string;
+  slug?: string;
   level: number;
   icon?: string;
   color?: string;
   description?: string;
   category: string;
+  yearsOfExperience?: number;
+  order?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -103,15 +106,37 @@ export interface ISkill {
 export interface IExperience {
   _id?: string;
   id?: string;
-  year: string;
-  role: string;
+  year?: string;
+  role?: string;
+  position?: string;
   company: string;
+  location?: string;
+  employmentType?: string;
   description?: string;
   technologies?: string[];
+  techStack?: string[];
+  highlights?: string[];
   icon?: string;
   color?: string;
-  period: string;
-  highlights: string[];
+  period?: string;
+  startDate?: string;
+  endDate?: string;
+  current?: boolean;
+  order?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ISocialLink {
+  _id?: string;
+  id?: string;
+  platform: string;
+  label: string;
+  url: string;
+  icon?: string;
+  handle?: string;
+  order?: number;
+  isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
