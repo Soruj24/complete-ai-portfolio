@@ -11,14 +11,7 @@ import { MediaGrid } from "./media-grid";
 import { MediaUploader } from "./media-uploader";
 import { MediaPreviewPanel } from "./media-preview";
 import type { MediaItem } from "@/features/media/types";
-
-function formatSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-}
+import { formatSize } from "./media-helpers";
 
 const ALL_MEDIA: MediaItem[] = [];
 

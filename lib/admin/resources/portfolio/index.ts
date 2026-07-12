@@ -1,0 +1,10 @@
+import "./projects";
+import "./project-categories";
+import "./project-tags";
+import "./skills";
+import "./experience";
+import "./education";
+import "./certificates";
+import "./achievements";
+import "./social-links";
+import "./testimonials";
