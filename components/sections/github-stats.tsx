@@ -1,73 +1,72 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Github, Star, GitFork, Eye, GitCommit } from "lucide-react";
+import { Github, Star, GitFork, Users, UserPlus, GitCommit } from "lucide-react";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { GlassCard } from "@/components/ui/glass-card";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { GITHUB_USERNAME } from "@/lib/constants";
-import { cn } from "@/lib/utils";
-
-interface GitHubStats {
-  publicRepos: number;
-  totalStars: number;
-  totalForks: number;
-  totalCommits: number;
-  totalViews: number;
-}
+import type { GitHubDashboardData } from "@/lib/types/github";
 
 export function GitHubStats() {
-  const [stats, setStats] = useState<GitHubStats | null>(null);
+  const [data, setData] = useState<GitHubDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [userRes, reposRes] = await Promise.all([
-          fetch(`https://api.github.com/users/${GITHUB_USERNAME}`),
-          fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100`),
-        ]);
-
-        if (!userRes.ok || !reposRes.ok) throw new Error("GitHub API error");
-
-        const userData = await userRes.json();
-        const reposData = await reposRes.json();
-
-        const totalStars = reposData.reduce(
-          (acc: number, repo: { stargazers_count: number }) => acc + repo.stargazers_count,
-          0
-        );
-        const totalForks = reposData.reduce(
-          (acc: number, repo: { forks_count: number }) => acc + repo.forks_count,
-          0
-        );
-
-        setStats({
-          publicRepos: userData.public_repos,
-          totalStars,
-          totalForks,
-          totalCommits: userData.total_private_repos + 500,
-          totalViews: totalStars * 50 + totalForks * 30,
-        });
+        setLoading(true);
+        const res = await fetch("/api/github/stats");
+        if (!res.ok) throw new Error("Failed to fetch GitHub stats");
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error);
+        setData(json.data);
       } catch {
         setError(true);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchStats();
   }, []);
 
-  const statItems = stats
-    ? [
-        { target: stats.publicRepos, suffix: "+", label: "Repositories", icon: Github },
-        { target: stats.totalStars, suffix: "+", label: "Stars Earned", icon: Star },
-        { target: stats.totalForks, suffix: "+", label: "Forks", icon: GitFork },
-        { target: stats.totalCommits, suffix: "K+", label: "Commits", icon: GitCommit },
-      ]
-    : [];
-
   if (error) return null;
+  if (loading || !data) {
+    return (
+      <Section id="github-stats" variant="alt">
+        <div className="container">
+          <SectionHeader
+            label="Open Source"
+            title="GitHub Statistics"
+            description="My open source contributions and community impact."
+          />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <GlassCard key={i} className="p-4 md:p-6 text-center">
+                <div className="w-5 h-5 mx-auto mb-3 rounded bg-muted animate-pulse" />
+                <div className="w-16 h-6 mx-auto mb-1 rounded bg-muted animate-pulse" />
+                <div className="w-12 h-3 mx-auto rounded bg-muted animate-pulse" />
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </Section>
+    );
+  }
+
+  const { stats } = data;
+
+  const statItems = [
+    { target: stats.totalRepos, label: "Repositories", icon: Github },
+    { target: stats.totalStars, label: "Stars", icon: Star },
+    { target: stats.totalForks, label: "Forks", icon: GitFork },
+    { target: stats.followers, label: "Followers", icon: Users },
+    { target: stats.following, label: "Following", icon: UserPlus },
+    { target: stats.contributionCount, label: "Contributions", icon: GitCommit },
+  ];
 
   return (
     <Section id="github-stats" variant="alt">
@@ -90,14 +89,14 @@ export function GitHubStats() {
           </a>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
           {statItems.map((item, i) => {
             const Icon = item.icon;
             return (
               <AnimatedSection key={item.label} delay={i * 0.1}>
                 <GlassCard className="p-4 md:p-6 text-center">
                   <Icon className="w-5 h-5 mx-auto mb-3 text-accent" />
-                  <AnimatedCounter target={item.target} suffix={item.suffix} label={item.label} />
+                  <AnimatedCounter target={item.target} suffix="+" label={item.label} />
                 </GlassCard>
               </AnimatedSection>
             );

@@ -1,24 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Star, GitFork, GitCommit, Code2, ExternalLink, Loader2 } from "lucide-react";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
-import type { GithubRepo } from "../types";
+import { Search, Star, GitFork, GitCommit, Code2, ExternalLink, Loader2, Users, UserPlus } from "lucide-react";
+import type { GitHubDashboardData, GitHubRepo } from "@/lib/types/github";
 
 const LANG_COLORS: Record<string, string> = { TypeScript: "#3178c6", Python: "#3572a5", Dockerfile: "#384d54", Rust: "#dea584", Go: "#00add8" };
 
-export function GithubPage() {
-  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "analytics/github" });
-  const repos: GithubRepo[] = response?.data ?? [];
+function toRepoCard(r: GitHubRepo) {
+  return {
+    id: String(r.id),
+    name: r.name,
+    stars: r.stargazers_count,
+    forks: r.forks_count,
+    issues: r.open_issues_count,
+    language: r.language ?? "Unknown",
+    description: r.description ?? "",
+    updatedAt: r.pushed_at,
+  };
+}
 
+export function GithubPage() {
+  const [data, setData] = useState<GitHubDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  const filtered = repos.filter((r) => !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.description.toLowerCase().includes(search.toLowerCase()));
-  const totalStars = repos.reduce((a, r) => a + r.stars, 0);
-  const totalForks = repos.reduce((a, r) => a + r.forks, 0);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/github/stats");
+        if (!res.ok) throw new Error("Failed to fetch");
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error);
+        setData(json.data);
+      } catch (err) {
+        console.error("Failed to fetch GitHub data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
         <Loader2 size={24} className="animate-spin text-accent" />
@@ -26,7 +51,7 @@ export function GithubPage() {
     );
   }
 
-  if (repos.length === 0) {
+  if (!data) {
     return (
       <div className="space-y-6">
         <div><h1 className="text-2xl font-bold text-text-primary">GitHub Stats</h1><p className="text-sm text-text-tertiary">Repository performance and activity</p></div>
@@ -37,16 +62,23 @@ export function GithubPage() {
     );
   }
 
+  const { stats, repos } = data;
+  const reposCards = repos.map(toRepoCard);
+
+  const filtered = reposCards.filter(
+    (r) => !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.description.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div><h1 className="text-2xl font-bold text-text-primary">GitHub Stats</h1><p className="text-sm text-text-tertiary">Repository performance and activity</p></div>
 
       <div className="grid gap-4 sm:grid-cols-4">
         {[
-          { label: "Repositories", value: repos.length.toString(), icon: Code2, color: "text-accent" },
-          { label: "Total Stars", value: totalStars.toLocaleString(), icon: Star, color: "text-warning" },
-          { label: "Total Forks", value: totalForks.toLocaleString(), icon: GitFork, color: "text-accent" },
-          { label: "Total Issues", value: repos.reduce((a, r) => a + r.issues, 0).toString(), icon: GitCommit, color: "text-error" },
+          { label: "Repositories", value: String(stats.totalRepos), icon: Code2, color: "text-accent" },
+          { label: "Total Stars", value: stats.totalStars.toLocaleString(), icon: Star, color: "text-warning" },
+          { label: "Total Forks", value: stats.totalForks.toLocaleString(), icon: GitFork, color: "text-accent" },
+          { label: "Pull Requests", value: stats.totalPRs.toLocaleString(), icon: GitCommit, color: "text-error" },
         ].map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
             className="rounded-xl border border-border-primary bg-surface-primary p-4">
@@ -76,7 +108,10 @@ export function GithubPage() {
                 </div>
                 <p className="text-xs text-text-tertiary mt-1 line-clamp-1">{r.description}</p>
               </div>
-              <a href="#" className="rounded-md p-1.5 text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors opacity-0 group-hover:opacity-100"><ExternalLink size={14} /></a>
+              <a href={`https://github.com/${data.user.login}/${r.name}`} target="_blank" rel="noopener noreferrer"
+                className="rounded-md p-1.5 text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors opacity-0 group-hover:opacity-100">
+                <ExternalLink size={14} />
+              </a>
             </div>
             <div className="flex items-center gap-4 text-xs text-text-secondary">
               <span className="flex items-center gap-1"><Star size={12} className="text-warning" /> {r.stars}</span>

@@ -8,21 +8,7 @@ import { ContactMessage } from "@/models/ContactMessage";
 import { PageView } from "@/models/PageView";
 import { Download } from "@/models/Download";
 import mongoose from "mongoose";
-import { GITHUB_USERNAME } from "@/lib/constants";
-
-async function fetchGitHubStats() {
-  try {
-    const res = await fetch(
-      `https://api.github.com/users/${GITHUB_USERNAME}`,
-      { next: { revalidate: 3600 } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    return { contributions: data.public_repos + (data.total_private_repos || 0), repos: data.public_repos, followers: data.followers };
-  } catch {
-    return null;
-  }
-}
+import { getGitHubService } from "@/lib/services/github";
 
 export async function GET() {
   try {
@@ -44,7 +30,7 @@ export async function GET() {
       projectViews, projectViewsLastMonth,
       visitorCount, visitorsLastMonth,
       downloadCount, downloadsLastMonth,
-      github,
+      githubStats,
     ] = await Promise.all([
       Project.countDocuments(),
       Project.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
@@ -60,7 +46,7 @@ export async function GET() {
       PageView.countDocuments({ timestamp: { $gte: thirtyDaysAgo } }),
       Download.countDocuments(),
       Download.countDocuments({ timestamp: { $gte: thirtyDaysAgo } }),
-      fetchGitHubStats(),
+      getGitHubService().getStats().catch(() => null),
     ]);
 
     const computeChange = (current: number, previous: number) => {
@@ -75,8 +61,8 @@ export async function GET() {
       resumeDownloadsChange: computeChange(downloadCount, downloadsLastMonth),
       contactMessages: messageCount,
       contactMessagesChange: computeChange(messageCount, messagesLastMonth),
-      githubContributions: github?.repos ?? 0,
-      githubContributionsChange: 0,
+      githubContributions: githubStats?.totalPRs ?? 0,
+      githubContributionsChange: githubStats ? Math.round((githubStats.contributionCount / Math.max(githubStats.totalPRs, 1)) * 100) : 0,
       projectViews,
       projectViewsChange: computeChange(projectViews, projectViewsLastMonth),
     };

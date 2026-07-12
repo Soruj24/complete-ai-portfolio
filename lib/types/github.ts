@@ -51,15 +51,17 @@ export interface GitHubContributionsCollection {
   totalPullRequestReviewContributions: number;
   contributionCalendar: {
     totalContributions: number;
-    weeks: Array<{
-      firstDay: string;
-      contributionDays: Array<{
-        date: string;
-        contributionCount: number;
-        color: string;
-      }>;
-    }>;
+    weeks: GitHubContributionWeek[];
   };
+}
+
+export interface GitHubContributionWeek {
+  firstDay: string;
+  contributionDays: Array<{
+    date: string;
+    contributionCount: number;
+    color: string;
+  }>;
 }
 
 export interface GitHubTraffic {
@@ -146,8 +148,28 @@ export interface GitHubStats {
   totalStars: number;
   totalForks: number;
   totalIssues: number;
+  totalPRs: number;
   topLanguages: GitHubLanguage[];
   contributionCount: number;
+}
+
+export interface GitHubActivity {
+  id: string;
+  type: string;
+  repo: { name: string };
+  created_at: string;
+  payload: Record<string, unknown>;
+}
+
+export interface GitHubPinnedRepo {
+  id: string;
+  name: string;
+  description: string | null;
+  url: string;
+  stars: number;
+  forks: number;
+  language: { name: string; color: string | null } | null;
+  languages: string[];
 }
 
 export interface GitHubDashboardData {
@@ -166,4 +188,8 @@ export interface GitHubDashboardData {
   recentRepos: GitHubRepo[];
   topRepos: GitHubRepo[];
   languages: GitHubLanguage[];
+  contributionGraph: GitHubContributionWeek[];
+  recentActivity: GitHubActivity[];
+  latestCommits: GitHubActivity[];
+  pinnedRepos: GitHubPinnedRepo[];
 }

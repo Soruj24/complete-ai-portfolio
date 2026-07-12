@@ -14,6 +14,9 @@ import type {
   GitHubTraffic,
   GitHubTrafficReferrer,
   GitHubTrafficPopularity,
+  GitHubContributionWeek,
+  GitHubActivity,
+  GitHubPinnedRepo,
 } from "@/lib/types/github";
 
 const LANGUAGE_COLORS: Record<string, string> = {
@@ -268,6 +271,30 @@ export class GitHubService {
     }));
   }
 
+  async getTotalPullRequests(): Promise<number> {
+    try {
+      const query = `query($username: String!) {
+        user(login: $username) {
+          contributionsCollection {
+            totalPullRequestContributions
+            totalPullRequestReviewContributions
+          }
+        }
+      }`;
+
+      const data = await this.octokit.graphql<{
+        user: { contributionsCollection: { totalPullRequestContributions: number; totalPullRequestReviewContributions: number } };
+      }>(query, { username: this.username });
+
+      return (
+        data.user.contributionsCollection.totalPullRequestContributions +
+        data.user.contributionsCollection.totalPullRequestReviewContributions
+      );
+    } catch {
+      return 0;
+    }
+  }
+
   async getTraffic(repoName: string): Promise<{
     views: GitHubTraffic;
     clones: GitHubTraffic;
@@ -327,9 +354,9 @@ export class GitHubService {
         }
       }`;
 
-      const data = await this.octokit.graphql<{ user: { contributionsCollection: { contributionCalendar: { totalContributions: number } } } }>(query, {
-        username: this.username,
-      });
+      const data = await this.octokit.graphql<{
+        user: { contributionsCollection: { contributionCalendar: { totalContributions: number } } };
+      }>(query, { username: this.username });
 
       return data.user.contributionsCollection.contributionCalendar.totalContributions;
     } catch {
@@ -337,11 +364,104 @@ export class GitHubService {
     }
   }
 
+  async getContributionGraph(): Promise<GitHubContributionWeek[]> {
+    try {
+      const query = `query($username: String!) {
+        user(login: $username) {
+          contributionsCollection {
+            contributionCalendar {
+              weeks {
+                firstDay
+                contributionDays {
+                  date
+                  contributionCount
+                  color
+                }
+              }
+            }
+          }
+        }
+      }`;
+
+      const data = await this.octokit.graphql<{
+        user: { contributionsCollection: { contributionCalendar: { weeks: GitHubContributionWeek[] } } };
+      }>(query, { username: this.username });
+
+      return data.user.contributionsCollection.contributionCalendar.weeks;
+    } catch {
+      return [];
+    }
+  }
+
+  async getRecentActivity(count: number = 10): Promise<GitHubActivity[]> {
+    try {
+      const { data } = await this.octokit.rest.activity.listPublicEventsForUser({
+        username: this.username,
+        per_page: count,
+      });
+
+      return data.map((event) => ({
+        id: String(event.id ?? ""),
+        type: String(event.type ?? ""),
+        repo: { name: String(event.repo?.name ?? "") },
+        created_at: String(event.created_at ?? ""),
+        payload: event.payload as Record<string, unknown>,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async getPinnedRepos(): Promise<GitHubPinnedRepo[]> {
+    try {
+      const query = `query($username: String!) {
+        user(login: $username) {
+          pinnedItems(first: 6, types: REPOSITORY) {
+            nodes {
+              ... on Repository {
+                id
+                name
+                description
+                url
+                stargazerCount
+                forkCount
+                primaryLanguage { name color }
+                languages(first: 3) { nodes { name } }
+              }
+            }
+          }
+        }
+      }`;
+
+      const data = await this.octokit.graphql<{
+        user: { pinnedItems: { nodes: Array<Record<string, unknown>> } };
+      }>(query, { username: this.username });
+
+      return (data.user.pinnedItems.nodes || []).map((node) => ({
+        id: String(node.id ?? ""),
+        name: String(node.name ?? ""),
+        description: (node.description as string) || null,
+        url: String(node.url ?? ""),
+        stars: Number(node.stargazerCount ?? 0),
+        forks: Number(node.forkCount ?? 0),
+        language: node.primaryLanguage
+          ? { name: String((node.primaryLanguage as Record<string, unknown>).name ?? ""), color: ((node.primaryLanguage as Record<string, unknown>).color as string) || null }
+          : null,
+        languages: ((node.languages as Record<string, unknown>)?.nodes as Array<Record<string, unknown>> || []).map(
+          (l) => String(l.name ?? "")
+        ),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
   async getStats(): Promise<GitHubStats> {
-    const [user, repos, contributionCount] = await Promise.all([
+    const [user, repos, contributionCount, totalPRs] = await Promise.all([
       this.getUser(),
       this.getAllRepos(),
       this.getContributionCount(),
+      this.getTotalPullRequests(),
     ]);
 
     const totalStars = repos.reduce((a, r) => a + r.stargazers_count, 0);
@@ -365,16 +485,25 @@ export class GitHubService {
       .slice(0, 10)
       .map((l) => ({ ...l, bytes: Math.round((l.bytes / totalLangs) * 100) }));
 
-    return { user, repos, totalStars, totalForks, totalIssues, topLanguages, contributionCount };
+    return { user, repos, totalStars, totalForks, totalIssues, topLanguages, contributionCount, totalPRs };
   }
 
   async getDashboardData(): Promise<GitHubDashboardData> {
-    const stats = await this.getStats();
+    const [stats, contributionGraph, recentActivity, pinnedRepos] = await Promise.all([
+      this.getStats(),
+      this.getContributionGraph(),
+      this.getRecentActivity(20),
+      this.getPinnedRepos(),
+    ]);
 
     const sortedByStars = [...stats.repos].sort((a, b) => b.stargazers_count - a.stargazers_count);
     const recentRepos = stats.repos
       .filter((r) => !r.fork)
       .sort((a, b) => new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime())
+      .slice(0, 10);
+
+    const latestCommits: GitHubActivity[] = recentActivity
+      .filter((a) => a.type === "PushEvent")
       .slice(0, 10);
 
     return {
@@ -385,7 +514,7 @@ export class GitHubService {
         totalStars: stats.totalStars,
         totalForks: stats.totalForks,
         totalIssues: stats.totalIssues,
-        totalPRs: 0,
+        totalPRs: stats.totalPRs,
         followers: stats.user.followers,
         following: stats.user.following,
         contributionCount: stats.contributionCount,
@@ -393,6 +522,10 @@ export class GitHubService {
       recentRepos,
       topRepos: sortedByStars.slice(0, 10),
       languages: stats.topLanguages,
+      contributionGraph,
+      recentActivity,
+      latestCommits,
+      pinnedRepos,
     };
   }
 }

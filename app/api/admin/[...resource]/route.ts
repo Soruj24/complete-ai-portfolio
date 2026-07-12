@@ -18,7 +18,7 @@ function getResourceKey(pathname: string): string {
   return parts[0] || "";
 }
 
-const ANALYTICS_RESOURCES = ["analytics/traffic", "analytics/search", "analytics/visitors", "analytics/ai"];
+const ANALYTICS_RESOURCES = ["analytics/traffic", "analytics/search", "analytics/visitors", "analytics/ai", "analytics/github"];
 
 const DEDICATED_MODELS: Record<string, ModelType> = {
   certificates: Certificate,
