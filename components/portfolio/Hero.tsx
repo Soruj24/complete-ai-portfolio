@@ -12,48 +12,17 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { useSession } from "next-auth/react";
-import profilePic from "@/public/soruj-DESKTOP-Q8KK3O8.jpg";
-import type { ISettings, ISocialLink } from "@/shared/types";
+import { useSiteSettings } from "@/lib/hooks";
 
 export function Hero() {
   const { data: session } = useSession();
   const containerRef = useRef(null);
-  const [settings, setSettings] = useState<ISettings | null>(null);
-  const [socialLinks, setSocialLinks] = useState<ISocialLink[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const { settings, socialLinks, loading } = useSiteSettings();
   const isAdmin = session?.user?.role === "admin";
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [settingsRes, socialRes] = await Promise.all([
-          fetch("/api/settings/public"),
-          fetch("/api/social-links"),
-        ]);
-
-        if (settingsRes.ok) {
-          const data = await settingsRes.json();
-          if (data.success) setSettings(data.data);
-        }
-
-        if (socialRes.ok) {
-          const data = await socialRes.json();
-          if (data.success) setSocialLinks(data.data);
-        }
-      } catch {
-        console.error("Error fetching hero data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
 
   useGSAP(
     () => {

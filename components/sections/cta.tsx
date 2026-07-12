@@ -1,30 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkle } from "lucide-react";
 import { SITE } from "@/lib/constants";
-import { useInView } from "@/lib/hooks";
-import type { ISettings } from "@/shared/types";
+import { useInView, useSiteSettings } from "@/lib/hooks";
 
 export function CTA() {
   const [ref, isVisible] = useInView();
-  const [settings, setSettings] = useState<ISettings | null>(null);
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch("/api/settings/public");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success) setSettings(data.data);
-        }
-      } catch {
-        // Graceful degradation
-      }
-    };
-    fetchSettings();
-  }, []);
+  const { settings } = useSiteSettings();
 
   const email = settings?.contactEmail || "sorujmahmudb2h@gmail.com";
   const resumeUrl = SITE.resumeUrl;

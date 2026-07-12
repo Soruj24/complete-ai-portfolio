@@ -1,215 +1,105 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, ArrowUpRight, ArrowDownRight, Globe, Monitor, ExternalLink, FileText, Download, MousePointerClick, Loader2 } from "lucide-react";
+import { Search, Globe, Monitor, ExternalLink, FileText, ArrowUpRight, MousePointerClick, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTablesData } from "./hooks/use-tables-data";
+import { CountryRow } from "./rows/country-row";
+import { SourceRow } from "./rows/source-row";
+import { PageRow } from "./rows/page-row";
+import { ProjectRow } from "./rows/project-row";
+import type { ReferrerData, CityData, EngagementData } from "./types";
 
-interface TablesData {
-  countries: CountryData[];
-  cities: CityData[];
-  sources: SourceData[];
-  referrers: ReferrerData[];
-  topPages: PageData[];
-  projects: ProjectData[];
-  engagement: EngagementData[];
-}
-
-interface CountryData {
-  code: string;
-  name: string;
-  flag: string;
-  visitors: number;
-  percentage: number;
-  change: number;
-}
-
-interface CityData {
-  name: string;
-  country: string;
-  visitors: number;
-  duration: string;
-}
-
-interface SourceData {
-  name: string;
-  visitors: number;
-  percentage: number;
-  trend: number;
-}
-
-interface ReferrerData {
-  domain: string;
-  visitors: number;
-  percentage: number;
-  bounce: string;
-}
-
-interface PageData {
-  path: string;
-  title: string;
-  views: number;
-  visitors: number;
-}
-
-interface ProjectData {
-  _id: string;
-  name: string;
-  views: number;
-  downloads: number;
-  trend: number;
-}
-
-interface EngagementData {
-  label: string;
-  count: number;
-  change: number;
-  previous: number;
-}
-
-function CountryRow({ item, index }: { item: CountryData; index: number }) {
+function CityRow({ item, index }: { item: CityData; index: number }) {
   return (
-    <motion.tr key={item.code} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
-      className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
-    >
-      <td className="py-2.5 pr-3">
-        <div className="flex items-center gap-2.5">
-          <span className="text-base shrink-0">{item.flag}</span>
-          <span className="text-xs font-semibold text-text-primary">{item.name}</span>
-        </div>
-      </td>
-      <td className="py-2.5 px-3 text-right">
-        <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
-      </td>
-      <td className="py-2.5 px-3 hidden md:table-cell">
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 flex-1 rounded-full bg-background overflow-hidden max-w-[100px]">
-            <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${item.percentage * 2.5}%` }} />
-          </div>
-          <span className="text-[10px] font-mono text-text-tertiary w-10 text-right">{item.percentage}%</span>
-        </div>
-      </td>
-      <td className="py-2.5 pl-3 text-right">
-        <span className={cn("text-[10px] font-semibold inline-flex items-center gap-0.5", item.change >= 0 ? "text-success" : "text-error")}>
-          {item.change >= 0 ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
-          {Math.abs(item.change)}%
-        </span>
-      </td>
-    </motion.tr>
-  );
-}
-
-function SourceRow({ item, index }: { item: SourceData; index: number }) {
-  return (
-    <motion.tr key={item.name} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
+    <motion.tr key={`${item.name}-${index}`} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
       className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
     >
       <td className="py-2.5 pr-3">
         <span className="text-xs font-semibold text-text-primary">{item.name}</span>
-      </td>
-      <td className="py-2.5 px-3 text-right">
-        <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
-      </td>
-      <td className="py-2.5 px-3 hidden md:table-cell">
-        <div className="flex items-center gap-2">
-          <div className="h-1.5 flex-1 rounded-full bg-background overflow-hidden max-w-[100px]">
-            <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${item.percentage * 2.5}%` }} />
-          </div>
-          <span className="text-[10px] font-mono text-text-tertiary w-10 text-right">{item.percentage}%</span>
-        </div>
-      </td>
-      <td className="py-2.5 pl-3 text-right">
-        <span className={cn("text-[10px] font-semibold inline-flex items-center gap-0.5", item.trend >= 0 ? "text-success" : "text-error")}>
-          {item.trend >= 0 ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
-          {Math.abs(item.trend)}%
-        </span>
-      </td>
-    </motion.tr>
-  );
-}
-
-function PageRow({ item, index }: { item: PageData; index: number }) {
-  return (
-    <motion.tr key={item.path} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
-      className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
-    >
-      <td className="py-2.5 pr-3">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1 rounded-md bg-accent/10 shrink-0">
-            <FileText className="h-3 w-3 text-accent" />
-          </div>
-          <div>
-            <span className="text-xs font-semibold text-text-primary">{item.title}</span>
-            <span className="text-[9px] font-mono text-text-tertiary block">{item.path}</span>
-          </div>
-        </div>
-      </td>
-      <td className="py-2.5 px-3 text-right">
-        <span className="text-xs font-mono text-text-primary">{item.views.toLocaleString()}</span>
       </td>
       <td className="py-2.5 px-3 text-right hidden sm:table-cell">
-        <span className="text-[10px] font-mono text-text-tertiary">{item.visitors.toLocaleString()}</span>
+        <span className="text-[10px] text-text-tertiary">{item.country}</span>
+      </td>
+      <td className="py-2.5 px-3 text-right">
+        <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
+      </td>
+      <td className="py-2.5 pl-3 text-right">
+        <span className="text-[10px] font-mono text-text-tertiary">{item.duration}</span>
       </td>
     </motion.tr>
   );
 }
 
-function ProjectRow({ item, index }: { item: ProjectData; index: number }) {
+function ReferrerRow({ item, index }: { item: ReferrerData; index: number }) {
   return (
-    <motion.tr key={item._id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
+    <motion.tr key={item.domain} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
       className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
     >
       <td className="py-2.5 pr-3">
-        <span className="text-xs font-semibold text-text-primary">{item.name}</span>
+        <div className="flex items-center gap-2.5">
+          <ExternalLink className="h-3 w-3 text-text-tertiary shrink-0" />
+          <span className="text-xs font-semibold text-text-primary">{item.domain}</span>
+        </div>
       </td>
       <td className="py-2.5 px-3 text-right">
-        <span className="text-xs font-mono text-text-primary">{item.views.toLocaleString()}</span>
+        <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
       </td>
-      <td className="py-2.5 px-3 text-right">
-        <span className="text-xs font-mono text-text-primary">{item.downloads > 0 ? item.downloads.toLocaleString() : "-"}</span>
+      <td className="py-2.5 px-3 text-right hidden md:table-cell">
+        <div className="flex items-center gap-2 justify-end">
+          <div className="h-1.5 w-20 rounded-full bg-background overflow-hidden">
+            <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${item.percentage * 10}%` }} />
+          </div>
+          <span className="text-[10px] font-mono text-text-tertiary">{item.percentage}%</span>
+        </div>
       </td>
       <td className="py-2.5 pl-3 text-right">
-        {item.trend > 0 ? (
-          <span className="text-[10px] font-semibold text-success inline-flex items-center gap-0.5">
-            <ArrowUpRight className="h-2.5 w-2.5" /> {Math.abs(item.trend)}%
-          </span>
-        ) : item.trend < 0 ? (
-          <span className="text-[10px] font-semibold text-error inline-flex items-center gap-0.5">
-            <ArrowDownRight className="h-2.5 w-2.5" /> {Math.abs(item.trend)}%
-          </span>
-        ) : (
-          <span className="text-[10px] text-text-tertiary">-</span>
-        )}
+        <Badge variant="outline" className={cn(
+          "text-[9px] px-1.5 py-0 rounded-full border-0 font-medium",
+          parseInt(item.bounce) <= 25 ? "text-success bg-success/10" :
+          parseInt(item.bounce) <= 40 ? "text-warning bg-warning/10" : "text-error bg-error/10",
+        )}>
+          {item.bounce}
+        </Badge>
       </td>
     </motion.tr>
+  );
+}
+
+function EmptyRow() {
+  return <div className="py-4 text-center text-[10px] text-text-tertiary">No data yet</div>;
+}
+
+function EngagementCards({ items }: { items: EngagementData[] }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      {items.map((item, i) => (
+        <motion.div key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+          className="p-3 rounded-xl border border-border-subtle bg-surface-hover text-center"
+        >
+          <p className="text-lg font-bold text-text-primary">{item.count.toLocaleString()}</p>
+          <p className="text-[9px] text-text-tertiary mt-0.5">{item.label}</p>
+          <div className="flex items-center justify-center gap-0.5 mt-1">
+            <span className={cn("text-[9px] font-semibold", item.change >= 0 ? "text-success" : "text-error")}>
+              {item.change >= 0 ? "+" : ""}{item.change}%
+            </span>
+            <span className="text-[8px] text-text-tertiary">vs {item.previous.toLocaleString()}</span>
+          </div>
+        </motion.div>
+      ))}
+    </div>
   );
 }
 
 export function TablesSection() {
   const [geoSearch, setGeoSearch] = useState("");
   const [trafficTab, setTrafficTab] = useState("sources");
-  const [data, setData] = useState<TablesData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/admin/analytics/tables?days=30");
-        const json = await res.json();
-        if (json.success) setData(json.data);
-      } catch {
-        //
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  const { data, loading } = useTablesData();
 
   if (loading) {
     return (
@@ -253,9 +143,7 @@ export function TablesSection() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="px-4 pb-2">
-              {countries.length === 0 ? (
-                <div className="py-4 text-center text-[10px] text-text-tertiary">No country data yet</div>
-              ) : (
+              {countries.length === 0 ? <EmptyRow /> : (
                 <table className="w-full">
                   <thead>
                     <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
@@ -284,9 +172,7 @@ export function TablesSection() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="px-4 pb-2">
-              {cities.length === 0 ? (
-                <div className="py-4 text-center text-[10px] text-text-tertiary">No city data yet</div>
-              ) : (
+              {cities.length === 0 ? <EmptyRow /> : (
                 <table className="w-full">
                   <thead>
                     <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
@@ -297,24 +183,7 @@ export function TablesSection() {
                     </tr>
                   </thead>
                   <tbody>
-                    {cities.map((item, i) => (
-                      <motion.tr key={`${item.name}-${i}`} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-                        className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
-                      >
-                        <td className="py-2.5 pr-3">
-                          <span className="text-xs font-semibold text-text-primary">{item.name}</span>
-                        </td>
-                        <td className="py-2.5 px-3 text-right hidden sm:table-cell">
-                          <span className="text-[10px] text-text-tertiary">{item.country}</span>
-                        </td>
-                        <td className="py-2.5 px-3 text-right">
-                          <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
-                        </td>
-                        <td className="py-2.5 pl-3 text-right">
-                          <span className="text-[10px] font-mono text-text-tertiary">{item.duration}</span>
-                        </td>
-                      </motion.tr>
-                    ))}
+                    {cities.map((item, i) => <CityRow key={`${item.name}-${i}`} item={item} index={i} />)}
                   </tbody>
                 </table>
               )}
@@ -337,9 +206,7 @@ export function TablesSection() {
               </TabsList>
             </div>
             <TabsContent value="sources">
-              {sources.length === 0 ? (
-                <div className="py-4 text-center text-[10px] text-text-tertiary">No source data yet</div>
-              ) : (
+              {sources.length === 0 ? <EmptyRow /> : (
                 <table className="w-full mt-2">
                   <thead>
                     <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
@@ -356,9 +223,7 @@ export function TablesSection() {
               )}
             </TabsContent>
             <TabsContent value="referrers">
-              {referrers.length === 0 ? (
-                <div className="py-4 text-center text-[10px] text-text-tertiary">No referrer data yet</div>
-              ) : (
+              {referrers.length === 0 ? <EmptyRow /> : (
                 <table className="w-full mt-2">
                   <thead>
                     <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
@@ -369,38 +234,7 @@ export function TablesSection() {
                     </tr>
                   </thead>
                   <tbody>
-                    {referrers.map((item, i) => (
-                      <motion.tr key={item.domain} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-                        className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
-                      >
-                        <td className="py-2.5 pr-3">
-                          <div className="flex items-center gap-2.5">
-                            <ExternalLink className="h-3 w-3 text-text-tertiary shrink-0" />
-                            <span className="text-xs font-semibold text-text-primary">{item.domain}</span>
-                          </div>
-                        </td>
-                        <td className="py-2.5 px-3 text-right">
-                          <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
-                        </td>
-                        <td className="py-2.5 px-3 text-right hidden md:table-cell">
-                          <div className="flex items-center gap-2 justify-end">
-                            <div className="h-1.5 w-20 rounded-full bg-background overflow-hidden">
-                              <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${item.percentage * 10}%` }} />
-                            </div>
-                            <span className="text-[10px] font-mono text-text-tertiary">{item.percentage}%</span>
-                          </div>
-                        </td>
-                        <td className="py-2.5 pl-3 text-right">
-                          <Badge variant="outline" className={cn(
-                            "text-[9px] px-1.5 py-0 rounded-full border-0 font-medium",
-                            parseInt(item.bounce) <= 25 ? "text-success bg-success/10" :
-                            parseInt(item.bounce) <= 40 ? "text-warning bg-warning/10" : "text-error bg-error/10",
-                          )}>
-                            {item.bounce}
-                          </Badge>
-                        </td>
-                      </motion.tr>
-                    ))}
+                    {referrers.map((item, i) => <ReferrerRow key={item.domain} item={item} index={i} />)}
                   </tbody>
                 </table>
               )}
@@ -420,9 +254,7 @@ export function TablesSection() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="px-4 pb-2">
-              {topPages.length === 0 ? (
-                <div className="py-4 text-center text-[10px] text-text-tertiary">No page view data yet</div>
-              ) : (
+              {topPages.length === 0 ? <EmptyRow /> : (
                 <table className="w-full">
                   <thead>
                     <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
@@ -450,9 +282,7 @@ export function TablesSection() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="px-4 pb-2">
-              {projects.length === 0 ? (
-                <div className="py-4 text-center text-[10px] text-text-tertiary">No project data yet</div>
-              ) : (
+              {projects.length === 0 ? <EmptyRow /> : (
                 <table className="w-full">
                   <thead>
                     <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
@@ -482,22 +312,7 @@ export function TablesSection() {
             <CardDescription>Resume downloads, contact messages, and interactions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              {engagementData.map((item, i) => (
-                <motion.div key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                  className="p-3 rounded-xl border border-border-subtle bg-surface-hover text-center"
-                >
-                  <p className="text-lg font-bold text-text-primary">{item.count.toLocaleString()}</p>
-                  <p className="text-[9px] text-text-tertiary mt-0.5">{item.label}</p>
-                  <div className="flex items-center justify-center gap-0.5 mt-1">
-                    <span className={cn("text-[9px] font-semibold", item.change >= 0 ? "text-success" : "text-error")}>
-                      {item.change >= 0 ? "+" : ""}{item.change}%
-                    </span>
-                    <span className="text-[8px] text-text-tertiary">vs {item.previous.toLocaleString()}</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <EngagementCards items={engagementData} />
           </CardContent>
         </Card>
       )}

@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, ArrowRight, Download, Sparkle, Globe, Twitter } from "lucide-react";
 import { SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import type { ISettings, ISocialLink } from "@/shared/types";
+import { useSiteSettings } from "@/lib/hooks";
 
 const iconMap: Record<string, React.ElementType> = {
   github: Github,
@@ -31,35 +31,7 @@ const scrollToSection = (id: string) => {
 
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [settings, setSettings] = useState<ISettings | null>(null);
-  const [socialLinks, setSocialLinks] = useState<ISocialLink[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [settingsRes, socialRes] = await Promise.all([
-          fetch("/api/settings/public"),
-          fetch("/api/social-links"),
-        ]);
-
-        if (settingsRes.ok) {
-          const settingsData = await settingsRes.json();
-          if (settingsData.success) setSettings(settingsData.data);
-        }
-
-        if (socialRes.ok) {
-          const socialData = await socialRes.json();
-          if (socialData.success) setSocialLinks(socialData.data);
-        }
-      } catch {
-        // Silence errors - UI degrades gracefully
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  const { settings, socialLinks, loading } = useSiteSettings();
 
   if (loading) {
     return (

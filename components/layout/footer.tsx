@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback } from "react";
 import { ArrowUp, Mail, Github, Linkedin, Twitter, Globe } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
+import { useSiteSettings } from "@/lib/hooks";
 import Link from "next/link";
-import type { ISettings, ISocialLink } from "@/shared/types";
 
 const iconMap: Record<string, React.ElementType> = {
   github: Github,
@@ -15,32 +15,7 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export function Footer() {
-  const [settings, setSettings] = useState<ISettings | null>(null);
-  const [socialLinks, setSocialLinks] = useState<ISocialLink[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [settingsRes, socialRes] = await Promise.all([
-          fetch("/api/settings/public"),
-          fetch("/api/social-links"),
-        ]);
-
-        if (settingsRes.ok) {
-          const data = await settingsRes.json();
-          if (data.success) setSettings(data.data);
-        }
-
-        if (socialRes.ok) {
-          const data = await socialRes.json();
-          if (data.success) setSocialLinks(data.data);
-        }
-      } catch {
-        // Graceful degradation
-      }
-    };
-    fetchData();
-  }, []);
+  const { settings, socialLinks } = useSiteSettings();
 
   const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });

@@ -4,3 +4,4 @@ export { useScrollProgress, useScrollPosition, useScrolledPast } from "./use-scr
 export { useMousePosition } from "./use-mouse-position";
 export { useAnimatedCounter } from "./use-animated-counter";
 export { useTypewriter } from "./use-typewriter";
+export { useSiteSettings } from "./use-site-settings";

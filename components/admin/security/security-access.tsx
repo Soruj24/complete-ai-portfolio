@@ -6,136 +6,45 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, ShieldX, Gauge, KeyRound, Users, Grid3X3, Plus, Trash2, Clock, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, ShieldX, Gauge, KeyRound, Users, Grid3X3, Plus, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
-
-interface IPEntry {
-  id: string;
-  address: string;
-  status: "active" | "inactive";
-  reason: string;
-  addedBy: string;
-  expiresAt?: string;
-}
-
-interface Role {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  users: number;
-  permissions: string[];
-}
-
-const EMPTY_IP_WHITELIST: never[] = [];
-const EMPTY_IP_BLACKLIST: never[] = [];
-const EMPTY_RATE_LIMITS: never[] = [];
-const EMPTY_ROLES: never[] = [];
-const PERMISSION_ACTIONS = ["create", "read", "update", "delete"] as const;
-const PERMISSION_RESOURCES = ["users", "projects", "skills", "certifications", "settings"] as const;
+import { useSecurityQuery, SecurityInnerTabs, TabsContent } from "./shared";
+import { IPTable } from "./rows/ip-table";
+import { PermissionCell } from "./rows/permission-cell";
 
 const PASSWORD_POLICY_DEFAULT = {
-  minLength: 12,
-  expirationDays: 90,
-  requireUppercase: true,
-  requireLowercase: true,
-  requireNumbers: true,
-  requireSymbols: true,
-  historyCount: 5,
-  maxAttempts: 5,
-  lockoutDuration: 30,
+  minLength: 12, expirationDays: 90,
+  requireUppercase: true, requireLowercase: true, requireNumbers: true, requireSymbols: true,
+  historyCount: 5, maxAttempts: 5, lockoutDuration: 30,
 };
-
-function IPTable({ items, type }: { items: IPEntry[]; type: "whitelist" | "blacklist" }) {
-  const Icon = type === "whitelist" ? ShieldCheck : ShieldX;
-  const color = type === "whitelist" ? "text-success" : "text-error";
-  const bg = type === "whitelist" ? "bg-success/10" : "bg-error/10";
-
-  return (
-    <div className="space-y-2 mt-2">
-      {items.map((item, i) => (
-        <motion.div key={item.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-          className="flex items-center gap-3 p-3 rounded-xl border border-border-subtle bg-surface-hover"
-        >
-          <div className={cn("p-1.5 rounded-lg", bg)}>
-            <Icon className={cn("h-4 w-4", color)} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <code className="text-xs font-mono font-semibold text-text-primary">{item.address}</code>
-              <Badge className={cn("text-[7px] px-1 py-0 rounded border-0", item.status === "active" ? "bg-success/10 text-success" : "bg-surface-hover text-text-tertiary")}>
-                {item.status}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-3 mt-0.5 text-[9px] text-text-tertiary">
-              <span>Reason: {item.reason}</span>
-              <span>Added by: {item.addedBy}</span>
-              {item.expiresAt && <span className="flex items-center gap-1"><Clock className="h-2.5 w-2.5" /> Expires {item.expiresAt}</span>}
-            </div>
-          </div>
-          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-text-tertiary hover:text-error">
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
-function PermissionCell({ granted }: { granted: boolean }) {
-  return (
-    <div className={cn(
-      "h-7 w-7 rounded-md flex items-center justify-center transition-all",
-      granted ? "bg-success/10 text-success" : "bg-surface-hover text-text-tertiary/30",
-    )}>
-      {granted ? <CheckCircle2 className="h-3.5 w-3.5" /> : "-"}
-    </div>
-  );
-}
 
 export function AccessControlTab() {
   const [policy, setPolicy] = useState(PASSWORD_POLICY_DEFAULT);
   const [accessTab, setAccessTab] = useState("ip");
-  const { data: accessResponse } = useGetAdminResourceQuery({ resource: "security/access" });
-  const accessData = (accessResponse?.data || {}) as Record<string, any>;
-  const IP_WHITELIST = (accessData.whitelist || EMPTY_IP_WHITELIST) as any[];
-  const IP_BLACKLIST = (accessData.blacklist || EMPTY_IP_BLACKLIST) as any[];
-  const RATE_LIMITS = (accessData.rateLimits || EMPTY_RATE_LIMITS) as any[];
-  const ROLES = (accessData.roles || EMPTY_ROLES) as any[];
+  const { data: accessData } = useSecurityQuery("security/access");
+  const IP_WHITELIST = (accessData as any).whitelist || [];
+  const IP_BLACKLIST = (accessData as any).blacklist || [];
+  const RATE_LIMITS = (accessData as any).rateLimits || [];
+  const ROLES = (accessData as any).roles || [];
+
+  const innerTabs = [
+    { value: "ip", label: "IP Lists", icon: ShieldCheck },
+    { value: "rate", label: "Rate Limiting", icon: Gauge },
+    { value: "password", label: "Password Policy", icon: KeyRound },
+    { value: "roles", label: "Roles", icon: Users },
+    { value: "permissions", label: "Permissions", icon: Grid3X3 },
+  ];
 
   return (
-    <Tabs value={accessTab} onValueChange={setAccessTab} className="space-y-4">
-      <TabsList className="bg-surface-hover p-0.5 rounded-xl flex-wrap">
-        <TabsTrigger value="ip" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <ShieldCheck className="h-3.5 w-3.5" /> IP Lists
-        </TabsTrigger>
-        <TabsTrigger value="rate" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <Gauge className="h-3.5 w-3.5" /> Rate Limiting
-        </TabsTrigger>
-        <TabsTrigger value="password" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <KeyRound className="h-3.5 w-3.5" /> Password Policy
-        </TabsTrigger>
-        <TabsTrigger value="roles" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <Users className="h-3.5 w-3.5" /> Roles
-        </TabsTrigger>
-        <TabsTrigger value="permissions" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <Grid3X3 className="h-3.5 w-3.5" /> Permissions
-        </TabsTrigger>
-      </TabsList>
-
-      {/* IP Lists */}
+    <SecurityInnerTabs tabs={innerTabs} value={accessTab} onValueChange={setAccessTab}>
       <TabsContent value="ip" className="mt-0 space-y-4">
         <Card className="border-border-subtle bg-surface">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold text-text-primary flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-success" />
-                IP Whitelist
+                <ShieldCheck className="h-4 w-4 text-success" /> IP Whitelist
               </CardTitle>
               <Button size="sm" className="h-7 text-[10px] gap-1 rounded-lg bg-accent hover:bg-accent/90">
                 <Plus className="h-3 w-3" /> Add IP
@@ -152,8 +61,7 @@ export function AccessControlTab() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold text-text-primary flex items-center gap-2">
-                <ShieldX className="h-4 w-4 text-error" />
-                IP Blacklist
+                <ShieldX className="h-4 w-4 text-error" /> IP Blacklist
               </CardTitle>
               <Button size="sm" className="h-7 text-[10px] gap-1 rounded-lg bg-accent hover:bg-accent/90">
                 <Plus className="h-3 w-3" /> Add IP
@@ -167,10 +75,9 @@ export function AccessControlTab() {
         </Card>
       </TabsContent>
 
-      {/* Rate Limiting */}
       <TabsContent value="rate" className="mt-0 space-y-3">
         <div className="grid gap-3">
-          {RATE_LIMITS.map((rl, i) => (
+          {RATE_LIMITS.map((rl: any, i: number) => (
             <motion.div key={rl.endpoint} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               className="p-3 rounded-xl border border-border-subtle bg-surface"
             >
@@ -201,7 +108,6 @@ export function AccessControlTab() {
         </div>
       </TabsContent>
 
-      {/* Password Policy */}
       <TabsContent value="password" className="mt-0">
         <Card className="border-border-subtle bg-surface">
           <CardHeader>
@@ -268,9 +174,8 @@ export function AccessControlTab() {
         </Card>
       </TabsContent>
 
-      {/* Roles */}
       <TabsContent value="roles" className="mt-0 space-y-3">
-        {ROLES.map((role, i) => (
+        {ROLES.map((role: any, i: number) => (
           <motion.div key={role.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
             className="p-3 rounded-xl border border-border-subtle bg-surface"
           >
@@ -292,7 +197,6 @@ export function AccessControlTab() {
         ))}
       </TabsContent>
 
-      {/* Permission Matrix */}
       <TabsContent value="permissions" className="mt-0">
         <Card className="border-border-subtle bg-surface overflow-x-auto">
           <CardContent className="p-3">
@@ -300,20 +204,20 @@ export function AccessControlTab() {
               <thead>
                 <tr className="border-b border-border-subtle">
                   <th className="text-left pb-2 text-[9px] text-text-tertiary uppercase tracking-wider font-medium">Role</th>
-                  {PERMISSION_RESOURCES.map((res) => (
+                  {["users", "projects", "skills", "certifications", "settings"].map((res) => (
                     <th key={res} className="text-center pb-2 text-[9px] text-text-tertiary uppercase tracking-wider font-medium px-1">{res}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {ROLES.map((role) => (
+                {ROLES.map((role: any) => (
                   <tr key={role.id} className="border-b border-border-subtle/50 last:border-0">
                     <td className="py-2 pr-3">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-semibold text-text-primary">{role.name}</span>
                       </div>
                     </td>
-                    {PERMISSION_RESOURCES.map((res) => {
+                    {["users", "projects", "skills", "certifications", "settings"].map((res) => {
                       const hasPerm = role.permissions.includes("all") || role.permissions.some((p: string) => p.startsWith(res));
                       return (
                         <td key={res} className="text-center py-2 px-1">
@@ -328,6 +232,6 @@ export function AccessControlTab() {
           </CardContent>
         </Card>
       </TabsContent>
-    </Tabs>
+    </SecurityInnerTabs>
   );
 }

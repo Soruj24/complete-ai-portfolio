@@ -1,4 +1,12 @@
 import { GITHUB_USERNAME } from "@/lib/constants";
+import { LANGUAGE_COLORS } from "@/lib/github/constants";
+import { githubFetch, githubGraphql } from "@/lib/github/client";
+import {
+  PULL_REQUEST_CONTRIBUTIONS_QUERY,
+  CONTRIBUTION_COUNT_QUERY,
+  CONTRIBUTION_GRAPH_QUERY,
+  PINNED_REPOS_QUERY,
+} from "@/lib/github/queries";
 import type {
   GitHubUser,
   GitHubRepo,
@@ -18,62 +26,6 @@ import type {
   GitHubPinnedRepo,
 } from "@/lib/types/github";
 
-const LANGUAGE_COLORS: Record<string, string> = {
-  TypeScript: "#3178c6",
-  JavaScript: "#f1e05a",
-  Python: "#3572a5",
-  Rust: "#dea584",
-  Go: "#00add8",
-  Java: "#b07219",
-  "C++": "#f34b7d",
-  C: "#555555",
-  Ruby: "#701516",
-  PHP: "#4F5D95",
-  Swift: "#F05138",
-  Kotlin: "#A97BFF",
-  Dart: "#00B4AB",
-  Shell: "#89e051",
-  HTML: "#e34c26",
-  CSS: "#563d7c",
-  Dockerfile: "#384d54",
-  HCL: "#844FBA",
-  Lua: "#000080",
-  VimScript: "#199f4b",
-  Nix: "#7e7eff",
-  Svelte: "#ff3e00",
-  Vue: "#41b883",
-};
-
-const BASE = "https://api.github.com";
-const HEADERS: Record<string, string> = { Accept: "application/vnd.github.v3+json" };
-
-function initHeaders() {
-  const token = process.env.GITHUB_TOKEN;
-  if (token) {
-    return { ...HEADERS, Authorization: `Bearer ${token}` };
-  }
-  return HEADERS;
-}
-
-async function githubFetch(path: string) {
-  const res = await fetch(`${BASE}${path}`, { headers: initHeaders(), next: { revalidate: 300 } });
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
-  return res.json();
-}
-
-async function githubGraphql<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
-  const res = await fetch(`${BASE}/graphql`, {
-    method: "POST",
-    headers: { ...initHeaders(), "Content-Type": "application/json" },
-    body: JSON.stringify({ query, variables }),
-    next: { revalidate: 300 },
-  });
-  if (!res.ok) throw new Error(`GitHub GraphQL error: ${res.status}`);
-  const json = await res.json();
-  if (json.errors) throw new Error(json.errors[0]?.message || "GraphQL error");
-  return json.data as T;
-}
-
 export class GitHubService {
   private username: string;
 
@@ -82,8 +34,7 @@ export class GitHubService {
   }
 
   async getUser(): Promise<GitHubUser> {
-    const data = await githubFetch(`/users/${this.username}`);
-    return data as GitHubUser;
+    return githubFetch(`/users/${this.username}`) as Promise<GitHubUser>;
   }
 
   async getAllRepos(perPage: number = 100): Promise<GitHubRepo[]> {
@@ -100,7 +51,7 @@ export class GitHubService {
   }
 
   async getRepoLanguages(repoName: string): Promise<Record<string, number>> {
-    return githubFetch(`/repos/${this.username}/${repoName}/languages`);
+    return githubFetch(`/repos/${this.username}/${repoName}/languages`) as Promise<Record<string, number>>;
   }
 
   async getTopLanguages(): Promise<GitHubLanguage[]> {
@@ -126,15 +77,15 @@ export class GitHubService {
   }
 
   async getContributors(repoName: string): Promise<GitHubContributor[]> {
-    return githubFetch(`/repos/${this.username}/${repoName}/contributors?per_page=10`);
+    return githubFetch(`/repos/${this.username}/${repoName}/contributors?per_page=10`) as Promise<GitHubContributor[]>;
   }
 
   async getReleases(repoName: string): Promise<GitHubRelease[]> {
-    return githubFetch(`/repos/${this.username}/${repoName}/releases?per_page=10`);
+    return githubFetch(`/repos/${this.username}/${repoName}/releases?per_page=10`) as Promise<GitHubRelease[]>;
   }
 
   async getDeployments(repoName: string): Promise<GitHubDeployment[]> {
-    return githubFetch(`/repos/${this.username}/${repoName}/deployments?per_page=10`);
+    return githubFetch(`/repos/${this.username}/${repoName}/deployments?per_page=10`) as Promise<GitHubDeployment[]>;
   }
 
   async getIssues(repoName: string, state: "open" | "closed" | "all" = "all"): Promise<GitHubIssue[]> {
@@ -143,22 +94,14 @@ export class GitHubService {
   }
 
   async getPullRequests(repoName: string, state: "open" | "closed" | "all" = "all"): Promise<GitHubPullRequest[]> {
-    return githubFetch(`/repos/${this.username}/${repoName}/pulls?state=${state}&per_page=30`);
+    return githubFetch(`/repos/${this.username}/${repoName}/pulls?state=${state}&per_page=30`) as Promise<GitHubPullRequest[]>;
   }
 
   async getTotalPullRequests(): Promise<number> {
     try {
-      const query = `query($username: String!) {
-        user(login: $username) {
-          contributionsCollection {
-            totalPullRequestContributions
-            totalPullRequestReviewContributions
-          }
-        }
-      }`;
       const data = await githubGraphql<{
         user: { contributionsCollection: { totalPullRequestContributions: number; totalPullRequestReviewContributions: number } };
-      }>(query, { username: this.username });
+      }>(PULL_REQUEST_CONTRIBUTIONS_QUERY, { username: this.username });
       return (
         data.user.contributionsCollection.totalPullRequestContributions +
         data.user.contributionsCollection.totalPullRequestReviewContributions
@@ -185,16 +128,9 @@ export class GitHubService {
 
   async getContributionCount(): Promise<number> {
     try {
-      const query = `query($username: String!) {
-        user(login: $username) {
-          contributionsCollection {
-            contributionCalendar { totalContributions }
-          }
-        }
-      }`;
       const data = await githubGraphql<{
         user: { contributionsCollection: { contributionCalendar: { totalContributions: number } } };
-      }>(query, { username: this.username });
+      }>(CONTRIBUTION_COUNT_QUERY, { username: this.username });
       return data.user.contributionsCollection.contributionCalendar.totalContributions;
     } catch {
       return 0;
@@ -203,21 +139,9 @@ export class GitHubService {
 
   async getContributionGraph(): Promise<GitHubContributionWeek[]> {
     try {
-      const query = `query($username: String!) {
-        user(login: $username) {
-          contributionsCollection {
-            contributionCalendar {
-              weeks {
-                firstDay
-                contributionDays { date contributionCount color }
-              }
-            }
-          }
-        }
-      }`;
       const data = await githubGraphql<{
         user: { contributionsCollection: { contributionCalendar: { weeks: GitHubContributionWeek[] } } };
-      }>(query, { username: this.username });
+      }>(CONTRIBUTION_GRAPH_QUERY, { username: this.username });
       return data.user.contributionsCollection.contributionCalendar.weeks;
     } catch {
       return [];
@@ -241,22 +165,9 @@ export class GitHubService {
 
   async getPinnedRepos(): Promise<GitHubPinnedRepo[]> {
     try {
-      const query = `query($username: String!) {
-        user(login: $username) {
-          pinnedItems(first: 6, types: REPOSITORY) {
-            nodes {
-              ... on Repository {
-                id name description url stargazerCount forkCount
-                primaryLanguage { name color }
-                languages(first: 3) { nodes { name } }
-              }
-            }
-          }
-        }
-      }`;
       const data = await githubGraphql<{
         user: { pinnedItems: { nodes: Array<Record<string, unknown>> } };
-      }>(query, { username: this.username });
+      }>(PINNED_REPOS_QUERY, { username: this.username });
       return (data.user.pinnedItems.nodes || []).map((node: any) => ({
         id: String(node.id ?? ""),
         name: String(node.name ?? ""),

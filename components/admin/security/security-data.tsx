@@ -6,11 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Shield, Database, HardDrive, RefreshCw, CheckCircle2, XCircle, AlertTriangle, Clock, RotateCcw, Copy, Check, Download, FileKey, Lock, Unlock, Eye, EyeOff } from "lucide-react";
+import { Shield, Database, HardDrive, RefreshCw, CheckCircle2, XCircle, AlertTriangle, Clock, RotateCcw, Copy, Check, Download, FileKey, Lock, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+import { useSecurityQuery, SecurityInnerTabs, TabsContent } from "./shared";
 
 const EMPTY_BACKUP = {
   status: "healthy",
@@ -21,26 +19,16 @@ const EMPTY_BACKUP = {
   nextBackup: "-",
   databases: [],
 };
-const EMPTY_RECOVERY: never[] = [];
 
 export function DataProtectionTab() {
   const [dataTab, setDataTab] = useState("backup");
   const [showCodes, setShowCodes] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [encryptionEnabled, setEncryptionEnabled] = useState(true);
-  const { data: backupResponse } = useGetAdminResourceQuery({ resource: "backups" });
-  const { data: recoveryResponse } = useGetAdminResourceQuery({ resource: "security/recovery" });
-  const backupData = (backupResponse?.data || EMPTY_BACKUP) as Record<string, any>;
-  const BACKUP_STATUS = {
-    status: backupData.status ?? "healthy",
-    lastBackup: backupData.lastBackup ?? "-",
-    lastBackupSize: backupData.lastBackupSize ?? "-",
-    totalBackups: backupData.totalBackups ?? 0,
-    schedule: backupData.schedule ?? "-",
-    nextBackup: backupData.nextBackup ?? "-",
-    databases: backupData.databases ?? [],
-  };
-  const RECOVERY_CODES = (recoveryResponse?.data || EMPTY_RECOVERY) as any[];
+  const { data: backupResponse } = useSecurityQuery("backups");
+  const { data: recoveryData } = useSecurityQuery("security/recovery");
+  const BACKUP_STATUS = { ...EMPTY_BACKUP, ...(backupResponse as any) };
+  const RECOVERY_CODES = (Array.isArray(recoveryData) ? recoveryData : []) as any[];
 
   const storagePercent = (BACKUP_STATUS.databases.reduce((s: number, d: any) => {
     const num = parseFloat(d.size);
@@ -53,23 +41,15 @@ export function DataProtectionTab() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  return (
-    <Tabs value={dataTab} onValueChange={setDataTab} className="space-y-4">
-      <TabsList className="bg-surface-hover p-0.5 rounded-xl">
-        <TabsTrigger value="backup" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <HardDrive className="h-3.5 w-3.5" /> Backup Status
-        </TabsTrigger>
-        <TabsTrigger value="encryption" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <Lock className="h-3.5 w-3.5" /> DB Encryption
-        </TabsTrigger>
-        <TabsTrigger value="recovery" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <FileKey className="h-3.5 w-3.5" /> Recovery Codes
-        </TabsTrigger>
-      </TabsList>
+  const innerTabs = [
+    { value: "backup", label: "Backup Status", icon: HardDrive },
+    { value: "encryption", label: "DB Encryption", icon: Lock },
+    { value: "recovery", label: "Recovery Codes", icon: FileKey },
+  ];
 
-      {/* Backup Status */}
+  return (
+    <SecurityInnerTabs tabs={innerTabs} value={dataTab} onValueChange={setDataTab}>
       <TabsContent value="backup" className="mt-0 space-y-4">
-        {/* Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Last Backup", value: BACKUP_STATUS.lastBackup, icon: Clock, color: "text-accent" },
@@ -95,7 +75,6 @@ export function DataProtectionTab() {
           ))}
         </div>
 
-        {/* Schedule */}
         <Card className="border-border-subtle bg-surface">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold text-text-primary">Backup Schedule</CardTitle>
@@ -118,7 +97,6 @@ export function DataProtectionTab() {
           </CardContent>
         </Card>
 
-        {/* Database Backups */}
         <Card className="border-border-subtle bg-surface">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold text-text-primary">Database Backups</CardTitle>
@@ -159,7 +137,6 @@ export function DataProtectionTab() {
         </Card>
       </TabsContent>
 
-      {/* DB Encryption */}
       <TabsContent value="encryption" className="mt-0 space-y-4">
         <Card className="border-border-subtle bg-surface">
           <CardHeader className="pb-2">
@@ -218,7 +195,6 @@ export function DataProtectionTab() {
         </Card>
       </TabsContent>
 
-      {/* Recovery Codes */}
       <TabsContent value="recovery" className="mt-0 space-y-4">
         <Card className="border-border-subtle bg-surface">
           <CardHeader className="pb-2">
@@ -244,7 +220,7 @@ export function DataProtectionTab() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-2">
-              {RECOVERY_CODES.map((rc) => (
+              {RECOVERY_CODES.map((rc: any) => (
                 <div key={rc.code} className={cn(
                   "flex items-center justify-between p-2.5 rounded-lg border font-mono text-[10px] transition-all",
                   rc.used ? "border-border-subtle bg-surface-hover text-text-tertiary/50 line-through" : "border-border-subtle bg-background text-text-primary",
@@ -260,11 +236,11 @@ export function DataProtectionTab() {
               ))}
             </div>
             <p className="text-[9px] text-text-tertiary mt-2">
-              {RECOVERY_CODES.filter((c) => !c.used).length} codes remaining &middot; Regenerating codes will invalidate all previous codes
+              {RECOVERY_CODES.filter((c: any) => !c.used).length} codes remaining &middot; Regenerating codes will invalidate all previous codes
             </p>
           </CardContent>
         </Card>
       </TabsContent>
-    </Tabs>
+    </SecurityInnerTabs>
   );
 }

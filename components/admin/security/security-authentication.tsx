@@ -6,161 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import { Shield, Smartphone, Monitor, Globe, Key, CheckCircle2, AlertTriangle, Clock, LogOut, History, XCircle, Terminal, Laptop, Tablet, QrCode, Copy, Check } from "lucide-react";
+import { Shield, Monitor, Smartphone, History, AlertTriangle, LogOut, QrCode, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
-
-interface Session {
-  id: string;
-  device: string;
-  browser: string;
-  os: string;
-  ip: string;
-  location: string;
-  isCurrent: boolean;
-  isTrusted: boolean;
-  lastActive: string;
-  createdAt: string;
-}
-
-interface Device {
-  id: string;
-  name: string;
-  type: string;
-  os: string;
-  browser: string;
-  ip: string;
-  trusted: boolean;
-}
-
-interface LoginEntry {
-  id: string;
-  location: string;
-  ip: string;
-  device: string;
-  browser: string;
-  status: "success" | "failed";
-  reason?: string;
-  timestamp: string;
-}
-
-interface RecoveryCode {
-  code: string;
-  used: boolean;
-}
-
-const EMPTY_SESSIONS: never[] = [];
-const EMPTY_DEVICES: never[] = [];
-const EMPTY_FAILED_LOGINS: never[] = [];
-const EMPTY_RECOVERY: RecoveryCode[] = [];
-
-function SessionRow({ session }: { session: Session }) {
-  return (
-    <div className={cn(
-      "flex items-center gap-3 p-3 rounded-xl border transition-all",
-      session.isCurrent ? "border-accent/20 bg-accent/5" : "border-border-subtle bg-surface-hover",
-    )}>
-      <div className="p-2 rounded-lg bg-background">
-        <Monitor className="h-4 w-4 text-text-secondary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-text-primary">{session.device}</span>
-          {session.isCurrent && <Badge className="text-[7px] px-1 py-0 rounded border-0 bg-accent/10 text-accent">Current</Badge>}
-          {session.isTrusted && <Badge variant="outline" className="text-[7px] px-1 py-0 rounded border-border-subtle text-text-tertiary">Trusted</Badge>}
-        </div>
-        <div className="flex items-center gap-3 mt-0.5 text-[9px] text-text-tertiary font-mono">
-          <span>{session.browser} on {session.os}</span>
-          <span>{session.ip}</span>
-          <span>{session.location}</span>
-        </div>
-      </div>
-      <div className="text-right text-[9px] text-text-tertiary shrink-0">
-        <p>Active {session.lastActive}</p>
-        <p className="mt-0.5">Since {session.createdAt}</p>
-      </div>
-      {!session.isCurrent && (
-        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-text-tertiary hover:text-error">
-          <XCircle className="h-3.5 w-3.5" />
-        </Button>
-      )}
-    </div>
-  );
-}
-
-function DeviceRow({ device }: { device: Device }) {
-  const Icon = device.type === "Phone" ? Smartphone : device.type === "Tablet" ? Tablet : Laptop;
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-xl border border-border-subtle bg-surface-hover">
-      <div className="p-2 rounded-lg bg-background">
-        <Icon className="h-4 w-4 text-text-secondary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-text-primary">{device.name}</span>
-          <Badge variant="outline" className="text-[7px] px-1 py-0 rounded border-border-subtle text-text-tertiary">{device.type}</Badge>
-          {device.trusted && <Badge className="text-[7px] px-1 py-0 rounded border-0 bg-success/10 text-success">Trusted</Badge>}
-        </div>
-        <div className="flex items-center gap-3 mt-0.5 text-[9px] text-text-tertiary font-mono">
-          <span>{device.os}</span>
-          <span>{device.browser}</span>
-          <span>{device.ip}</span>
-        </div>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <Switch defaultChecked={device.trusted} />
-        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-text-tertiary hover:text-error">
-          <LogOut className="h-3.5 w-3.5" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function LoginRow({ entry }: { entry: LoginEntry }) {
-  return (
-    <div className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface-hover transition-colors">
-      <div className={cn("p-1.5 rounded-lg", entry.status === "success" ? "bg-success/10" : "bg-error/10")}>
-        {entry.status === "success" ? <CheckCircle2 className="h-3.5 w-3.5 text-success" /> : <XCircle className="h-3.5 w-3.5 text-error" />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-medium text-text-primary">{entry.location}</span>
-          <Badge className={cn(
-            "text-[7px] px-1 py-0 rounded border-0 font-medium",
-            entry.status === "success" ? "bg-success/10 text-success" : "bg-error/10 text-error",
-          )}>
-            {entry.status}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2 mt-0.5 text-[8px] text-text-tertiary font-mono">
-          <span>{entry.ip}</span>
-          <span>{entry.device}</span>
-          <span>{entry.browser}</span>
-          {entry.reason && <span className="text-warning">{entry.reason}</span>}
-        </div>
-      </div>
-      <span className="text-[9px] text-text-tertiary shrink-0">{entry.timestamp}</span>
-    </div>
-  );
-}
+import { useSecurityQuery, SecurityInnerTabs, TabsContent } from "./shared";
+import { SessionRow } from "./rows/session-row";
+import { DeviceRow } from "./rows/device-row";
+import { LoginRow } from "./rows/login-row";
+import { FailedLoginRow } from "./rows/failed-login-row";
 
 export function AuthenticationTab() {
   const [twoFAEnabled, setTwoFAEnabled] = useState(true);
   const [showRecovery, setShowRecovery] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [authTab, setAuthTab] = useState("sessions");
-  const { data: sessionsResponse } = useGetAdminResourceQuery({ resource: "sessions" });
-  const { data: loginResponse } = useGetAdminResourceQuery({ resource: "login-history" });
-  const { data: recoveryResponse } = useGetAdminResourceQuery({ resource: "security/recovery" });
-  const sessionData = (sessionsResponse?.data || {}) as Record<string, any>;
-  const SESSIONS = (sessionData.sessions || EMPTY_SESSIONS) as any[];
-  const DEVICES = (sessionData.devices || EMPTY_DEVICES) as any[];
-  const FAILED_LOGINS = (loginResponse?.data || EMPTY_FAILED_LOGINS) as any[];
-  const RECOVERY_CODES = (recoveryResponse?.data || EMPTY_RECOVERY) as any[];
+  const { data: sessionsData } = useSecurityQuery("sessions");
+  const { data: loginData } = useSecurityQuery("login-history");
+  const { data: recoveryResponse } = useSecurityQuery("security/recovery");
+  const SESSIONS = (sessionsData as any).sessions || [];
+  const DEVICES = (sessionsData as any).devices || [];
+  const FAILED_LOGINS = (Array.isArray(loginData) ? loginData : []) as any[];
+  const RECOVERY_CODES = (Array.isArray(recoveryResponse) ? recoveryResponse : []) as any[];
 
   const copyCode = async (code: string) => {
     await navigator.clipboard.writeText(code);
@@ -168,27 +33,16 @@ export function AuthenticationTab() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  return (
-    <Tabs value={authTab} onValueChange={setAuthTab} className="space-y-4">
-      <TabsList className="bg-surface-hover p-0.5 rounded-xl">
-        <TabsTrigger value="sessions" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <Monitor className="h-3.5 w-3.5" /> Sessions
-        </TabsTrigger>
-        <TabsTrigger value="devices" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <Smartphone className="h-3.5 w-3.5" /> Devices
-        </TabsTrigger>
-        <TabsTrigger value="2fa" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <Shield className="h-3.5 w-3.5" /> 2FA
-        </TabsTrigger>
-        <TabsTrigger value="history" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <History className="h-3.5 w-3.5" /> Login History
-        </TabsTrigger>
-        <TabsTrigger value="failed" className="rounded-lg text-xs gap-1.5 data-[state=active]:bg-surface data-[state=active]:shadow-sm">
-          <AlertTriangle className="h-3.5 w-3.5" /> Failed Logins
-        </TabsTrigger>
-      </TabsList>
+  const innerTabs = [
+    { value: "sessions", label: "Sessions", icon: Monitor },
+    { value: "devices", label: "Devices", icon: Smartphone },
+    { value: "2fa", label: "2FA", icon: Shield },
+    { value: "history", label: "Login History", icon: History },
+    { value: "failed", label: "Failed Logins", icon: AlertTriangle },
+  ];
 
-      {/* Sessions */}
+  return (
+    <SecurityInnerTabs tabs={innerTabs} value={authTab} onValueChange={setAuthTab}>
       <TabsContent value="sessions" className="space-y-3 mt-0">
         <div className="flex items-center justify-between">
           <p className="text-[10px] text-text-tertiary">{SESSIONS.length} active session{SESSIONS.length !== 1 ? "s" : ""}</p>
@@ -196,14 +50,13 @@ export function AuthenticationTab() {
             <LogOut className="h-3 w-3" /> Revoke All
           </Button>
         </div>
-        {SESSIONS.map((s, i) => (
+        {SESSIONS.map((s: any, i: number) => (
           <motion.div key={s.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
             <SessionRow session={s} />
           </motion.div>
         ))}
       </TabsContent>
 
-      {/* Devices */}
       <TabsContent value="devices" className="space-y-3 mt-0">
         <div className="flex items-center justify-between">
           <p className="text-[10px] text-text-tertiary">{DEVICES.length} trusted device{DEVICES.length !== 1 ? "s" : ""}</p>
@@ -211,14 +64,13 @@ export function AuthenticationTab() {
             <LogOut className="h-3 w-3" /> Remove All
           </Button>
         </div>
-        {DEVICES.map((d, i) => (
+        {DEVICES.map((d: any, i: number) => (
           <motion.div key={d.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
             <DeviceRow device={d} />
           </motion.div>
         ))}
       </TabsContent>
 
-      {/* 2FA */}
       <TabsContent value="2fa" className="mt-0 space-y-4">
         <Card className="border-border-subtle bg-surface">
           <CardContent className="p-4">
@@ -266,7 +118,6 @@ export function AuthenticationTab() {
               </CardContent>
             </Card>
 
-            {/* Recovery Codes */}
             <Card className="border-border-subtle bg-surface">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -282,7 +133,7 @@ export function AuthenticationTab() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
-                  {RECOVERY_CODES.map((rc) => (
+                  {RECOVERY_CODES.map((rc: any) => (
                     <div key={rc.code} className={cn(
                       "flex items-center justify-between p-2.5 rounded-lg border font-mono text-[10px] transition-all",
                       rc.used ? "border-border-subtle bg-surface-hover text-text-tertiary/50 line-through" : "border-border-subtle bg-background text-text-primary",
@@ -297,30 +148,28 @@ export function AuthenticationTab() {
                     </div>
                   ))}
                 </div>
-                <p className="text-[9px] text-text-tertiary mt-2">{RECOVERY_CODES.filter((c) => !c.used).length} codes remaining</p>
+                <p className="text-[9px] text-text-tertiary mt-2">{RECOVERY_CODES.filter((c: any) => !c.used).length} codes remaining</p>
               </CardContent>
             </Card>
           </>
         )}
       </TabsContent>
 
-      {/* Login History */}
       <TabsContent value="history" className="space-y-1 mt-0">
-        {[...FAILED_LOGINS, ...SESSIONS.map((s) => ({
+        {[...FAILED_LOGINS, ...SESSIONS.map((s: any) => ({
           id: `lh-${s.id}`, user: "admin@portfolio.dev", ip: s.ip, location: s.location, device: s.device, browser: s.browser,
           status: "success" as const, timestamp: s.lastActive,
-        }))].sort((a, b) => {
+        }))].sort((a: any, b: any) => {
           const tA = a.timestamp.includes("min") ? 0 : a.timestamp.includes("h") ? 1 : a.timestamp.includes("d") ? 2 : a.timestamp.includes("w") ? 3 : 4;
           const tB = b.timestamp.includes("min") ? 0 : b.timestamp.includes("h") ? 1 : b.timestamp.includes("d") ? 2 : b.timestamp.includes("w") ? 3 : 4;
           return tA - tB;
-        }).map((entry, i) => (
+        }).map((entry: any, i: number) => (
           <motion.div key={entry.id} initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }}>
-            <LoginRow entry={entry as LoginEntry} />
+            <LoginRow entry={entry} />
           </motion.div>
         ))}
       </TabsContent>
 
-      {/* Failed Logins */}
       <TabsContent value="failed" className="space-y-1 mt-0">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] text-text-tertiary">{FAILED_LOGINS.length} failed attempt{FAILED_LOGINS.length !== 1 ? "s" : ""} in the last 7 days</p>
@@ -328,28 +177,12 @@ export function AuthenticationTab() {
             <History className="h-3 w-3" /> View All
           </Button>
         </div>
-        {FAILED_LOGINS.map((entry, i) => (
-          <motion.div key={entry.id} initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-            className="flex items-center gap-3 p-2.5 rounded-lg bg-error/5 border border-error/10"
-          >
-            <div className="p-1.5 rounded-lg bg-error/10">
-              <XCircle className="h-3.5 w-3.5 text-error" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-medium text-text-primary">{entry.location}</span>
-                <span className="text-[8px] text-text-tertiary font-mono">{entry.ip}</span>
-              </div>
-              <div className="flex items-center gap-2 text-[8px] text-text-tertiary font-mono">
-                <span>{entry.device}</span>
-                <span>{entry.browser}</span>
-                {entry.reason && <span className="text-error">{entry.reason}</span>}
-              </div>
-            </div>
-            <span className="text-[9px] text-text-tertiary shrink-0">{entry.timestamp}</span>
+        {FAILED_LOGINS.map((entry: any, i: number) => (
+          <motion.div key={entry.id} initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
+            <FailedLoginRow entry={entry} />
           </motion.div>
         ))}
       </TabsContent>
-    </Tabs>
+    </SecurityInnerTabs>
   );
 }

@@ -12,32 +12,15 @@ import {
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
+import { useSiteSettings } from "@/lib/hooks";
 import profilePic from "@/public/soruj-DESKTOP-Q8KK3O8.jpg";
-import type { ISettings } from "@/shared/types";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function About() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [settings, setSettings] = useState<ISettings | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch("/api/settings/public");
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const data = await res.json();
-        if (data.success) setSettings(data.data);
-      } catch (error) {
-        console.error("Error fetching settings:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSettings();
-  }, []);
+  const { settings, loading } = useSiteSettings();
 
   useGSAP(
     () => {

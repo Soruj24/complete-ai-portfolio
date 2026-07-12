@@ -6,51 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Activity, AlertTriangle, ShieldAlert, User, Globe, Info, CheckCircle2, Clock, Eye, EyeOff } from "lucide-react";
+import { Search, Activity, ShieldAlert, AlertTriangle, Clock, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
-
-interface AuditLog {
-  id: string;
-  action: string;
-  user: string;
-  resource: string;
-  details: string;
-  severity: "info" | "warning" | "critical";
-  ip: string;
-  timestamp: string;
-}
-
-interface SecurityAlert {
-  id: string;
-  title: string;
-  description: string;
-  severity: "low" | "medium" | "high" | "critical";
-  status: "open" | "investigating" | "resolved";
-  source: string;
-  timestamp: string;
-}
-
-function getAlertColor(severity: string) {
-  const colors: Record<string, string> = {
-    critical: "text-error bg-error/10 border-error/20",
-    high: "text-warning bg-warning/10 border-warning/20",
-    medium: "text-accent bg-accent/10 border-accent/20",
-    low: "text-info bg-info/10 border-info/20",
-    info: "text-text-tertiary bg-surface-hover border-border-subtle",
-  };
-  return colors[severity] || colors.info;
-}
-
-const EMPTY_AUDIT: never[] = [];
-const EMPTY_ALERTS: never[] = [];
-
-const severityConfig = {
-  info: { icon: Info, color: "text-accent", bg: "bg-accent/10" },
-  warning: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10" },
-  critical: { icon: ShieldAlert, color: "text-error", bg: "bg-error/10" },
-};
+import { useSecurityQuery, getAlertColor } from "./shared";
+import { AuditLogRow } from "./rows/audit-log-row";
 
 const alertSeverityConfig = {
   low: { color: "text-info", bg: "bg-info/10", label: "Low" },
@@ -65,43 +24,15 @@ const alertStatusConfig = {
   resolved: { color: "text-success bg-success/10", label: "Resolved" },
 };
 
-function AuditLogRow({ log }: { log: AuditLog }) {
-  const sev = severityConfig[log.severity];
-  const SevIcon = sev.icon;
-  return (
-    <motion.div initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }}
-      className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-surface-hover transition-colors group"
-    >
-      <div className={cn("p-1.5 rounded-lg mt-0.5", sev.bg)}>
-        <SevIcon className={cn("h-3.5 w-3.5", sev.color)} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <Badge className={cn("text-[7px] px-1 py-0 rounded border-0 font-medium", sev.bg, sev.color)}>
-            {log.action}
-          </Badge>
-          <span className="text-[10px] font-medium text-text-primary">{log.user}</span>
-          <span className="text-[9px] text-text-tertiary">{log.resource}</span>
-        </div>
-        <p className="text-[9px] text-text-tertiary mt-0.5">{log.details}</p>
-        <div className="flex items-center gap-2 mt-1 text-[8px] text-text-tertiary font-mono">
-          <Globe className="h-2.5 w-2.5" /> {log.ip}
-        </div>
-      </div>
-      <span className="text-[9px] text-text-tertiary shrink-0">{log.timestamp}</span>
-    </motion.div>
-  );
-}
-
 export function MonitoringTab() {
   const [auditSearch, setAuditSearch] = useState("");
   const [filterSeverity, setFilterSeverity] = useState<string>("all");
-  const { data: auditResponse } = useGetAdminResourceQuery({ resource: "audit" });
-  const { data: alertsResponse } = useGetAdminResourceQuery({ resource: "security/alerts" });
-  const AUDIT_LOGS = (auditResponse?.data || EMPTY_AUDIT) as any[];
-  const SECURITY_ALERTS = (alertsResponse?.data || EMPTY_ALERTS) as any[];
+  const { data: auditData } = useSecurityQuery("audit");
+  const { data: alertsData } = useSecurityQuery("security/alerts");
+  const AUDIT_LOGS = (Array.isArray(auditData) ? auditData : []) as any[];
+  const SECURITY_ALERTS = (Array.isArray(alertsData) ? alertsData : []) as any[];
 
-  const filteredAudit = AUDIT_LOGS.filter((l) => {
+  const filteredAudit = AUDIT_LOGS.filter((l: any) => {
     if (filterSeverity !== "all" && l.severity !== filterSeverity) return false;
     if (auditSearch && !l.details.toLowerCase().includes(auditSearch.toLowerCase()) && !l.user.toLowerCase().includes(auditSearch.toLowerCase()) && !l.action.toLowerCase().includes(auditSearch.toLowerCase())) return false;
     return true;
@@ -109,7 +40,6 @@ export function MonitoringTab() {
 
   return (
     <div className="space-y-4">
-      {/* Security Alerts */}
       <Card className="border-border-subtle bg-surface">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold text-text-primary flex items-center gap-2">
@@ -165,7 +95,6 @@ export function MonitoringTab() {
         </CardContent>
       </Card>
 
-      {/* Audit Logs */}
       <Card className="border-border-subtle bg-surface">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -199,7 +128,7 @@ export function MonitoringTab() {
               placeholder="Search audit logs..." className="pl-8 h-8 text-[10px] border-border-subtle bg-background rounded-lg" />
           </div>
           <div className="space-y-0.5 max-h-[400px] overflow-y-auto no-scrollbar">
-            {filteredAudit.map((log) => <AuditLogRow key={log.id} log={log} />)}
+            {filteredAudit.map((log: any) => <AuditLogRow key={log.id} log={log} />)}
             {filteredAudit.length === 0 && (
               <p className="text-center text-[10px] text-text-tertiary py-8">No audit logs match your filter</p>
             )}

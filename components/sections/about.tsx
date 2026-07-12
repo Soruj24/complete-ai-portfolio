@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { Code2, Brain, Server, Shield, Loader2, Sparkles } from "lucide-react";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { GlassCard } from "@/components/ui/glass-card";
-import type { ISettings } from "@/shared/types";
+import { useSiteSettings } from "@/lib/hooks";
 
 const fallbackHighlights = [
   {
@@ -38,25 +38,7 @@ const valueCategories = [
 ];
 
 export function About() {
-  const [settings, setSettings] = useState<ISettings | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const res = await fetch("/api/settings/public");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success) setSettings(data.data);
-        }
-      } catch {
-        // Graceful degradation
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSettings();
-  }, []);
+  const { settings, loading } = useSiteSettings();
 
   const specializations = settings?.specializations || [];
   const highlights = specializations.length >= 3
