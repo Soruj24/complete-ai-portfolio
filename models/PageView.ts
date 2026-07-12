@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPageView extends Document {
   path: string;
+  sessionId?: string;
   ip?: string;
   userAgent?: string;
   timestamp: Date;
@@ -21,6 +22,7 @@ export interface IPageView extends Document {
 const PageViewSchema = new Schema<IPageView>(
   {
     path: { type: String, required: true },
+    sessionId: String,
     ip: String,
     userAgent: String,
     timestamp: { type: Date, default: Date.now },
@@ -41,6 +43,7 @@ const PageViewSchema = new Schema<IPageView>(
 
 PageViewSchema.index({ timestamp: -1 });
 PageViewSchema.index({ path: 1, timestamp: -1 });
+PageViewSchema.index({ sessionId: 1, timestamp: 1 });
 PageViewSchema.index({ country: 1, timestamp: -1 });
 PageViewSchema.index({ deviceType: 1, timestamp: -1 });
 PageViewSchema.index({ browser: 1, timestamp: -1 });

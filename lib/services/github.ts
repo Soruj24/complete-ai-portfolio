@@ -1,4 +1,3 @@
-import { Octokit } from "octokit";
 import { GITHUB_USERNAME } from "@/lib/constants";
 import type {
   GitHubUser,
@@ -45,106 +44,68 @@ const LANGUAGE_COLORS: Record<string, string> = {
   Vue: "#41b883",
 };
 
-function createOctokit(): Octokit {
+const BASE = "https://api.github.com";
+const HEADERS: Record<string, string> = { Accept: "application/vnd.github.v3+json" };
+
+function initHeaders() {
   const token = process.env.GITHUB_TOKEN;
-  return new Octokit(token ? { auth: token } : {});
+  if (token) {
+    return { ...HEADERS, Authorization: `Bearer ${token}` };
+  }
+  return HEADERS;
 }
 
-function toGitHubRepo(repo: Record<string, unknown>): GitHubRepo {
-  return {
-    id: Number(repo.id),
-    name: String(repo.name ?? ""),
-    full_name: String(repo.full_name ?? ""),
-    html_url: String(repo.html_url ?? ""),
-    description: repo.description as string | null,
-    fork: Boolean(repo.fork),
-    language: repo.language as string | null,
-    stargazers_count: Number(repo.stargazers_count ?? 0),
-    watchers_count: Number(repo.watchers_count ?? 0),
-    forks_count: Number(repo.forks_count ?? 0),
-    open_issues_count: Number(repo.open_issues_count ?? 0),
-    topics: Array.isArray(repo.topics) ? (repo.topics as string[]) : [],
-    created_at: String(repo.created_at ?? ""),
-    updated_at: String(repo.updated_at ?? ""),
-    pushed_at: String(repo.pushed_at ?? ""),
-    size: Number(repo.size ?? 0),
-    default_branch: String(repo.default_branch ?? "main"),
-    homepage: repo.homepage as string | null,
-  };
+async function githubFetch(path: string) {
+  const res = await fetch(`${BASE}${path}`, { headers: initHeaders(), next: { revalidate: 300 } });
+  if (!res.ok) throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
+  return res.json();
 }
 
-function toGitHubUser(data: Record<string, unknown>): GitHubUser {
-  return {
-    login: String(data.login ?? ""),
-    id: Number(data.id ?? 0),
-    avatar_url: String(data.avatar_url ?? ""),
-    html_url: String(data.html_url ?? ""),
-    name: data.name as string | null,
-    company: data.company as string | null,
-    blog: data.blog as string | null,
-    location: data.location as string | null,
-    email: data.email as string | null,
-    bio: data.bio as string | null,
-    public_repos: Number(data.public_repos ?? 0),
-    public_gists: Number(data.public_gists ?? 0),
-    followers: Number(data.followers ?? 0),
-    following: Number(data.following ?? 0),
-    created_at: String(data.created_at ?? ""),
-    updated_at: String(data.updated_at ?? ""),
-  };
+async function githubGraphql<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
+  const res = await fetch(`${BASE}/graphql`, {
+    method: "POST",
+    headers: { ...initHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ query, variables }),
+    next: { revalidate: 300 },
+  });
+  if (!res.ok) throw new Error(`GitHub GraphQL error: ${res.status}`);
+  const json = await res.json();
+  if (json.errors) throw new Error(json.errors[0]?.message || "GraphQL error");
+  return json.data as T;
 }
 
 export class GitHubService {
-  private octokit: Octokit;
   private username: string;
 
   constructor(username: string = GITHUB_USERNAME) {
-    this.octokit = createOctokit();
     this.username = username;
   }
 
   async getUser(): Promise<GitHubUser> {
-    const { data } = await this.octokit.rest.users.getByUsername({
-      username: this.username,
-    });
-    return toGitHubUser(data as Record<string, unknown>);
+    const data = await githubFetch(`/users/${this.username}`);
+    return data as GitHubUser;
   }
 
   async getAllRepos(perPage: number = 100): Promise<GitHubRepo[]> {
     const repos: GitHubRepo[] = [];
     let page = 1;
-
     while (true) {
-      const { data } = await this.octokit.rest.repos.listForUser({
-        username: this.username,
-        per_page: perPage,
-        page,
-        sort: "pushed",
-        direction: "desc",
-      });
-
-      const mapped = (data as any[]).map((r) => toGitHubRepo(r as unknown as Record<string, unknown>));
+      const data = await githubFetch(`/users/${this.username}/repos?per_page=${perPage}&page=${page}&sort=pushed&direction=desc`);
+      const mapped = data as GitHubRepo[];
       repos.push(...mapped);
-
-      if (data.length < perPage) break;
+      if (mapped.length < perPage) break;
       page++;
     }
-
     return repos;
   }
 
   async getRepoLanguages(repoName: string): Promise<Record<string, number>> {
-    const { data } = await this.octokit.rest.repos.listLanguages({
-      owner: this.username,
-      repo: repoName,
-    });
-    return data as Record<string, number>;
+    return githubFetch(`/repos/${this.username}/${repoName}/languages`);
   }
 
   async getTopLanguages(): Promise<GitHubLanguage[]> {
     const repos = await this.getAllRepos();
     const langBytes: Record<string, number> = {};
-
     for (const repo of repos) {
       if (!repo.language) continue;
       try {
@@ -156,119 +117,33 @@ export class GitHubService {
         continue;
       }
     }
-
     const total = Object.values(langBytes).reduce((a, b) => a + b, 0);
     if (total === 0) return [];
-
     return Object.entries(langBytes)
-      .map(([name, bytes]) => ({
-        name,
-        bytes,
-        color: LANGUAGE_COLORS[name] ?? "#6b7280",
-      }))
+      .map(([name, bytes]) => ({ name, bytes, color: LANGUAGE_COLORS[name] ?? "#6b7280" }))
       .sort((a, b) => b.bytes - a.bytes)
       .slice(0, 10);
   }
 
   async getContributors(repoName: string): Promise<GitHubContributor[]> {
-    const { data } = await this.octokit.rest.repos.listContributors({
-      owner: this.username,
-      repo: repoName,
-      per_page: 10,
-    });
-
-    return (data as any[]).map((c) => ({
-      login: String(c.login ?? ""),
-      id: Number(c.id ?? 0),
-      avatar_url: String(c.avatar_url ?? ""),
-      contributions: Number(c.contributions ?? 0),
-      html_url: String(c.html_url ?? ""),
-    }));
+    return githubFetch(`/repos/${this.username}/${repoName}/contributors?per_page=10`);
   }
 
   async getReleases(repoName: string): Promise<GitHubRelease[]> {
-    const { data } = await this.octokit.rest.repos.listReleases({
-      owner: this.username,
-      repo: repoName,
-      per_page: 10,
-    });
-
-    return (data as any[]).map((r) => ({
-      id: Number(r.id ?? 0),
-      tag_name: String(r.tag_name ?? ""),
-      name: r.name as string | null,
-      body: r.body as string | null,
-      draft: Boolean(r.draft),
-      prerelease: Boolean(r.prerelease),
-      created_at: String(r.created_at ?? ""),
-      published_at: String(r.published_at ?? ""),
-      html_url: String(r.html_url ?? ""),
-    }));
+    return githubFetch(`/repos/${this.username}/${repoName}/releases?per_page=10`);
   }
 
   async getDeployments(repoName: string): Promise<GitHubDeployment[]> {
-    const { data } = await this.octokit.rest.repos.listDeployments({
-      owner: this.username,
-      repo: repoName,
-      per_page: 10,
-    });
-
-    return (data as any[]).map((d) => ({
-      id: Number(d.id ?? 0),
-      sha: String(d.sha ?? ""),
-      ref: String(d.ref ?? ""),
-      environment: String(d.environment ?? ""),
-      state: "active",
-      created_at: String(d.created_at ?? ""),
-      updated_at: String(d.updated_at ?? ""),
-    }));
+    return githubFetch(`/repos/${this.username}/${repoName}/deployments?per_page=10`);
   }
 
   async getIssues(repoName: string, state: "open" | "closed" | "all" = "all"): Promise<GitHubIssue[]> {
-    const { data } = await this.octokit.rest.issues.listForRepo({
-      owner: this.username,
-      repo: repoName,
-      state,
-      per_page: 30,
-    });
-
-    return (data as any[])
-      .filter((i: any) => !i.pull_request)
-      .map((i: any) => ({
-        id: Number(i.id ?? 0),
-        number: Number(i.number ?? 0),
-        title: String(i.title ?? ""),
-        state: i.state as "open" | "closed",
-        html_url: String(i.html_url ?? ""),
-        created_at: String(i.created_at ?? ""),
-        updated_at: String(i.updated_at ?? ""),
-        labels: (i.labels as Array<{ name: string; color: string }>).map((l: any) => ({
-          name: String(l.name ?? ""),
-          color: String(l.color ?? ""),
-        })),
-      }));
+    const data = await githubFetch(`/repos/${this.username}/${repoName}/issues?state=${state}&per_page=30`);
+    return (data as GitHubIssue[]).filter((i) => !("pull_request" in i));
   }
 
   async getPullRequests(repoName: string, state: "open" | "closed" | "all" = "all"): Promise<GitHubPullRequest[]> {
-    const { data } = await this.octokit.rest.pulls.list({
-      owner: this.username,
-      repo: repoName,
-      state,
-      per_page: 30,
-    });
-
-    return (data as any[]).map((pr: any) => ({
-      id: Number(pr.id ?? 0),
-      number: Number(pr.number ?? 0),
-      title: String(pr.title ?? ""),
-      state: pr.state as "open" | "closed",
-      html_url: String(pr.html_url ?? ""),
-      created_at: String(pr.created_at ?? ""),
-      updated_at: String(pr.updated_at ?? ""),
-      merged_at: pr.merged_at as string | null,
-      head: { ref: String(pr.head?.ref ?? "") },
-      base: { ref: String(pr.base?.ref ?? "") },
-    }));
+    return githubFetch(`/repos/${this.username}/${repoName}/pulls?state=${state}&per_page=30`);
   }
 
   async getTotalPullRequests(): Promise<number> {
@@ -281,11 +156,9 @@ export class GitHubService {
           }
         }
       }`;
-
-      const data = await this.octokit.graphql<{
+      const data = await githubGraphql<{
         user: { contributionsCollection: { totalPullRequestContributions: number; totalPullRequestReviewContributions: number } };
       }>(query, { username: this.username });
-
       return (
         data.user.contributionsCollection.totalPullRequestContributions +
         data.user.contributionsCollection.totalPullRequestReviewContributions
@@ -295,50 +168,18 @@ export class GitHubService {
     }
   }
 
-  async getTraffic(repoName: string): Promise<{
-    views: GitHubTraffic;
-    clones: GitHubTraffic;
-    referrers: GitHubTrafficReferrer[];
-    popular: GitHubTrafficPopularity[];
-  }> {
-    const [viewsRes, clonesRes, referrersRes, popularRes] = await Promise.allSettled([
-      this.octokit.request("GET /repos/{owner}/{repo}/traffic/views", {
-        owner: this.username,
-        repo: repoName,
-      }),
-      this.octokit.request("GET /repos/{owner}/{repo}/traffic/clones", {
-        owner: this.username,
-        repo: repoName,
-      }),
-      this.octokit.request("GET /repos/{owner}/{repo}/traffic/popular/referrers", {
-        owner: this.username,
-        repo: repoName,
-      }),
-      this.octokit.request("GET /repos/{owner}/{repo}/traffic/popular/paths", {
-        owner: this.username,
-        repo: repoName,
-      }),
+  async getTraffic(repoName: string) {
+    const [views, clones, referrers, popular] = await Promise.allSettled([
+      githubFetch(`/repos/${this.username}/${repoName}/traffic/views`),
+      githubFetch(`/repos/${this.username}/${repoName}/traffic/clones`),
+      githubFetch(`/repos/${this.username}/${repoName}/traffic/popular/referrers`),
+      githubFetch(`/repos/${this.username}/${repoName}/traffic/popular/paths`),
     ]);
-
-    const views = viewsRes.status === "fulfilled" ? viewsRes.value.data : { count: 0, uniques: 0 };
-    const clones = clonesRes.status === "fulfilled" ? clonesRes.value.data : { count: 0, uniques: 0 };
-    const referrers = referrersRes.status === "fulfilled" ? referrersRes.value.data : [];
-    const popular = popularRes.status === "fulfilled" ? popularRes.value.data : [];
-
     return {
-      views: { count: Number(views.count ?? 0), uniques: Number(views.uniques ?? 0) },
-      clones: { count: Number(clones.count ?? 0), uniques: Number(clones.uniques ?? 0) },
-      referrers: (referrers as any[]).map((r: any) => ({
-        referrer: String(r.referrer ?? ""),
-        count: Number(r.count ?? 0),
-        uniques: Number(r.uniques ?? 0),
-      })),
-      popular: (popular as any[]).map((p: any) => ({
-        path: String(p.path ?? ""),
-        title: String(p.title ?? ""),
-        count: Number(p.count ?? 0),
-        uniques: Number(p.uniques ?? 0),
-      })),
+      views: views.status === "fulfilled" ? views.value as GitHubTraffic : { count: 0, uniques: 0 },
+      clones: clones.status === "fulfilled" ? clones.value as GitHubTraffic : { count: 0, uniques: 0 },
+      referrers: referrers.status === "fulfilled" ? referrers.value as GitHubTrafficReferrer[] : [],
+      popular: popular.status === "fulfilled" ? popular.value as GitHubTrafficPopularity[] : [],
     };
   }
 
@@ -347,17 +188,13 @@ export class GitHubService {
       const query = `query($username: String!) {
         user(login: $username) {
           contributionsCollection {
-            contributionCalendar {
-              totalContributions
-            }
+            contributionCalendar { totalContributions }
           }
         }
       }`;
-
-      const data = await this.octokit.graphql<{
+      const data = await githubGraphql<{
         user: { contributionsCollection: { contributionCalendar: { totalContributions: number } } };
       }>(query, { username: this.username });
-
       return data.user.contributionsCollection.contributionCalendar.totalContributions;
     } catch {
       return 0;
@@ -372,21 +209,15 @@ export class GitHubService {
             contributionCalendar {
               weeks {
                 firstDay
-                contributionDays {
-                  date
-                  contributionCount
-                  color
-                }
+                contributionDays { date contributionCount color }
               }
             }
           }
         }
       }`;
-
-      const data = await this.octokit.graphql<{
+      const data = await githubGraphql<{
         user: { contributionsCollection: { contributionCalendar: { weeks: GitHubContributionWeek[] } } };
       }>(query, { username: this.username });
-
       return data.user.contributionsCollection.contributionCalendar.weeks;
     } catch {
       return [];
@@ -395,12 +226,8 @@ export class GitHubService {
 
   async getRecentActivity(count: number = 10): Promise<GitHubActivity[]> {
     try {
-      const { data } = await this.octokit.rest.activity.listPublicEventsForUser({
-        username: this.username,
-        per_page: count,
-      });
-
-      return (data as any[]).map((event: any) => ({
+      const data = await githubFetch(`/users/${this.username}/events/public?per_page=${count}`);
+      return (data as GitHubActivity[]).map((event: any) => ({
         id: String(event.id ?? ""),
         type: String(event.type ?? ""),
         repo: { name: String(event.repo?.name ?? "") },
@@ -419,12 +246,7 @@ export class GitHubService {
           pinnedItems(first: 6, types: REPOSITORY) {
             nodes {
               ... on Repository {
-                id
-                name
-                description
-                url
-                stargazerCount
-                forkCount
+                id name description url stargazerCount forkCount
                 primaryLanguage { name color }
                 languages(first: 3) { nodes { name } }
               }
@@ -432,11 +254,9 @@ export class GitHubService {
           }
         }
       }`;
-
-      const data = await this.octokit.graphql<{
+      const data = await githubGraphql<{
         user: { pinnedItems: { nodes: Array<Record<string, unknown>> } };
       }>(query, { username: this.username });
-
       return (data.user.pinnedItems.nodes || []).map((node: any) => ({
         id: String(node.id ?? ""),
         name: String(node.name ?? ""),
@@ -445,10 +265,10 @@ export class GitHubService {
         stars: Number(node.stargazerCount ?? 0),
         forks: Number(node.forkCount ?? 0),
         language: node.primaryLanguage
-          ? { name: String((node.primaryLanguage as Record<string, unknown>).name ?? ""), color: ((node.primaryLanguage as Record<string, unknown>).color as string) || null }
+          ? { name: String(node.primaryLanguage.name ?? ""), color: (node.primaryLanguage.color as string) || null }
           : null,
         languages: ((node.languages as Record<string, unknown>)?.nodes as Array<Record<string, unknown>> || []).map(
-          (l) => String(l.name ?? "")
+          (l: any) => String(l.name ?? "")
         ),
       }));
     } catch {
@@ -463,29 +283,21 @@ export class GitHubService {
       this.getContributionCount(),
       this.getTotalPullRequests(),
     ]);
-
     const totalStars = repos.reduce((a, r) => a + r.stargazers_count, 0);
     const totalForks = repos.reduce((a, r) => a + r.forks_count, 0);
     const totalIssues = repos.reduce((a, r) => a + r.open_issues_count, 0);
-
     const langBytes: Record<string, number> = {};
     for (const repo of repos) {
       if (!repo.language) continue;
       langBytes[repo.language] = (langBytes[repo.language] ?? 0) + 1;
     }
-
     const totalLangs = Object.values(langBytes).reduce((a, b) => a + b, 0);
     const topLanguages: GitHubLanguage[] = Object.entries(langBytes)
-      .map(([name, count]) => ({
-        name,
-        bytes: count,
-        color: LANGUAGE_COLORS[name] ?? "#6b7280",
-      }))
+      .map(([name, count]) => ({ name, bytes: count, color: LANGUAGE_COLORS[name] ?? "#6b7280" }))
       .sort((a, b) => b.bytes - a.bytes)
       .slice(0, 10)
       .map((l) => ({ ...l, bytes: Math.round((l.bytes / totalLangs) * 100) }));
-
-    return { user, repos, totalStars, totalForks, totalIssues, topLanguages, contributionCount, totalPRs };
+    return { user, repos, totalStars, totalForks, totalIssues, totalPRs, topLanguages, contributionCount };
   }
 
   async getDashboardData(): Promise<GitHubDashboardData> {
@@ -495,17 +307,12 @@ export class GitHubService {
       this.getRecentActivity(20),
       this.getPinnedRepos(),
     ]);
-
     const sortedByStars = [...stats.repos].sort((a, b) => b.stargazers_count - a.stargazers_count);
     const recentRepos = stats.repos
       .filter((r) => !r.fork)
       .sort((a, b) => new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime())
       .slice(0, 10);
-
-    const latestCommits: GitHubActivity[] = recentActivity
-      .filter((a) => a.type === "PushEvent")
-      .slice(0, 10);
-
+    const latestCommits = recentActivity.filter((a) => a.type === "PushEvent").slice(0, 10);
     return {
       user: stats.user,
       repos: stats.repos,

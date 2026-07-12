@@ -74,8 +74,8 @@ export function MetricsChartsSection() {
         {[
           { label: "Total Visitors", value: data.totalVisitors.toLocaleString(), trend: data.visitorsChange, icon: Users, color: "text-accent" },
           { label: "Page Views", value: data.totalPageviews.toLocaleString(), trend: data.pageviewsChange, icon: Eye, color: "text-purple-500" },
-          { label: "Bounce Rate", value: `${data.avgBounceRate}%`, trend: -3.2, icon: TrendingUp, color: "text-amber-500", invert: true },
-          { label: "Avg Session", value: `${Math.floor(data.avgSessionDuration / 60)}m ${data.avgSessionDuration % 60}s`, trend: 5.8, icon: Clock, color: "text-success" },
+          { label: "Bounce Rate", value: data.avgBounceRate > 0 ? `${data.avgBounceRate}%` : "--", trend: 0, icon: TrendingUp, color: "text-amber-500", invert: true },
+          { label: "Avg Session", value: data.avgSessionDuration > 0 ? `${Math.floor(data.avgSessionDuration / 60)}m ${data.avgSessionDuration % 60}s` : "--", trend: 0, icon: Clock, color: "text-success" },
         ].map((stat) => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="p-4 rounded-xl border border-border-subtle bg-surface"
@@ -102,29 +102,8 @@ export function MetricsChartsSection() {
             <CardDescription>New vs returning</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={180}>
-                <RechartsPieChart>
-                  <RechartsPie data={[
-                    { name: "New Visitors", value: Math.round(data.totalVisitors * 0.68), color: "var(--color-accent)" },
-                    { name: "Returning", value: Math.round(data.totalVisitors * 0.32), color: "#10b981" },
-                  ]} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" startAngle={90} endAngle={-270}>
-                    <Cell fill="var(--color-accent)" />
-                    <Cell fill="#10b981" />
-                  </RechartsPie>
-                  <Tooltip contentStyle={{ background: "var(--color-surface)", border: "1px solid var(--color-border-subtle)", borderRadius: "10px", fontSize: "12px" }} />
-                </RechartsPieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex items-center justify-center gap-4 text-xs mt-2">
-              <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "var(--color-accent)" }} />
-                <span className="text-text-secondary">New 68%</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#10b981]" />
-                <span className="text-text-secondary">Returning 32%</span>
-              </div>
+            <div className="flex items-center justify-center h-[180px]">
+              <span className="text-xs text-text-tertiary">Requires session-based tracking</span>
             </div>
           </CardContent>
         </Card>

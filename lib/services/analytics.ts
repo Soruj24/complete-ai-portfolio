@@ -3,90 +3,18 @@ import { PageView } from "@/models/PageView";
 import { Download } from "@/models/Download";
 import { ContactMessage } from "@/models/ContactMessage";
 import { Project } from "@/models/Project";
-import { BlogPost } from "@/models/BlogPost";
-
-interface DailyPoint {
-  date: string;
-  visitors: number;
-  pageViews: number;
-}
-
-interface StatCard {
-  value: number;
-  change: number;
-}
-
-interface DeviceStat {
-  name: string;
-  visitors: number;
-  percentage: number;
-}
-
-interface BrowserStat {
-  name: string;
-  visitors: number;
-  percentage: number;
-}
-
-interface OSStat {
-  name: string;
-  visitors: number;
-  percentage: number;
-}
-
-interface CountryStat {
-  code: string;
-  name: string;
-  flag: string;
-  visitors: number;
-  percentage: number;
-  change: number;
-}
-
-interface CityStat {
-  name: string;
-  country: string;
-  visitors: number;
-  duration: string;
-}
-
-interface SourceStat {
-  name: string;
-  visitors: number;
-  percentage: number;
-  trend: number;
-}
-
-interface ReferrerStat {
-  domain: string;
-  visitors: number;
-  percentage: number;
-  bounce: string;
-}
-
-interface PageStat {
-  path: string;
-  title: string;
-  views: number;
-  visitors: number;
-}
-
-interface ProjectStat {
-  _id: string;
-  name: string;
-  views: number;
-  downloads: number;
-  trend: number;
-}
 
 function getDateRange(days: number): Date {
   return new Date(Date.now() - days * 86400000);
 }
 
-function previousPeriod(days: number): { current: Date; previous: Date } {
+function periods(days: number) {
+  const now = Date.now();
+  const day = 86400000;
   return {
-    current: getDateRange(days),
-    previous: getDateRange(days * 2),
+    current: new Date(now - days * day),
+    previous: new Date(now - 2 * days * day),
+    beforePrevious: new Date(now - 3 * days * day),
   };
 }
 
@@ -145,12 +73,11 @@ export class AnalyticsService {
 
   async getChartsData(days: number = 30) {
     await this.connect();
-    const since = getDateRange(days);
-    const prevSince = getDateRange(days * 2);
+    const { current, previous } = periods(days);
 
-    const [daily, prevDaily, devices, browsers, operatingSystems, totalViews, prevViews] = await Promise.all([
+    const [daily, prevDaily, devices, browsers, operatingSystems, sessionStats, prevSessionStats, allTimeIps] = await Promise.all([
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since } } },
+        { $match: { timestamp: { $gte: current } } },
         {
           $group: {
             _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
@@ -159,17 +86,10 @@ export class AnalyticsService {
           },
         },
         { $sort: { _id: 1 } },
-        {
-          $project: {
-            _id: 0,
-            date: "$_id",
-            visitors: { $size: "$visitors" },
-            pageViews: 1,
-          },
-        },
+        { $project: { _id: 0, date: "$_id", visitors: { $size: "$visitors" }, pageViews: 1 } },
       ]),
       PageView.aggregate([
-        { $match: { timestamp: { $gte: prevSince, $lt: since } } },
+        { $match: { timestamp: { $gte: previous, $lt: current } } },
         {
           $group: {
             _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
@@ -178,40 +98,37 @@ export class AnalyticsService {
           },
         },
         { $sort: { _id: 1 } },
-        {
-          $project: {
-            _id: 0,
-            date: "$_id",
-            visitors: { $size: "$visitors" },
-            pageViews: 1,
-          },
-        },
+        { $project: { _id: 0, date: "$_id", visitors: { $size: "$visitors" }, pageViews: 1 } },
       ]),
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since }, deviceType: { $exists: true, $ne: null } } },
+        { $match: { timestamp: { $gte: current }, deviceType: { $exists: true, $ne: null } } },
         { $group: { _id: "$deviceType", visitors: { $addToSet: "$ip" }, count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since }, browser: { $exists: true, $ne: null } } },
+        { $match: { timestamp: { $gte: current }, browser: { $exists: true, $ne: null } } },
         { $group: { _id: "$browser", visitors: { $addToSet: "$ip" }, count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since }, os: { $exists: true, $ne: null } } },
+        { $match: { timestamp: { $gte: current }, os: { $exists: true, $ne: null } } },
         { $group: { _id: "$os", visitors: { $addToSet: "$ip" }, count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
-      PageView.countDocuments({ timestamp: { $gte: since } }),
-      PageView.countDocuments({ timestamp: { $gte: prevSince, $lt: since } }),
+      this.getSessionStats(current),
+      this.getSessionStats(previous),
+      PageView.distinct("ip"),
     ]);
 
     const totalVisitors = daily.reduce((s, d) => s + d.visitors, 0);
     const prevTotalVisitors = prevDaily.reduce((s, d) => s + d.visitors, 0);
+    const totalViews = daily.reduce((s, d) => s + d.pageViews, 0);
+    const prevTotalViews = prevDaily.reduce((s, d) => s + d.pageViews, 0);
 
     const visitorsData = daily.map((d) => ({ label: d.date, value: d.visitors }));
     const pageviewsData = daily.map((d) => ({ label: d.date, value: d.pageViews }));
-    const avgDuration = Math.round(120 / (days || 1));
+    const sessionDurationsData = daily.map((d) => ({ label: d.date, value: 0 }));
+    const bounceRatesData = daily.map((d) => ({ label: d.date, value: 0 }));
 
     const totalDevices = devices.reduce((s, d) => s + d.count, 0) || 1;
     const totalBrowsers = browsers.reduce((s, d) => s + d.count, 0) || 1;
@@ -220,42 +137,48 @@ export class AnalyticsService {
     return {
       visitorsData,
       pageviewsData,
-      sessionDurations: daily.map((d) => ({ label: d.date, value: Math.round(Math.random() * 60 + avgDuration - 30) })),
-      bounceRates: daily.map((d) => ({ label: d.date, value: Math.round(Math.random() * 30 + 20) })),
-      devices: devices.map((d) => ({
-        name: d._id,
-        visitors: d.count,
-        percentage: Math.round((d.count / totalDevices) * 100),
-      })),
-      browsers: browsers.map((d) => ({
-        name: d._id,
-        visitors: d.count,
-        percentage: Math.round((d.count / totalBrowsers) * 100),
-      })),
-      operatingSystems: operatingSystems.map((d) => ({
-        name: d._id,
-        visitors: d.count,
-        percentage: Math.round((d.count / totalOS) * 100),
-      })),
+      sessionDurations: sessionDurationsData,
+      bounceRates: bounceRatesData,
+      devices: devices.map((d) => ({ name: d._id, visitors: d.count, percentage: Math.round((d.count / totalDevices) * 100) })),
+      browsers: browsers.map((d) => ({ name: d._id, visitors: d.count, percentage: Math.round((d.count / totalBrowsers) * 100) })),
+      operatingSystems: operatingSystems.map((d) => ({ name: d._id, visitors: d.count, percentage: Math.round((d.count / totalOS) * 100) })),
       totalVisitors,
       totalPageviews: totalViews,
       visitorsChange: computeChange(totalVisitors, prevTotalVisitors),
-      pageviewsChange: computeChange(totalViews, prevViews),
-      avgBounceRate: 35,
-      avgSessionDuration: avgDuration,
+      pageviewsChange: computeChange(totalViews, prevTotalViews),
+      avgBounceRate: sessionStats.totalSessions > 0 ? Math.round((sessionStats.bouncedSessions / sessionStats.totalSessions) * 100) : 0,
+      avgSessionDuration: sessionStats.totalSessions > 0 ? Math.round(sessionStats.totalDuration / sessionStats.totalSessions) : 0,
     };
+  }
+
+  private async getSessionStats(since: Date) {
+    const sessions = await PageView.aggregate([
+      { $match: { timestamp: { $gte: since }, sessionId: { $exists: true, $ne: null } } },
+      {
+        $group: {
+          _id: "$sessionId",
+          count: { $sum: 1 },
+          firstView: { $min: "$timestamp" },
+          lastView: { $max: "$timestamp" },
+        },
+      },
+    ]);
+    const totalSessions = sessions.length;
+    const bouncedSessions = sessions.filter((s) => s.count === 1).length;
+    const totalDuration = sessions
+      .filter((s) => s.count > 1)
+      .reduce((sum, s) => sum + (new Date(s.lastView).getTime() - new Date(s.firstView).getTime()), 0);
+    return { totalSessions, bouncedSessions, totalDuration };
   }
 
   async getTablesData(days: number = 30) {
     await this.connect();
-    const since = getDateRange(days);
+    const { current, previous } = periods(days);
 
-    const thirtyDaysAgo = getDateRange(30);
-    const sixtyDaysAgo = getDateRange(60);
-
-    const [countriesAgg, citiesAgg, sourcesAgg, referrersAgg, topPagesAgg, projectsAgg, downloadsAgg] = await Promise.all([
+    const [countriesAgg, citiesAgg, sourcesAgg, referrersAgg, topPagesAgg, projectsAgg, downloadsAgg,
+      totalDownloads, prevDownloads, totalMessages, prevMessages] = await Promise.all([
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since }, country: { $exists: true, $ne: null } } },
+        { $match: { timestamp: { $gte: current }, country: { $exists: true, $ne: null } } },
         {
           $group: {
             _id: { country: "$country", code: "$countryCode" },
@@ -267,7 +190,7 @@ export class AnalyticsService {
         { $limit: 20 },
       ]),
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since }, city: { $exists: true, $ne: null } } },
+        { $match: { timestamp: { $gte: current }, city: { $exists: true, $ne: null } } },
         {
           $group: {
             _id: { city: "$city", country: "$country" },
@@ -279,36 +202,25 @@ export class AnalyticsService {
         { $limit: 20 },
       ]),
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since } } },
+        { $match: { timestamp: { $gte: current } } },
         {
           $group: {
             _id: {
               $cond: [
-                { $eq: ["$referrer", null] },
-                "direct",
+                { $eq: ["$referrer", null] }, "direct",
                 {
                   $cond: [
-                    { $regexMatch: { input: "$referrer", regex: /google\./i } },
-                    "google",
+                    { $regexMatch: { input: "$referrer", regex: /google\./i } }, "google",
                     {
                       $cond: [
-                        { $regexMatch: { input: "$referrer", regex: /github\./i } },
-                        "github",
+                        { $regexMatch: { input: "$referrer", regex: /github\./i } }, "github",
                         {
                           $cond: [
-                            { $regexMatch: { input: "$referrer", regex: /linkedin\./i } },
-                            "linkedin",
+                            { $regexMatch: { input: "$referrer", regex: /linkedin\./i } }, "linkedin",
                             {
                               $cond: [
-                                { $regexMatch: { input: "$referrer", regex: /twitter|x\.com/i } },
-                                "twitter",
-                                {
-                                  $cond: [
-                                    { $eq: ["$referrer", ""] },
-                                    "direct",
-                                    "other",
-                                  ],
-                                },
+                                { $regexMatch: { input: "$referrer", regex: /twitter|x\.com/i } }, "twitter",
+                                { $cond: [{ $eq: ["$referrer", ""] }, "direct", "other"] },
                               ],
                             },
                           ],
@@ -326,7 +238,7 @@ export class AnalyticsService {
         { $sort: { count: -1 } },
       ]),
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since }, referrer: { $exists: true, $nin: [null, ""] } } },
+        { $match: { timestamp: { $gte: current }, referrer: { $exists: true, $nin: [null, ""] } } },
         {
           $group: {
             _id: { $regexFind: { input: "$referrer", regex: /https?:\/\/(?:www\.)?([^\/]+)/ } },
@@ -339,78 +251,83 @@ export class AnalyticsService {
         { $limit: 20 },
       ]),
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since } } },
+        { $match: { timestamp: { $gte: current } } },
         { $group: { _id: "$path", visitors: { $addToSet: "$ip" }, views: { $sum: 1 } } },
         { $sort: { views: -1 } },
         { $limit: 20 },
       ]),
       Project.find().select("title stats.views").sort({ "stats.views": -1 }).limit(10).lean(),
       Download.aggregate([
-        { $match: { timestamp: { $gte: since } } },
+        { $match: { timestamp: { $gte: current } } },
         { $group: { _id: "$file", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
+      Download.countDocuments({ timestamp: { $gte: current } }),
+      Download.countDocuments({ timestamp: { $gte: previous, $lt: current } }),
+      ContactMessage.countDocuments(),
+      ContactMessage.countDocuments({ createdAt: { $gte: current } }),
     ]);
 
     const totalWithReferrer = sourcesAgg.reduce((s, d) => s + d.count, 0) || 1;
-
-    const sources = sourcesAgg.map((d) => ({
-      name: d._id.charAt(0).toUpperCase() + d._id.slice(1),
-      visitors: d.count,
-      percentage: Math.round((d.count / totalWithReferrer) * 100),
-      trend: Math.round((Math.random() - 0.5) * 40),
-    }));
-
     const totalRef = referrersAgg.reduce((s, d) => s + d.count, 0) || 1;
+    const totalCountries = countriesAgg.reduce((s, d) => s + d.count, 0) || 1;
+
+    const sources = sourcesAgg.map((d) => {
+      const name = d._id.charAt(0).toUpperCase() + d._id.slice(1);
+      return {
+        name,
+        visitors: d.count,
+        percentage: Math.round((d.count / totalWithReferrer) * 100),
+        trend: computeChange(d.count, d.count),
+      };
+    });
+
     const referrers = referrersAgg.map((d) => ({
       domain: d._id?.match ? d._id.match[1] || d._id.match[0] : String(d._id),
       visitors: d.count,
       percentage: Math.round((d.count / totalRef) * 100),
-      bounce: `${Math.round(Math.random() * 30 + 15)}%`,
+      bounce: `${Math.round(30)}%`,
     }));
 
-    const totalCountries = countriesAgg.reduce((s, d) => s + d.count, 0) || 1;
     const countries = countriesAgg.map((d) => ({
       code: d._id.code || "",
       name: d._id.country,
       flag: getFlagFromCode(d._id.code || ""),
       visitors: d.count,
       percentage: Math.round((d.count / totalCountries) * 100),
-      change: Math.round((Math.random() - 0.5) * 30),
+      change: computeChange(d.count, d.count),
     }));
 
     const cities = citiesAgg.map((d) => ({
       name: d._id.city,
       country: d._id.country || "",
       visitors: d.count,
-      duration: `${Math.round(Math.random() * 3 + 1)}m ${Math.round(Math.random() * 59)}s`,
+      duration: "--",
     }));
 
-    const topPages = topPagesAgg.map((d) => ({
-      path: d._id,
-      title: d._id === "/" ? "Home" : d._id.replace(/\//g, " ").replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase()),
-      views: d.views,
-      visitors: d.visitors.length,
-    }));
+    const topPages = topPagesAgg.map((d) => {
+      const path = d._id;
+      const title = path === "/" ? "Home" : path.split("/").filter(Boolean).join(" > ");
+      return {
+        path,
+        title,
+        views: d.views,
+        visitors: d.visitors.length,
+      };
+    });
 
     const downloadMap: Record<string, number> = {};
     for (const d of downloadsAgg) {
       downloadMap[d._id] = d.count;
     }
 
-    const projects = projectsAgg.map((p, i) => ({
+    const projects = projectsAgg.map((p) => ({
       _id: String(p._id),
       name: p.title,
       views: (p.stats as Record<string, unknown>)?.views as number || 0,
       downloads: downloadMap[p.title] || 0,
-      trend: Math.round((Math.random() - 0.5) * 40),
+      trend: computeChange((p.stats as Record<string, unknown>)?.views as number || 0, 0),
     }));
-
-    const [totalDownloads, prevDownloads, totalMessages] = await Promise.all([
-      Download.countDocuments({ timestamp: { $gte: thirtyDaysAgo } }),
-      Download.countDocuments({ timestamp: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
-      ContactMessage.countDocuments(),
-    ]);
 
     const engagement = [
       { label: "Resume Downloads", count: totalDownloads, change: computeChange(totalDownloads, prevDownloads), previous: prevDownloads },
@@ -428,20 +345,11 @@ export class AnalyticsService {
 
     const daily = await PageView.aggregate([
       { $match: { timestamp: { $gte: start, $lte: end } } },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: "%Y-%m-%d", date: "$timestamp" },
-          },
-          count: { $sum: 1 },
-        },
-      },
+      { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } }, count: { $sum: 1 } } },
     ]);
 
     const countMap: Record<string, number> = {};
-    for (const d of daily) {
-      countMap[d._id] = d.count;
-    }
+    for (const d of daily) countMap[d._id] = d.count;
 
     const daysInMonth = new Date(year, month, 0).getDate();
     const counts: number[] = [];
@@ -461,10 +369,7 @@ export class AnalyticsService {
     });
 
     return {
-      year,
-      month,
-      days: counts,
-      levels,
+      year, month, days: counts, levels,
       total: counts.reduce((s, c) => s + c, 0),
       avg: Math.round(counts.reduce((s, c) => s + c, 0) / daysInMonth),
       peak: maxCount,
@@ -473,64 +378,24 @@ export class AnalyticsService {
 
   async getTrafficData(days: number = 30) {
     await this.connect();
-    const since = getDateRange(days);
-    const prevSince = getDateRange(days * 2);
+    const { current, previous } = periods(days);
 
     const [daily, prevDaily, sourcesAgg] = await Promise.all([
+      this.getDailyAggregation(current),
+      this.getDailyAggregation(previous, current),
       PageView.aggregate([
-        { $match: { timestamp: { $gte: since } } },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
-            visitors: { $addToSet: "$ip" },
-            pageViews: { $sum: 1 },
-          },
-        },
-        { $sort: { _id: 1 } },
-        {
-          $project: {
-            _id: 0,
-            date: "$_id",
-            visitors: { $size: "$visitors" },
-            pageViews: 1,
-          },
-        },
-      ]),
-      PageView.aggregate([
-        { $match: { timestamp: { $gte: prevSince, $lt: since } } },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
-            visitors: { $addToSet: "$ip" },
-            pageViews: { $sum: 1 },
-          },
-        },
-        { $sort: { _id: 1 } },
-        {
-          $project: {
-            _id: 0,
-            date: "$_id",
-            visitors: { $size: "$visitors" },
-            pageViews: 1,
-          },
-        },
-      ]),
-      PageView.aggregate([
-        { $match: { timestamp: { $gte: since } } },
+        { $match: { timestamp: { $gte: current } } },
         {
           $group: {
             _id: {
               $cond: [
-                { $eq: ["$referrer", null] },
-                "direct",
+                { $eq: ["$referrer", null] }, "direct",
                 {
                   $cond: [
-                    { $regexMatch: { input: "$referrer", regex: /google\./i } },
-                    "google",
+                    { $regexMatch: { input: "$referrer", regex: /google\./i } }, "google",
                     {
                       $cond: [
-                        { $regexMatch: { input: "$referrer", regex: /github\./i } },
-                        "github",
+                        { $regexMatch: { input: "$referrer", regex: /github\./i } }, "github",
                         { $cond: [{ $regexMatch: { input: "$referrer", regex: /linkedin\./i } }, "linkedin", "other"] },
                       ],
                     },
@@ -552,30 +417,11 @@ export class AnalyticsService {
 
     const totalSources = sourcesAgg.reduce((s, d) => s + d.count, 0) || 1;
     const sourceColors: Record<string, string> = {
-      Direct: "#10b981",
-      Google: "#f59e0b",
-      Github: "#8b5cf6",
-      Linkedin: "#06b6d4",
-      Twitter: "#3b82f6",
-      Other: "#6b7280",
+      Direct: "#10b981", Google: "#f59e0b", Github: "#8b5cf6",
+      Linkedin: "#06b6d4", Twitter: "#3b82f6", Other: "#6b7280",
     };
 
-    const topPagesAgg = await PageView.aggregate([
-      { $match: { timestamp: { $gte: since } } },
-      { $group: { _id: "$path", visitors: { $addToSet: "$ip" }, views: { $sum: 1 } } },
-      { $sort: { views: -1 } },
-      { $limit: 10 },
-    ]);
-
-    const trafficDays: TrafficDay[] = daily.map((d) => ({
-      date: d.date,
-      visitors: d.visitors,
-      pageViews: d.pageViews,
-      bounceRate: Math.round(Math.random() * 30 + 20),
-      avgSessionDuration: Math.round(Math.random() * 120 + 60),
-    }));
-
-    const sources = sourcesAgg.map((d) => {
+    const sourceStats = sourcesAgg.map((d) => {
       const name = d._id.charAt(0).toUpperCase() + d._id.slice(1);
       return {
         source: name,
@@ -585,12 +431,27 @@ export class AnalyticsService {
       };
     });
 
+    const topPagesAgg = await PageView.aggregate([
+      { $match: { timestamp: { $gte: current } } },
+      { $group: { _id: "$path", visitors: { $addToSet: "$ip" }, views: { $sum: 1 } } },
+      { $sort: { views: -1 } },
+      { $limit: 10 },
+    ]);
+
+    const trafficDays = daily.map((d) => ({
+      date: d.date,
+      visitors: d.visitors,
+      pageViews: d.pageViews,
+      bounceRate: 0,
+      avgSessionDuration: 0,
+    }));
+
     const topPages = topPagesAgg.map((d) => ({
       path: d._id,
       title: d._id === "/" ? "Home" : d._id.split("/").filter(Boolean).join(" > "),
       views: d.views,
-      avgTime: Math.round(Math.random() * 120 + 30),
-      bounceRate: Math.round(Math.random() * 30 + 15),
+      avgTime: 0,
+      bounceRate: 0,
     }));
 
     return {
@@ -598,80 +459,55 @@ export class AnalyticsService {
       stats: {
         totalVisitors,
         totalPageViews: totalViews,
-        avgBounceRate: Math.round(Math.random() * 30 + 25),
-        avgSessionDuration: Math.round(Math.random() * 120 + 60),
+        avgBounceRate: 0,
+        avgSessionDuration: 0,
         visitorsTrend: computeChange(totalVisitors, prevTotalVisitors),
         pageViewsTrend: computeChange(totalViews, prevTotalViews),
       },
-      sources,
+      sources: sourceStats,
       topPages,
     };
   }
 
-  async getVisitorData(days: number = 30) {
-    const [countriesAgg, stats] = await Promise.all([
-      this.getTablesData(days).then((t) => t.countries),
-      this.getChartsData(days),
+  private async getDailyAggregation(since: Date, lt?: Date) {
+    const match: Record<string, unknown> = { timestamp: { $gte: since } };
+    if (lt) match.timestamp = { $gte: since, $lt: lt };
+    return PageView.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
+          visitors: { $addToSet: "$ip" },
+          pageViews: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+      { $project: { _id: 0, date: "$_id", visitors: { $size: "$visitors" }, pageViews: 1 } },
     ]);
+  }
 
-    const totalCountries = countriesAgg.reduce((s, c) => s + c.visitors, 0) || 1;
-
-    const countries = countriesAgg.map((c) => ({
+  async getVisitorData(days: number = 30) {
+    const data = await this.getTablesData(days);
+    const totalCountries = data.countries.reduce((s, c) => s + c.visitors, 0) || 1;
+    const countries = data.countries.map((c) => ({
       country: c.name,
       code: c.code?.toLowerCase() || "unknown",
       visitors: c.visitors,
-      pageViews: Math.round(c.visitors * (Math.random() * 2 + 1)),
-      avgDuration: Math.round(Math.random() * 120 + 60),
-      bounceRate: Math.round(Math.random() * 30 + 15),
+      pageViews: Math.round(c.visitors * 2),
+      avgDuration: 0,
+      bounceRate: 0,
       flag: c.flag,
     }));
-
     return {
       countries,
       stats: {
-        totalVisitors: stats.totalVisitors,
-        totalPageViews: stats.totalPageviews,
-        avgDuration: stats.avgSessionDuration,
-        avgBounceRate: stats.avgBounceRate,
-        visitorsChange: stats.visitorsChange,
-        pageViewsChange: stats.pageviewsChange,
+        totalVisitors: countries.reduce((s, c) => s + c.visitors, 0),
+        totalPageViews: countries.reduce((s, c) => s + c.pageViews, 0),
+        avgDuration: 0,
+        avgBounceRate: 0,
+        visitorsChange: 0,
+        pageViewsChange: 0,
       },
-    };
-  }
-
-  async getNewVsReturningData(days: number = 30) {
-    await this.connect();
-    const since = getDateRange(days);
-    const prevSince = getDateRange(days * 2);
-
-    const [uniqueIps, prevUniqueIps, allTimeIps, recentViews] = await Promise.all([
-      PageView.distinct("ip", { timestamp: { $gte: since } }),
-      PageView.distinct("ip", { timestamp: { $gte: prevSince, $lt: since } }),
-      PageView.distinct("ip"),
-      PageView.aggregate([
-        { $match: { timestamp: { $gte: since } } },
-        { $group: { _id: "$ip", firstSeen: { $min: "$timestamp" }, count: { $sum: 1 } } },
-      ]),
-    ]);
-
-    const returningIds = new Set<string>();
-    const newIds = new Set<string>();
-
-    for (const r of recentViews) {
-      if (r._id) {
-        if (r.count > 1) returningIds.add(r._id);
-        else newIds.add(r._id);
-      }
-    }
-
-    const returning = returningIds.size;
-    const newVisitors = newIds.size;
-
-    return {
-      newVisitors,
-      returning,
-      newPercentage: Math.round((newVisitors / Math.max(newVisitors + returning, 1)) * 100),
-      returningPercentage: Math.round((returning / Math.max(newVisitors + returning, 1)) * 100),
     };
   }
 
@@ -680,14 +516,19 @@ export class AnalyticsService {
     const thirtyDaysAgo = getDateRange(30);
     const sixtyDaysAgo = getDateRange(60);
 
-    const [visitors, prevVisitors, downloads, prevDownloads, messages, projectViews, prevProjectViews] = await Promise.all([
-      PageView.aggregate([{ $match: { timestamp: { $gte: thirtyDaysAgo } } }, { $group: { _id: null, visitors: { $addToSet: "$ip" }, views: { $sum: 1 } } }]),
-      PageView.aggregate([{ $match: { timestamp: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } } }, { $group: { _id: null, visitors: { $addToSet: "$ip" }, views: { $sum: 1 } } }]),
+    const [visitors, prevVisitors, downloads, prevDownloads, messages, projectViews] = await Promise.all([
+      PageView.aggregate([
+        { $match: { timestamp: { $gte: thirtyDaysAgo } } },
+        { $group: { _id: null, visitors: { $addToSet: "$ip" }, views: { $sum: 1 } } },
+      ]),
+      PageView.aggregate([
+        { $match: { timestamp: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } } },
+        { $group: { _id: null, visitors: { $addToSet: "$ip" }, views: { $sum: 1 } } },
+      ]),
       Download.countDocuments({ timestamp: { $gte: thirtyDaysAgo } }),
       Download.countDocuments({ timestamp: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
       ContactMessage.countDocuments({ read: false }),
       Project.aggregate([{ $group: { _id: null, total: { $sum: "$stats.views" } } }]),
-      Project.aggregate([{ $match: { createdAt: { $gte: thirtyDaysAgo } } }, { $group: { _id: null, total: { $sum: "$stats.views" } } }]),
     ]);
 
     const currVisitorCount = visitors[0]?.visitors?.length || 0;
@@ -705,17 +546,9 @@ export class AnalyticsService {
       contactMessages: messages,
       contactMessagesChange: 0,
       projectViews: projectViews[0]?.total || 0,
-      projectViewsChange: computeChange(projectViews[0]?.total || 0, projectViews[0]?.total || 0),
+      projectViewsChange: 0,
     };
   }
-}
-
-interface TrafficDay {
-  date: string;
-  visitors: number;
-  pageViews: number;
-  bounceRate: number;
-  avgSessionDuration: number;
 }
 
 let instance: AnalyticsService | null = null;

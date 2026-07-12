@@ -109,8 +109,8 @@ export function TrafficPage() {
   const statCards = [
     { label: "Visitors", value: stats.totalVisitors.toLocaleString(), trend: stats.visitorsTrend, icon: Users },
     { label: "Page Views", value: stats.totalPageViews.toLocaleString(), trend: stats.pageViewsTrend, icon: Eye },
-    { label: "Bounce Rate", value: `${stats.avgBounceRate}%`, trend: -2.1, icon: ArrowRight },
-    { label: "Avg Session", value: `${Math.floor(stats.avgSessionDuration / 60)}m ${stats.avgSessionDuration % 60}s`, trend: 5.3, icon: Clock },
+    { label: "Bounce Rate", value: stats.avgBounceRate > 0 ? `${stats.avgBounceRate}%` : "--", trend: 0, icon: ArrowRight },
+    { label: "Avg Session", value: stats.avgSessionDuration > 0 ? `${Math.floor(stats.avgSessionDuration / 60)}m ${stats.avgSessionDuration % 60}s` : "--", trend: 0, icon: Clock },
   ];
 
   return (

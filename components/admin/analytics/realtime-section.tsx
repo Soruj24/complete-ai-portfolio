@@ -75,7 +75,7 @@ export function RealtimeSection() {
                 {[
                   { label: "Peak Today", value: String(data?.peakToday ?? 0), color: "text-amber-500" },
                   { label: "Total Today", value: String(data?.totalToday ?? 0), color: "text-accent" },
-                  { label: "Avg Session", value: data && data.totalToday > 0 ? "~2m" : "--", color: "text-info" },
+                  { label: "Avg Session", value: "--", color: "text-info" },
                 ].map((stat) => (
                   <div key={stat.label} className="p-2.5 rounded-lg bg-surface-hover text-center">
                     <p className="text-xs font-semibold text-text-primary">{stat.value}</p>
