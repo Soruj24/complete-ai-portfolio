@@ -4,12 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useRef, useState, useEffect } from "react";
 import { Loader2, Briefcase, Calendar, GraduationCap } from "lucide-react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 import { IExperience } from "@/types";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
 // import { experiences } from "@/data/experience"; // Removed static import
 
 export function Experience() {
@@ -42,58 +38,22 @@ export function Experience() {
     fetchExperiences();
   }, []);
 
-  useGSAP(
-    () => {
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          end: "bottom 20%",
-          toggleActions: "play none none reverse",
+  useSectionAnimation(sectionRef, (tl) => {
+    tl.from(".experience-reveal-text", { y: 50, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out" })
+      .from(".experience-line", { scaleY: 0, transformOrigin: "top", duration: 1.5, ease: "none" }, "-=0.5")
+      .from(
+        ".experience-item",
+        {
+          x: (index) => (index % 2 === 0 ? -100 : 100),
+          opacity: 0,
+          duration: 1,
+          stagger: 0.3,
+          ease: "power4.out",
         },
-      });
-
-      tl.from(".experience-reveal-text", {
-        y: 50,
-        opacity: 0,
-        duration: 1,
-        stagger: 0.2,
-        ease: "power3.out",
-      })
-        .from(
-          ".experience-line",
-          {
-            scaleY: 0,
-            transformOrigin: "top",
-            duration: 1.5,
-            ease: "none",
-          },
-          "-=0.5"
-        )
-        .from(
-          ".experience-item",
-          {
-            x: (index) => (index % 2 === 0 ? -100 : 100),
-            opacity: 0,
-            duration: 1,
-            stagger: 0.3,
-            ease: "power4.out",
-          },
-          "-=1"
-        )
-        .from(
-          ".experience-dot",
-          {
-            scale: 0,
-            duration: 0.5,
-            stagger: 0.3,
-            ease: "back.out(2)",
-          },
-          "-=1.2"
-        );
-    },
-    { scope: sectionRef }
-  );
+        "-=1",
+      )
+      .from(".experience-dot", { scale: 0, duration: 0.5, stagger: 0.3, ease: "back.out(2)" }, "-=1.2");
+  });
 
   return (
     <section id="experience" ref={sectionRef} className="py-20 md:py-32 bg-[#fafafa] dark:bg-gray-900 transition-colors duration-500">

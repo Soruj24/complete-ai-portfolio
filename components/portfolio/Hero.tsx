@@ -13,10 +13,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
 import { useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useSiteSettings } from "@/lib/hooks";
+import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
 
 export function Hero() {
   const { data: session } = useSession();
@@ -24,11 +24,10 @@ export function Hero() {
   const { settings, socialLinks, loading } = useSiteSettings();
   const isAdmin = session?.user?.role === "admin";
 
-  useGSAP(
-    () => {
+  useSectionAnimation(
+    containerRef,
+    (tl) => {
       if (loading) return;
-
-      const tl = gsap.timeline();
 
       tl.from(".reveal-text", {
         y: 100,
@@ -39,23 +38,12 @@ export function Hero() {
       })
         .from(
           ".reveal-subtext",
-          {
-            y: 20,
-            opacity: 0,
-            duration: 0.8,
-            ease: "power3.out",
-          },
+          { y: 20, opacity: 0, duration: 0.8, ease: "power3.out" },
           "-=0.6",
         )
         .from(
           ".reveal-button",
-          {
-            y: 20,
-            opacity: 0,
-            duration: 0.8,
-            ease: "power3.out",
-            stagger: 0.1,
-          },
+          { y: 20, opacity: 0, duration: 0.8, ease: "power3.out", stagger: 0.1 },
           "-=0.4",
         );
 
@@ -68,7 +56,7 @@ export function Hero() {
         stagger: 0.5,
       });
     },
-    { scope: containerRef, dependencies: [loading] },
+    { deps: [loading], scrollTrigger: false },
   );
 
   if (loading) {

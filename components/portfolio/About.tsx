@@ -9,67 +9,39 @@ import {
   Loader2,
   Sparkles,
 } from "lucide-react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 import { useRef } from "react";
 import { useSiteSettings } from "@/lib/hooks";
+import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
 import profilePic from "@/public/soruj-DESKTOP-Q8KK3O8.jpg";
-
-gsap.registerPlugin(ScrollTrigger);
 
 export function About() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const { settings, loading } = useSiteSettings();
 
-  useGSAP(
-    () => {
+  useSectionAnimation(
+    sectionRef,
+    (tl) => {
       if (loading || !settings) return;
 
-      const ctx = gsap.context(() => {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none reverse",
-          },
-        });
-
-        tl.from(".about-reveal-text", {
-          y: 50,
-          opacity: 0,
-          duration: 1,
-          stagger: 0.2,
-          ease: "power3.out",
-        })
-          .from(
-            ".about-value-item",
-            {
-              x: -20,
-              opacity: 0,
-              duration: 0.5,
-              stagger: 0.1,
-              ease: "back.out(1.7)",
-            },
-            "-=0.5"
-          )
-          .from(
-            ".about-card",
-            {
-              scale: 0.9,
-              opacity: 0,
-              duration: 0.8,
-              stagger: 0.15,
-              ease: "elastic.out(1, 0.8)",
-            },
-            "-=0.5"
-          );
-      }, sectionRef);
-
-      return () => ctx.revert();
+      tl.from(".about-reveal-text", {
+        y: 50,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power3.out",
+      })
+        .from(
+          ".about-value-item",
+          { x: -20, opacity: 0, duration: 0.5, stagger: 0.1, ease: "back.out(1.7)" },
+          "-=0.5",
+        )
+        .from(
+          ".about-card",
+          { scale: 0.9, opacity: 0, duration: 0.8, stagger: 0.15, ease: "elastic.out(1, 0.8)" },
+          "-=0.5",
+        );
     },
-    { dependencies: [loading, settings] }
+    { deps: [loading, settings] },
   );
 
   if (loading) {

@@ -3,12 +3,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useRef, useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 import { ISkill } from "@/types";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
 // import { skillCategories } from "@/data/skills"; // Removed static import
 
 export function Skills() {
@@ -62,37 +58,11 @@ export function Skills() {
     return acc;
   }, []);
 
-  useGSAP(() => {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 80%",
-        end: "bottom 20%",
-        toggleActions: "play none none reverse"
-      }
-    });
-
-    tl.from(".skills-reveal-text", {
-      y: 50,
-      opacity: 0,
-      duration: 1,
-      stagger: 0.2,
-      ease: "power3.out"
-    })
-    .from(".skill-card", {
-      y: 30,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.1,
-      ease: "power2.out"
-    }, "-=0.5")
-    .from(".skill-progress-bar", {
-      width: 0,
-      duration: 1.5,
-      stagger: 0.05,
-      ease: "power4.out"
-    }, "-=0.8");
-  }, { scope: sectionRef });
+  useSectionAnimation(sectionRef, (tl) => {
+    tl.from(".skills-reveal-text", { y: 50, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out" })
+      .from(".skill-card", { y: 30, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, "-=0.5")
+      .from(".skill-progress-bar", { width: 0, duration: 1.5, stagger: 0.05, ease: "power4.out" }, "-=0.8");
+  });
 
   return (
     <section id="skills" ref={sectionRef} className="py-20 md:py-32 bg-[#fafafa] dark:bg-gray-900 transition-colors duration-500">

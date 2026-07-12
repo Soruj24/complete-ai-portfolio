@@ -1,15 +1,11 @@
 "use client";
 
 import { useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 import { Loader2 } from "lucide-react";
 import { useContact } from "@/hooks/use-contact";
 import { ContactInfo } from "./contact-info";
 import { ContactForm } from "./contact-form";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
 
 export function Contact() {
   const sectionRef = useRef(null);
@@ -18,20 +14,16 @@ export function Contact() {
     setIsSubmitted, handleSubmit,
   } = useContact();
 
-  useGSAP(() => {
-    if (loading || !settings) return;
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 80%",
-        end: "bottom 20%",
-        toggleActions: "play none none reverse",
-      },
-    });
-    tl.from(".contact-reveal-text", { y: 50, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out" })
-      .from(".contact-info-item", { x: -30, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, "-=0.5")
-      .from(".contact-form-card", { x: 30, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.8");
-  }, { scope: sectionRef, dependencies: [loading, settings] });
+  useSectionAnimation(
+    sectionRef,
+    (tl) => {
+      if (loading || !settings) return;
+      tl.from(".contact-reveal-text", { y: 50, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out" })
+        .from(".contact-info-item", { x: -30, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, "-=0.5")
+        .from(".contact-form-card", { x: 30, opacity: 0, duration: 1, ease: "power3.out" }, "-=0.8");
+    },
+    { deps: [loading, settings] },
+  );
 
   if (loading) {
     return (

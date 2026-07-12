@@ -13,9 +13,8 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
 import { IProject } from "@/types";
+import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
 import { CustomPagination } from "@/components/shared/CustomPagination";
 // import { projects } from "@/data/projects"; // Removed static import
 
@@ -51,36 +50,13 @@ export function Projects() {
 
   const currentProjects = projects;
 
-  useGSAP(
-    () => {
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          end: "bottom 20%",
-          toggleActions: "play none none reverse",
-        },
-      });
-
-      tl.from(".projects-reveal-text", {
-        y: 50,
-        opacity: 0,
-        duration: 1,
-        stagger: 0.2,
-        ease: "power3.out",
-      }).from(
-        ".project-card",
-        {
-          y: 60,
-          opacity: 0,
-          duration: 1,
-          stagger: 0.2,
-          ease: "power4.out",
-        },
-        "-=0.6",
-      );
+  useSectionAnimation(
+    sectionRef,
+    (tl) => {
+      tl.from(".projects-reveal-text", { y: 50, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out" })
+        .from(".project-card", { y: 60, opacity: 0, duration: 1, stagger: 0.2, ease: "power4.out" }, "-=0.6");
     },
-    { scope: sectionRef, dependencies: [currentPage] },
+    { deps: [currentPage] },
   );
 
   const paginate = (pageNumber: number) => {
