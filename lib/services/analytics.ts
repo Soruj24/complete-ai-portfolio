@@ -3,10 +3,14 @@ import {
   mapRecentEvents,
   mapDailyToChart,
   mapZeroChartData,
+  computeChange,
+  computeSessionStats,
+  buildCalendarDays,
+} from "@/lib/mappers/analytics-mapper";
+import {
   buildDevicesResponse,
   buildBrowsersResponse,
   buildOperatingSystemsResponse,
-  computeChange,
   buildCountriesResponse,
   buildCitiesResponse,
   buildSourcesResponse,
@@ -18,11 +22,9 @@ import {
   buildTrafficStats,
   buildTrafficSources,
   buildTrafficTopPages,
-  buildCalendarDays,
   buildVisitorCountries,
   buildVisitorStats,
-  computeSessionStats,
-} from "@/lib/mappers/analytics-mapper";
+} from "@/lib/mappers/analytics-response";
 
 export class AnalyticsService {
   private repo: AnalyticsRepository;

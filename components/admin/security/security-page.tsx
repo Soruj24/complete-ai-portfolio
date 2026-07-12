@@ -1,34 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Shield, ShieldCheck, ShieldAlert, Key, Users, Activity,
-  HardDrive, FileKey, Lock, AlertTriangle, CheckCircle2,
-  Gauge, Smartphone, Monitor, Globe, Database, Variable,
+  Shield, ShieldCheck, ShieldAlert, Key, Activity,
+  HardDrive, Lock, AlertTriangle, Monitor, Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+import { useSecurityQuery, getAlertColor } from "./shared";
 import { AuthenticationTab } from "./security-authentication";
-
-function getAlertColor(severity: string) {
-  const colors: Record<string, string> = {
-    critical: "text-error bg-error/10 border-error/20",
-    high: "text-warning bg-warning/10 border-warning/20",
-    medium: "text-accent bg-accent/10 border-accent/20",
-    low: "text-info bg-info/10 border-info/20",
-    info: "text-text-tertiary bg-surface-hover border-border-subtle",
-  };
-  return colors[severity] || colors.info;
-}
-
-const EMPTY_SCORE = { overall: 0, categories: [], findings: [] };
-const EMPTY_ALERTS: never[] = [];
 import { AccessControlTab } from "./security-access";
 import { MonitoringTab } from "./security-monitoring";
 import { SecretsTab } from "./security-secrets";
@@ -42,16 +25,15 @@ const SCORE_COLOR = (score: number) => {
 
 export function SecurityPage() {
   const [tab, setTab] = useState("overview");
-  const { data: scoreResponse } = useGetAdminResourceQuery({ resource: "security/score" });
-  const { data: alertsResponse } = useGetAdminResourceQuery({ resource: "security/alerts" });
-  const scoreData = (scoreResponse?.data || EMPTY_SCORE) as Record<string, any>;
-  const SECURITY_SCORE = { overall: scoreData.overall ?? 0, categories: scoreData.categories ?? [], findings: scoreData.findings ?? [] };
-  const SECURITY_ALERTS = (alertsResponse?.data || EMPTY_ALERTS) as any[];
+  const { data: scoreData } = useSecurityQuery("security/score");
+  const { data: alertsData } = useSecurityQuery("security/alerts");
+  const SECURITY_SCORE = { overall: 0, categories: [], findings: [], ...(scoreData as any) };
+  const SECURITY_ALERTS = (Array.isArray(alertsData) ? alertsData : []) as any[];
   const scoreMeta = SCORE_COLOR(SECURITY_SCORE.overall);
 
   const tabs = [
     { value: "overview", label: "Overview", icon: Shield },
-    { value: "authentication", label: "Authentication", icon: Smartphone },
+    { value: "authentication", label: "Authentication", icon: ShieldCheck },
     { value: "access", label: "Access Control", icon: ShieldCheck },
     { value: "monitoring", label: "Monitoring", icon: Activity },
     { value: "secrets", label: "Secrets", icon: Key },
@@ -60,7 +42,6 @@ export function SecurityPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Security Center</h1>
@@ -68,7 +49,6 @@ export function SecurityPage() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
         {tabs.map((t) => (
           <button key={t.value} onClick={() => setTab(t.value)}
@@ -85,10 +65,8 @@ export function SecurityPage() {
         ))}
       </div>
 
-      {/* Overview Tab */}
       {tab === "overview" && (
         <div className="space-y-6">
-          {/* Security Score */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="border-border-subtle bg-surface lg:col-span-1">
               <CardContent className="p-6 text-center">
@@ -127,7 +105,6 @@ export function SecurityPage() {
               </CardContent>
             </Card>
 
-            {/* Score breakdown + recent alerts */}
             <div className="lg:col-span-2 space-y-4">
               <Card className="border-border-subtle bg-surface">
                 <CardHeader className="pb-2">
@@ -150,7 +127,6 @@ export function SecurityPage() {
                 </CardContent>
               </Card>
 
-              {/* Active Alerts */}
               <Card className="border-border-subtle bg-surface">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
@@ -165,12 +141,10 @@ export function SecurityPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {SECURITY_ALERTS.filter((a) => a.status !== "resolved").slice(0, 3).map((alert) => (
+                  {SECURITY_ALERTS.filter((a: any) => a.status !== "resolved").slice(0, 3).map((alert: any) => (
                     <div key={alert.id} className={cn(
                       "flex items-start gap-2 p-2.5 rounded-lg border text-[10px]",
-                      alert.severity === "critical" ? "border-error/20 bg-error/5" :
-                      alert.severity === "high" ? "border-warning/20 bg-warning/5" :
-                      "border-border-subtle bg-surface-hover",
+                      getAlertColor(alert.severity),
                     )}>
                       <AlertTriangle className={cn(
                         "h-3.5 w-3.5 mt-0.5 shrink-0",
@@ -196,7 +170,6 @@ export function SecurityPage() {
             </div>
           </div>
 
-          {/* Quick Actions */}
           <Card className="border-border-subtle bg-surface">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold text-text-primary">Quick Actions</CardTitle>
@@ -228,7 +201,6 @@ export function SecurityPage() {
         </div>
       )}
 
-      {/* Tab Content */}
       {tab === "authentication" && <AuthenticationTab />}
       {tab === "access" && <AccessControlTab />}
       {tab === "monitoring" && <MonitoringTab />}
