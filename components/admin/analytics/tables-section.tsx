@@ -1,14 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, ArrowUpRight, ArrowDownRight, Globe, Monitor, ExternalLink, FileText, Download, MousePointerClick } from "lucide-react";
+import { Search, ArrowUpRight, ArrowDownRight, Globe, Monitor, ExternalLink, FileText, Download, MousePointerClick, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+
+interface TablesData {
+  countries: CountryData[];
+  cities: CityData[];
+  sources: SourceData[];
+  referrers: ReferrerData[];
+  topPages: PageData[];
+  projects: ProjectData[];
+  engagement: EngagementData[];
+}
 
 interface CountryData {
   code: string;
@@ -41,14 +50,14 @@ interface ReferrerData {
 }
 
 interface PageData {
-  title: string;
   path: string;
+  title: string;
   views: number;
-  avgDuration: string;
-  bounceRate: string;
+  visitors: number;
 }
 
 interface ProjectData {
+  _id: string;
   name: string;
   views: number;
   downloads: number;
@@ -61,19 +70,6 @@ interface EngagementData {
   change: number;
   previous: number;
 }
-
-function generateEngagementData(): EngagementData[] {
-  return [];
-}
-
-const EMPTY_COUNTRIES: never[] = [];
-const EMPTY_CITIES: never[] = [];
-const EMPTY_SOURCES: never[] = [];
-const EMPTY_REFERRERS: never[] = [];
-const EMPTY_TOP_PAGES: never[] = [];
-const EMPTY_PROJECTS: never[] = [];
-
-const COLORS_BAR = ["var(--color-accent)", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4"];
 
 function CountryRow({ item, index }: { item: CountryData; index: number }) {
   return (
@@ -156,16 +152,7 @@ function PageRow({ item, index }: { item: PageData; index: number }) {
         <span className="text-xs font-mono text-text-primary">{item.views.toLocaleString()}</span>
       </td>
       <td className="py-2.5 px-3 text-right hidden sm:table-cell">
-        <span className="text-[10px] font-mono text-text-tertiary">{item.avgDuration}</span>
-      </td>
-      <td className="py-2.5 pl-3 text-right hidden md:table-cell">
-        <Badge variant="outline" className={cn(
-          "text-[9px] px-1.5 py-0 rounded-full border-0 font-medium",
-          parseInt(item.bounceRate) <= 25 ? "text-success bg-success/10" :
-          parseInt(item.bounceRate) <= 40 ? "text-warning bg-warning/10" : "text-error bg-error/10",
-        )}>
-          {item.bounceRate}
-        </Badge>
+        <span className="text-[10px] font-mono text-text-tertiary">{item.visitors.toLocaleString()}</span>
       </td>
     </motion.tr>
   );
@@ -173,7 +160,7 @@ function PageRow({ item, index }: { item: PageData; index: number }) {
 
 function ProjectRow({ item, index }: { item: ProjectData; index: number }) {
   return (
-    <motion.tr key={item.name} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
+    <motion.tr key={item._id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
       className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
     >
       <td className="py-2.5 pr-3">
@@ -188,7 +175,7 @@ function ProjectRow({ item, index }: { item: ProjectData; index: number }) {
       <td className="py-2.5 pl-3 text-right">
         {item.trend > 0 ? (
           <span className="text-[10px] font-semibold text-success inline-flex items-center gap-0.5">
-            <ArrowUpRight className="h-2.5 w-2.5" /> {item.trend}%
+            <ArrowUpRight className="h-2.5 w-2.5" /> {Math.abs(item.trend)}%
           </span>
         ) : item.trend < 0 ? (
           <span className="text-[10px] font-semibold text-error inline-flex items-center gap-0.5">
@@ -205,17 +192,40 @@ function ProjectRow({ item, index }: { item: ProjectData; index: number }) {
 export function TablesSection() {
   const [geoSearch, setGeoSearch] = useState("");
   const [trafficTab, setTrafficTab] = useState("sources");
-  const [contentTab, setContentTab] = useState("pages");
-  const { data: tablesResponse } = useGetAdminResourceQuery({ resource: "analytics/tables" });
-  const tablesData = (tablesResponse?.data || {}) as Record<string, any>;
-  const countries = (tablesData.countries || EMPTY_COUNTRIES) as any[];
-  const cities = (tablesData.cities || EMPTY_CITIES) as any[];
-  const sources = (tablesData.sources || EMPTY_SOURCES) as any[];
-  const referrers = (tablesData.referrers || EMPTY_REFERRERS) as any[];
-  const topPages = (tablesData.topPages || EMPTY_TOP_PAGES) as any[];
-  const projects = (tablesData.projects || EMPTY_PROJECTS) as any[];
+  const [data, setData] = useState<TablesData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const engagementData = generateEngagementData();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/admin/analytics/tables?days=30");
+        const json = await res.json();
+        if (json.success) setData(json.data);
+      } catch {
+        //
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={24} className="animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  const countries = data?.countries ?? [];
+  const cities = data?.cities ?? [];
+  const sources = data?.sources ?? [];
+  const referrers = data?.referrers ?? [];
+  const topPages = data?.topPages ?? [];
+  const projects = data?.projects ?? [];
+  const engagementData = data?.engagement ?? [];
 
   const filteredCountries = countries.filter((c) =>
     c.name.toLowerCase().includes(geoSearch.toLowerCase())
@@ -223,9 +233,7 @@ export function TablesSection() {
 
   return (
     <div className="space-y-4">
-      {/* Geo Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Countries */}
         <Card className="border-border-subtle bg-surface">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -245,24 +253,27 @@ export function TablesSection() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="px-4 pb-2">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
-                    <th className="text-left pb-2 font-medium">Country</th>
-                    <th className="text-right pb-2 font-medium">Visitors</th>
-                    <th className="text-right pb-2 font-medium hidden md:table-cell">Share</th>
-                    <th className="text-right pb-2 font-medium">Trend</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredCountries.map((item, i) => <CountryRow key={item.code} item={item} index={i} />)}
-                </tbody>
-              </table>
+              {countries.length === 0 ? (
+                <div className="py-4 text-center text-[10px] text-text-tertiary">No country data yet</div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
+                      <th className="text-left pb-2 font-medium">Country</th>
+                      <th className="text-right pb-2 font-medium">Visitors</th>
+                      <th className="text-right pb-2 font-medium hidden md:table-cell">Share</th>
+                      <th className="text-right pb-2 font-medium">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCountries.map((item, i) => <CountryRow key={item.code} item={item} index={i} />)}
+                  </tbody>
+                </table>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Cities */}
         <Card className="border-border-subtle bg-surface">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold text-text-primary flex items-center gap-2">
@@ -273,42 +284,45 @@ export function TablesSection() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="px-4 pb-2">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
-                    <th className="text-left pb-2 font-medium">City</th>
-                    <th className="text-right pb-2 font-medium hidden sm:table-cell">Country</th>
-                    <th className="text-right pb-2 font-medium">Visitors</th>
-                    <th className="text-right pb-2 font-medium">Duration</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cities.map((item, i) => (
-                    <motion.tr key={item.name} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-                      className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
-                    >
-                      <td className="py-2.5 pr-3">
-                        <span className="text-xs font-semibold text-text-primary">{item.name}</span>
-                      </td>
-                      <td className="py-2.5 px-3 text-right hidden sm:table-cell">
-                        <span className="text-[10px] text-text-tertiary">{item.country}</span>
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
-                      </td>
-                      <td className="py-2.5 pl-3 text-right">
-                        <span className="text-[10px] font-mono text-text-tertiary">{item.duration}</span>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
+              {cities.length === 0 ? (
+                <div className="py-4 text-center text-[10px] text-text-tertiary">No city data yet</div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
+                      <th className="text-left pb-2 font-medium">City</th>
+                      <th className="text-right pb-2 font-medium hidden sm:table-cell">Country</th>
+                      <th className="text-right pb-2 font-medium">Visitors</th>
+                      <th className="text-right pb-2 font-medium">Duration</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cities.map((item, i) => (
+                      <motion.tr key={`${item.name}-${i}`} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                        className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
+                      >
+                        <td className="py-2.5 pr-3">
+                          <span className="text-xs font-semibold text-text-primary">{item.name}</span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right hidden sm:table-cell">
+                          <span className="text-[10px] text-text-tertiary">{item.country}</span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
+                        </td>
+                        <td className="py-2.5 pl-3 text-right">
+                          <span className="text-[10px] font-mono text-text-tertiary">{item.duration}</span>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Traffic Section */}
       <Card className="border-border-subtle bg-surface">
         <CardHeader className="pb-2">
           <Tabs value={trafficTab} onValueChange={setTrafficTab}>
@@ -323,71 +337,78 @@ export function TablesSection() {
               </TabsList>
             </div>
             <TabsContent value="sources">
-              <table className="w-full mt-2">
-                <thead>
-                  <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
-                    <th className="text-left pb-2 font-medium">Source</th>
-                    <th className="text-right pb-2 font-medium">Visitors</th>
-                    <th className="text-right pb-2 font-medium hidden md:table-cell">Share</th>
-                    <th className="text-right pb-2 font-medium">Trend</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sources.map((item, i) => <SourceRow key={item.name} item={item} index={i} />)}
-                </tbody>
-              </table>
+              {sources.length === 0 ? (
+                <div className="py-4 text-center text-[10px] text-text-tertiary">No source data yet</div>
+              ) : (
+                <table className="w-full mt-2">
+                  <thead>
+                    <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
+                      <th className="text-left pb-2 font-medium">Source</th>
+                      <th className="text-right pb-2 font-medium">Visitors</th>
+                      <th className="text-right pb-2 font-medium hidden md:table-cell">Share</th>
+                      <th className="text-right pb-2 font-medium">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sources.map((item, i) => <SourceRow key={item.name} item={item} index={i} />)}
+                  </tbody>
+                </table>
+              )}
             </TabsContent>
             <TabsContent value="referrers">
-              <table className="w-full mt-2">
-                <thead>
-                  <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
-                    <th className="text-left pb-2 font-medium">Domain</th>
-                    <th className="text-right pb-2 font-medium">Visitors</th>
-                    <th className="text-right pb-2 font-medium hidden md:table-cell">Share</th>
-                    <th className="text-right pb-2 font-medium">Bounce</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {referrers.map((item, i) => (
-                    <motion.tr key={item.domain} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
-                      className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
-                    >
-                      <td className="py-2.5 pr-3">
-                        <div className="flex items-center gap-2.5">
-                          <ExternalLink className="h-3 w-3 text-text-tertiary shrink-0" />
-                          <span className="text-xs font-semibold text-text-primary">{item.domain}</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
-                      </td>
-                      <td className="py-2.5 px-3 text-right hidden md:table-cell">
-                        <div className="flex items-center gap-2 justify-end">
-                          <div className="h-1.5 w-20 rounded-full bg-background overflow-hidden">
-                            <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${item.percentage * 10}%` }} />
+              {referrers.length === 0 ? (
+                <div className="py-4 text-center text-[10px] text-text-tertiary">No referrer data yet</div>
+              ) : (
+                <table className="w-full mt-2">
+                  <thead>
+                    <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
+                      <th className="text-left pb-2 font-medium">Domain</th>
+                      <th className="text-right pb-2 font-medium">Visitors</th>
+                      <th className="text-right pb-2 font-medium hidden md:table-cell">Share</th>
+                      <th className="text-right pb-2 font-medium">Bounce</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {referrers.map((item, i) => (
+                      <motion.tr key={item.domain} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                        className="group border-b border-border-subtle/50 last:border-0 hover:bg-surface-hover/50 transition-colors"
+                      >
+                        <td className="py-2.5 pr-3">
+                          <div className="flex items-center gap-2.5">
+                            <ExternalLink className="h-3 w-3 text-text-tertiary shrink-0" />
+                            <span className="text-xs font-semibold text-text-primary">{item.domain}</span>
                           </div>
-                          <span className="text-[10px] font-mono text-text-tertiary">{item.percentage}%</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 pl-3 text-right">
-                        <Badge variant="outline" className={cn(
-                          "text-[9px] px-1.5 py-0 rounded-full border-0 font-medium",
-                          parseInt(item.bounce) <= 25 ? "text-success bg-success/10" :
-                          parseInt(item.bounce) <= 40 ? "text-warning bg-warning/10" : "text-error bg-error/10",
-                        )}>
-                          {item.bounce}
-                        </Badge>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <span className="text-xs font-mono text-text-primary">{item.visitors.toLocaleString()}</span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right hidden md:table-cell">
+                          <div className="flex items-center gap-2 justify-end">
+                            <div className="h-1.5 w-20 rounded-full bg-background overflow-hidden">
+                              <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${item.percentage * 10}%` }} />
+                            </div>
+                            <span className="text-[10px] font-mono text-text-tertiary">{item.percentage}%</span>
+                          </div>
+                        </td>
+                        <td className="py-2.5 pl-3 text-right">
+                          <Badge variant="outline" className={cn(
+                            "text-[9px] px-1.5 py-0 rounded-full border-0 font-medium",
+                            parseInt(item.bounce) <= 25 ? "text-success bg-success/10" :
+                            parseInt(item.bounce) <= 40 ? "text-warning bg-warning/10" : "text-error bg-error/10",
+                          )}>
+                            {item.bounce}
+                          </Badge>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </TabsContent>
           </Tabs>
         </CardHeader>
       </Card>
 
-      {/* Content Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="border-border-subtle bg-surface">
           <CardHeader className="pb-2">
@@ -399,19 +420,22 @@ export function TablesSection() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="px-4 pb-2">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
-                    <th className="text-left pb-2 font-medium">Page</th>
-                    <th className="text-right pb-2 font-medium">Views</th>
-                    <th className="text-right pb-2 font-medium hidden sm:table-cell">Duration</th>
-                    <th className="text-right pb-2 font-medium hidden md:table-cell">Bounce</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topPages.map((item, i) => <PageRow key={item.path} item={item} index={i} />)}
-                </tbody>
-              </table>
+              {topPages.length === 0 ? (
+                <div className="py-4 text-center text-[10px] text-text-tertiary">No page view data yet</div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
+                      <th className="text-left pb-2 font-medium">Page</th>
+                      <th className="text-right pb-2 font-medium">Views</th>
+                      <th className="text-right pb-2 font-medium hidden sm:table-cell">Visitors</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topPages.map((item, i) => <PageRow key={item.path} item={item} index={i} />)}
+                  </tbody>
+                </table>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -426,52 +450,57 @@ export function TablesSection() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="px-4 pb-2">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
-                    <th className="text-left pb-2 font-medium">Project</th>
-                    <th className="text-right pb-2 font-medium">Views</th>
-                    <th className="text-right pb-2 font-medium">Downloads</th>
-                    <th className="text-right pb-2 font-medium">Trend</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projects.map((item, i) => <ProjectRow key={item.name} item={item} index={i} />)}
-                </tbody>
-              </table>
+              {projects.length === 0 ? (
+                <div className="py-4 text-center text-[10px] text-text-tertiary">No project data yet</div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-[9px] text-text-tertiary uppercase tracking-wider border-b border-border-subtle/50">
+                      <th className="text-left pb-2 font-medium">Project</th>
+                      <th className="text-right pb-2 font-medium">Views</th>
+                      <th className="text-right pb-2 font-medium">Downloads</th>
+                      <th className="text-right pb-2 font-medium">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {projects.map((item, i) => <ProjectRow key={item._id} item={item} index={i} />)}
+                  </tbody>
+                </table>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Engagement Section */}
-      <Card className="border-border-subtle bg-surface">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold text-text-primary flex items-center gap-2">
-            <MousePointerClick className="h-4 w-4 text-amber-500" />
-            Engagement
-          </CardTitle>
-          <CardDescription>Resume downloads, button clicks, and interactions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {engagementData.map((item, i) => (
-              <motion.div key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                className="p-3 rounded-xl border border-border-subtle bg-surface-hover text-center"
-              >
-                <p className="text-lg font-bold text-text-primary">{item.count.toLocaleString()}</p>
-                <p className="text-[9px] text-text-tertiary mt-0.5">{item.label}</p>
-                <div className="flex items-center justify-center gap-0.5 mt-1">
-                  <span className={cn("text-[9px] font-semibold", item.change >= 0 ? "text-success" : "text-error")}>
-                    {item.change >= 0 ? "+" : ""}{item.change}%
-                  </span>
-                  <span className="text-[8px] text-text-tertiary">vs {item.previous.toLocaleString()}</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {engagementData.length > 0 && (
+        <Card className="border-border-subtle bg-surface">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-text-primary flex items-center gap-2">
+              <MousePointerClick className="h-4 w-4 text-amber-500" />
+              Engagement
+            </CardTitle>
+            <CardDescription>Resume downloads, contact messages, and interactions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {engagementData.map((item, i) => (
+                <motion.div key={item.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                  className="p-3 rounded-xl border border-border-subtle bg-surface-hover text-center"
+                >
+                  <p className="text-lg font-bold text-text-primary">{item.count.toLocaleString()}</p>
+                  <p className="text-[9px] text-text-tertiary mt-0.5">{item.label}</p>
+                  <div className="flex items-center justify-center gap-0.5 mt-1">
+                    <span className={cn("text-[9px] font-semibold", item.change >= 0 ? "text-success" : "text-error")}>
+                      {item.change >= 0 ? "+" : ""}{item.change}%
+                    </span>
+                    <span className="text-[8px] text-text-tertiary">vs {item.previous.toLocaleString()}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

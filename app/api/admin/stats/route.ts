@@ -9,6 +9,7 @@ import { PageView } from "@/models/PageView";
 import { Download } from "@/models/Download";
 import mongoose from "mongoose";
 import { getGitHubService } from "@/lib/services/github";
+import { getAnalyticsService } from "@/lib/services/analytics";
 
 export async function GET() {
   try {
@@ -21,6 +22,7 @@ export async function GET() {
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
     const [
       projectCount, projectsLastMonth,
@@ -28,8 +30,7 @@ export async function GET() {
       blogCount, blogsLastMonth,
       messageCount, messagesLastMonth,
       projectViews, projectViewsLastMonth,
-      visitorCount, visitorsLastMonth,
-      downloadCount, downloadsLastMonth,
+      dashboardStats,
       githubStats,
     ] = await Promise.all([
       Project.countDocuments(),
@@ -42,10 +43,7 @@ export async function GET() {
       ContactMessage.countDocuments({ read: false, createdAt: { $gte: thirtyDaysAgo } }),
       Project.aggregate([{ $group: { _id: null, total: { $sum: "$stats.views" } } }]).then(r => r[0]?.total || 0),
       Project.aggregate([{ $match: { createdAt: { $gte: thirtyDaysAgo } } }, { $group: { _id: null, total: { $sum: "$stats.views" } } }]).then(r => r[0]?.total || 0),
-      PageView.countDocuments(),
-      PageView.countDocuments({ timestamp: { $gte: thirtyDaysAgo } }),
-      Download.countDocuments(),
-      Download.countDocuments({ timestamp: { $gte: thirtyDaysAgo } }),
+      getAnalyticsService().getDashboardStats().catch(() => null),
       getGitHubService().getStats().catch(() => null),
     ]);
 
@@ -55,10 +53,10 @@ export async function GET() {
     };
 
     const stats = {
-      visitors: visitorCount,
-      visitorsChange: computeChange(visitorCount, visitorsLastMonth),
-      resumeDownloads: downloadCount,
-      resumeDownloadsChange: computeChange(downloadCount, downloadsLastMonth),
+      visitors: dashboardStats?.visitors ?? 0,
+      visitorsChange: dashboardStats?.visitorsChange ?? 0,
+      resumeDownloads: dashboardStats?.resumeDownloads ?? 0,
+      resumeDownloadsChange: dashboardStats?.resumeDownloadsChange ?? 0,
       contactMessages: messageCount,
       contactMessagesChange: computeChange(messageCount, messagesLastMonth),
       githubContributions: githubStats?.totalPRs ?? 0,

@@ -123,7 +123,7 @@ export class GitHubService {
         direction: "desc",
       });
 
-      const mapped = data.map((r) => toGitHubRepo(r as unknown as Record<string, unknown>));
+      const mapped = (data as any[]).map((r) => toGitHubRepo(r as unknown as Record<string, unknown>));
       repos.push(...mapped);
 
       if (data.length < perPage) break;
@@ -177,7 +177,7 @@ export class GitHubService {
       per_page: 10,
     });
 
-    return data.map((c) => ({
+    return (data as any[]).map((c) => ({
       login: String(c.login ?? ""),
       id: Number(c.id ?? 0),
       avatar_url: String(c.avatar_url ?? ""),
@@ -193,7 +193,7 @@ export class GitHubService {
       per_page: 10,
     });
 
-    return data.map((r) => ({
+    return (data as any[]).map((r) => ({
       id: Number(r.id ?? 0),
       tag_name: String(r.tag_name ?? ""),
       name: r.name as string | null,
@@ -213,7 +213,7 @@ export class GitHubService {
       per_page: 10,
     });
 
-    return data.map((d) => ({
+    return (data as any[]).map((d) => ({
       id: Number(d.id ?? 0),
       sha: String(d.sha ?? ""),
       ref: String(d.ref ?? ""),
@@ -232,9 +232,9 @@ export class GitHubService {
       per_page: 30,
     });
 
-    return data
-      .filter((i) => !i.pull_request)
-      .map((i) => ({
+    return (data as any[])
+      .filter((i: any) => !i.pull_request)
+      .map((i: any) => ({
         id: Number(i.id ?? 0),
         number: Number(i.number ?? 0),
         title: String(i.title ?? ""),
@@ -242,7 +242,7 @@ export class GitHubService {
         html_url: String(i.html_url ?? ""),
         created_at: String(i.created_at ?? ""),
         updated_at: String(i.updated_at ?? ""),
-        labels: (i.labels as Array<{ name: string; color: string }>).map((l) => ({
+        labels: (i.labels as Array<{ name: string; color: string }>).map((l: any) => ({
           name: String(l.name ?? ""),
           color: String(l.color ?? ""),
         })),
@@ -257,7 +257,7 @@ export class GitHubService {
       per_page: 30,
     });
 
-    return data.map((pr) => ({
+    return (data as any[]).map((pr: any) => ({
       id: Number(pr.id ?? 0),
       number: Number(pr.number ?? 0),
       title: String(pr.title ?? ""),
@@ -328,12 +328,12 @@ export class GitHubService {
     return {
       views: { count: Number(views.count ?? 0), uniques: Number(views.uniques ?? 0) },
       clones: { count: Number(clones.count ?? 0), uniques: Number(clones.uniques ?? 0) },
-      referrers: referrers.map((r) => ({
+      referrers: (referrers as any[]).map((r: any) => ({
         referrer: String(r.referrer ?? ""),
         count: Number(r.count ?? 0),
         uniques: Number(r.uniques ?? 0),
       })),
-      popular: popular.map((p) => ({
+      popular: (popular as any[]).map((p: any) => ({
         path: String(p.path ?? ""),
         title: String(p.title ?? ""),
         count: Number(p.count ?? 0),
@@ -400,7 +400,7 @@ export class GitHubService {
         per_page: count,
       });
 
-      return data.map((event) => ({
+      return (data as any[]).map((event: any) => ({
         id: String(event.id ?? ""),
         type: String(event.type ?? ""),
         repo: { name: String(event.repo?.name ?? "") },
@@ -437,7 +437,7 @@ export class GitHubService {
         user: { pinnedItems: { nodes: Array<Record<string, unknown>> } };
       }>(query, { username: this.username });
 
-      return (data.user.pinnedItems.nodes || []).map((node) => ({
+      return (data.user.pinnedItems.nodes || []).map((node: any) => ({
         id: String(node.id ?? ""),
         name: String(node.name ?? ""),
         description: (node.description as string) || null,

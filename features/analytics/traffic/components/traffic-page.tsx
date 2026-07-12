@@ -1,34 +1,86 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Users, Eye, ArrowRight, Clock, Globe, Loader2 } from "lucide-react";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Area, AreaChart } from "recharts";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
-import type { TrafficDay, TrafficSource, TopPage, TrafficStats } from "../types";
+import { AreaChart, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area } from "recharts";
+
+interface TrafficDay {
+  date: string;
+  visitors: number;
+  pageViews: number;
+  bounceRate: number;
+  avgSessionDuration: number;
+}
+
+interface TrafficSource {
+  source: string;
+  visitors: number;
+  percentage: number;
+  color: string;
+}
+
+interface TopPage {
+  path: string;
+  title: string;
+  views: number;
+  avgTime: number;
+  bounceRate: number;
+}
+
+interface TrafficResponse {
+  daily: TrafficDay[];
+  stats: {
+    totalVisitors: number;
+    totalPageViews: number;
+    avgBounceRate: number;
+    avgSessionDuration: number;
+    visitorsTrend: number;
+    pageViewsTrend: number;
+  };
+  sources: TrafficSource[];
+  topPages: TopPage[];
+}
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
-  return <div className="rounded-lg border border-border-primary bg-surface-primary p-3 text-sm shadow-lg">
-    <p className="font-medium text-text-primary">{label}</p>
-    {payload.map((p: any) => (
-      <p key={p.name} className="text-text-secondary" style={{ color: p.color }}>{p.name}: {p.value.toLocaleString()}</p>
-    ))}
-  </div>;
+  return (
+    <div className="rounded-lg border border-border-primary bg-surface-primary p-3 text-sm shadow-lg">
+      <p className="font-medium text-text-primary">{label}</p>
+      {payload.map((p: any) => (
+        <p key={p.name} className="text-text-secondary" style={{ color: p.color }}>{p.name}: {p.value.toLocaleString()}</p>
+      ))}
+    </div>
+  );
 };
 
 export function TrafficPage() {
-  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "analytics/traffic" });
-  const items = response?.data ?? [];
-
-  const DAYS: TrafficDay[] = items.length > 0 ? items : [];
-  const SOURCES: TrafficSource[] = items.length > 0 ? (items[0]?.sources ?? []) : [];
-  const TOP_PAGES: TopPage[] = items.length > 0 ? (items[0]?.topPages ?? []) : [];
-
+  const [data, setData] = useState<TrafficResponse | null>(null);
+  const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"7d" | "30d">("30d");
-  const chartData = useMemo(() => period === "7d" ? DAYS.slice(-7) : DAYS, [period, DAYS]);
 
-  if (isLoading) {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/admin/analytics/traffic?days=30");
+        const json = await res.json();
+        if (json.success) setData(json.data);
+      } catch {
+        //
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const chartData = useMemo(() => {
+    if (!data) return [];
+    return period === "7d" ? data.daily.slice(-7) : data.daily;
+  }, [period, data]);
+
+  if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
         <Loader2 size={24} className="animate-spin text-accent" />
@@ -36,7 +88,7 @@ export function TrafficPage() {
     );
   }
 
-  if (DAYS.length === 0) {
+  if (!data || data.daily.length === 0) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -52,25 +104,13 @@ export function TrafficPage() {
     );
   }
 
-  const currentVisitors = DAYS[DAYS.length - 1].visitors;
-  const prevVisitors = DAYS[DAYS.length - 2].visitors;
-  const currentPageViews = DAYS[DAYS.length - 1].pageViews;
-  const prevPageViews = DAYS[DAYS.length - 2].pageViews;
-
-  const STATS: TrafficStats = {
-    totalVisitors: currentVisitors,
-    totalPageViews: currentPageViews,
-    avgBounceRate: +(DAYS.reduce((s, d) => s + d.bounceRate, 0) / DAYS.length).toFixed(1),
-    avgSessionDuration: Math.floor(DAYS.reduce((s, d) => s + d.avgSessionDuration, 0) / DAYS.length),
-    visitorsTrend: +((currentVisitors - prevVisitors) / prevVisitors * 100).toFixed(1),
-    pageViewsTrend: +((currentPageViews - prevPageViews) / prevPageViews * 100).toFixed(1),
-  };
+  const { stats, sources, topPages } = data;
 
   const statCards = [
-    { label: "Visitors", value: STATS.totalVisitors.toLocaleString(), trend: STATS.visitorsTrend, icon: Users, format: "number" as const },
-    { label: "Page Views", value: STATS.totalPageViews.toLocaleString(), trend: STATS.pageViewsTrend, icon: Eye, format: "number" as const },
-    { label: "Bounce Rate", value: `${STATS.avgBounceRate}%`, trend: -2.1, icon: ArrowRight, format: "percent" as const },
-    { label: "Avg Session", value: `${Math.floor(STATS.avgSessionDuration / 60)}m ${STATS.avgSessionDuration % 60}s`, trend: 5.3, icon: Clock, format: "time" as const },
+    { label: "Visitors", value: stats.totalVisitors.toLocaleString(), trend: stats.visitorsTrend, icon: Users },
+    { label: "Page Views", value: stats.totalPageViews.toLocaleString(), trend: stats.pageViewsTrend, icon: Eye },
+    { label: "Bounce Rate", value: `${stats.avgBounceRate}%`, trend: -2.1, icon: ArrowRight },
+    { label: "Avg Session", value: `${Math.floor(stats.avgSessionDuration / 60)}m ${stats.avgSessionDuration % 60}s`, trend: 5.3, icon: Clock },
   ];
 
   return (
@@ -102,7 +142,7 @@ export function TrafficPage() {
             <p className="text-2xl font-bold text-text-primary">{s.value}</p>
             <div className={`mt-1 flex items-center gap-1 text-xs ${s.trend >= 0 ? "text-success" : "text-error"}`}>
               {s.trend >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-              <span>{Math.abs(s.trend)}% vs previous day</span>
+              <span>{Math.abs(s.trend)}% vs previous period</span>
             </div>
           </motion.div>
         ))}
@@ -131,14 +171,14 @@ export function TrafficPage() {
           <h3 className="mb-4 text-sm font-semibold text-text-primary">Traffic Sources</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie data={SOURCES} dataKey="visitors" nameKey="source" cx="50%" cy="50%" innerRadius={50} outerRadius={90}>
-                {SOURCES.map((s) => <Cell key={s.source} fill={s.color} />)}
+              <Pie data={sources} dataKey="visitors" nameKey="source" cx="50%" cy="50%" innerRadius={50} outerRadius={90}>
+                {sources.map((s) => <Cell key={s.source} fill={s.color} />)}
               </Pie>
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
           <div className="mt-4 space-y-2">
-            {SOURCES.map((s) => (
+            {sources.map((s) => (
               <div key={s.source} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
@@ -167,7 +207,7 @@ export function TrafficPage() {
               </tr>
             </thead>
             <tbody>
-              {TOP_PAGES.map((p) => (
+              {topPages.map((p) => (
                 <tr key={p.path} className="border-b border-border-primary transition-colors hover:bg-surface-hover">
                   <td className="px-5 py-3 font-medium text-text-primary">{p.title}</td>
                   <td className="px-5 py-3 text-text-secondary font-mono text-xs">{p.path}</td>

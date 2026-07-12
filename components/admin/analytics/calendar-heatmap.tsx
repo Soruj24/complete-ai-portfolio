@@ -1,21 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-function generateCalendarDays(year: number, month: number) {
-  const daysInMonth = new Date(year, month, 0).getDate();
-  return Array.from({ length: daysInMonth }, (_, i) => ({
-    date: `${year}-${String(month).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`,
-    count: 0,
-    level: 0 as const,
-  }));
-}
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -32,8 +22,35 @@ export function CalendarHeatmap() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
+  const [levels, setLevels] = useState<number[]>([]);
+  const [counts, setCounts] = useState<number[]>([]);
+  const [total, setTotal] = useState(0);
+  const [avg, setAvg] = useState(0);
+  const [peak, setPeak] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const days = useMemo(() => generateCalendarDays(year, month), [year, month]);
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/admin/analytics/calendar?year=${year}&month=${month}`);
+      const json = await res.json();
+      if (json.success) {
+        setLevels(json.data.levels);
+        setCounts(json.data.days);
+        setTotal(json.data.total);
+        setAvg(json.data.avg);
+        setPeak(json.data.peak);
+      }
+    } catch {
+      //
+    } finally {
+      setLoading(false);
+    }
+  }, [year, month]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstDay = new Date(year, month - 1, 1).getDay();
@@ -53,10 +70,6 @@ export function CalendarHeatmap() {
     setMonth(now.getMonth() + 1);
   };
 
-  const totalCount = days.reduce((s, d) => s + d.count, 0);
-  const avgCount = Math.round(totalCount / days.length);
-  const maxCount = Math.max(...days.map((d) => d.count));
-
   const grid: ({ day: number; count: number; level: number } | null)[][] = [];
   let dayCounter = 0;
 
@@ -66,8 +79,11 @@ export function CalendarHeatmap() {
       if ((w === 0 && d < firstDay) || dayCounter >= daysInMonth) {
         week.push(null);
       } else {
-        const dayData = days[dayCounter];
-        week.push({ day: dayData ? parseInt(dayData.date.split("-")[2]) : dayCounter + 1, count: dayData?.count || 0, level: dayData?.level || 0 });
+        week.push({
+          day: dayCounter + 1,
+          count: counts[dayCounter] || 0,
+          level: levels[dayCounter] || 0,
+        });
         dayCounter++;
       }
     }
@@ -104,58 +120,63 @@ export function CalendarHeatmap() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-4 mb-4 text-[10px] text-text-tertiary">
-          <span>Total: <strong className="text-text-primary">{totalCount.toLocaleString()}</strong></span>
-          <span>Avg: <strong className="text-text-primary">{avgCount.toLocaleString()}</strong>/day</span>
-          <span>Peak: <strong className="text-text-primary">{maxCount.toLocaleString()}</strong></span>
-        </div>
-        <div className="overflow-x-auto">
-          {/* Day labels */}
-          <div className="flex gap-0.5 mb-1">
-            <div className="w-8 shrink-0" />
-            {DAYS.map((d) => (
-              <div key={d} className="flex-1 text-[8px] text-text-tertiary text-center font-medium">{d}</div>
-            ))}
+        {loading ? (
+          <div className="flex items-center justify-center h-32">
+            <Loader2 size={20} className="animate-spin text-text-tertiary" />
           </div>
-          {/* Grid */}
-          {grid.map((week, wi) => (
-            <div key={wi} className="flex gap-0.5 mb-0.5">
-              <div className="w-8 shrink-0 text-[8px] text-text-tertiary flex items-center justify-center font-medium">
-                {wi * 7 + 1}-{Math.min((wi + 1) * 7, daysInMonth)}
+        ) : (
+          <>
+            <div className="flex items-center gap-4 mb-4 text-[10px] text-text-tertiary">
+              <span>Total: <strong className="text-text-primary">{total.toLocaleString()}</strong></span>
+              <span>Avg: <strong className="text-text-primary">{avg.toLocaleString()}</strong>/day</span>
+              <span>Peak: <strong className="text-text-primary">{peak.toLocaleString()}</strong></span>
+            </div>
+            <div className="overflow-x-auto">
+              <div className="flex gap-0.5 mb-1">
+                <div className="w-8 shrink-0" />
+                {DAYS.map((d) => (
+                  <div key={d} className="flex-1 text-[8px] text-text-tertiary text-center font-medium">{d}</div>
+                ))}
               </div>
-              {week.map((day, di) => (
-                <div key={di} className="flex-1 aspect-square">
-                  {day ? (
-                    <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: (wi * 7 + di) * 0.005 }}
-                      className={cn(
-                        "w-full h-full rounded-sm cursor-pointer transition-all hover:ring-2 hover:ring-accent/50 relative group",
-                        levelColors[day.level],
+              {grid.map((week, wi) => (
+                <div key={wi} className="flex gap-0.5 mb-0.5">
+                  <div className="w-8 shrink-0 text-[8px] text-text-tertiary flex items-center justify-center font-medium">
+                    {wi * 7 + 1}-{Math.min((wi + 1) * 7, daysInMonth)}
+                  </div>
+                  {week.map((day, di) => (
+                    <div key={di} className="flex-1 aspect-square">
+                      {day ? (
+                        <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: (wi * 7 + di) * 0.005 }}
+                          className={cn(
+                            "w-full h-full rounded-sm cursor-pointer transition-all hover:ring-2 hover:ring-accent/50 relative group",
+                            levelColors[day.level],
+                          )}
+                        >
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-10">
+                            <div className="bg-surface border border-border-subtle rounded-lg px-2 py-1 text-[9px] whitespace-nowrap shadow-lg">
+                              <strong className="text-text-primary">{day.count.toLocaleString()}</strong>{" "}
+                              <span className="text-text-tertiary">page views on {MONTHS[month - 1]} {day.day}, {year}</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <div className="w-full h-full rounded-sm" />
                       )}
-                    >
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-10">
-                        <div className="bg-surface border border-border-subtle rounded-lg px-2 py-1 text-[9px] whitespace-nowrap shadow-lg">
-                          <strong className="text-text-primary">{day.count.toLocaleString()}</strong>{" "}
-                          <span className="text-text-tertiary">visitors on {MONTHS[month - 1]} {day.day}, {year}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <div className="w-full h-full rounded-sm" />
-                  )}
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
-          ))}
-        </div>
-        {/* Legend */}
-        <div className="flex items-center justify-end gap-1.5 mt-3 text-[9px] text-text-tertiary">
-          <span>Less</span>
-          {levelColors.map((color, i) => (
-            <div key={i} className={cn("h-3 w-3 rounded-sm", color)} />
-          ))}
-          <span>More</span>
-        </div>
+            <div className="flex items-center justify-end gap-1.5 mt-3 text-[9px] text-text-tertiary">
+              <span>Less</span>
+              {levelColors.map((color, i) => (
+                <div key={i} className={cn("h-3 w-3 rounded-sm", color)} />
+              ))}
+              <span>More</span>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
