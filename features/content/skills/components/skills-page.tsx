@@ -124,8 +124,8 @@ export function SkillsPage() {
             <div key={cat}>
               <h3 className="mb-3 text-sm font-semibold text-text-primary">{SKILL_CATEGORY_LABELS[cat]} ({catSkills.length})</h3>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {catSkills.map((skill: Skill, i: number) => (
-                  <motion.div key={skill.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
+                  {catSkills.map((skill: Skill, i: number) => (
+                  <motion.div key={skill._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
                     className="rounded-xl border border-border-primary bg-surface-primary p-4 transition-colors hover:border-accent/30"
                   >
                     <div className="mb-2 flex items-center justify-between">
@@ -147,7 +147,7 @@ export function SkillsPage() {
           ))}
         </div>
       )}
-      <SkillFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d: Record<string, unknown>) => { await fetch("/api/admin/skills", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Skill has been created."); refetch(); }} />
+      <SkillFormDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onSubmit={async (d) => { await fetch("/api/admin/skills", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(d) }); toastSuccess("Created!", "Skill has been created."); refetch(); }} />
     </div>
   );
 }

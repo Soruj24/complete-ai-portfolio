@@ -4,11 +4,14 @@ import type { Document } from "mongoose";
 
 interface ISkillDocument extends Document {
   name: string;
+  slug?: string;
   level: number;
   icon?: string;
   color?: string;
   description?: string;
   category: string;
+  yearsOfExperience?: number;
+  order?: number;
   createdAt: Date;
   updatedAt: Date;
 }

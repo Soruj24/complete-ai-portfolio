@@ -7,6 +7,7 @@ import { Testimonial } from "@/models/Testimonial";
 import { Achievement } from "@/models/Achievement";
 import { Resume } from "@/models/Resume";
 import { SocialLink } from "@/models/SocialLink";
+import { Skill } from "@/models/Skill";
 
 type ModelType = typeof Certificate | typeof Testimonial | typeof Achievement | typeof Resume | typeof SocialLink | typeof AdminResource;
 
@@ -26,6 +27,7 @@ const DEDICATED_MODELS: Record<string, ModelType> = {
   achievements: Achievement,
   resume: Resume,
   "social-links": SocialLink,
+  skills: Skill,
 };
 
 function getModel(key: string): ModelType {

@@ -1,16 +1,16 @@
 export type SkillCategory = "frontend" | "backend" | "devops" | "database" | "design" | "tools" | "ai" | "other";
 
 export interface Skill {
-  id: string;
+  _id: string;
   name: string;
-  slug: string;
+  slug?: string;
   category: SkillCategory;
   level: number;
-  icon: string;
+  icon?: string;
   color: string;
-  yearsOfExperience: number;
-  order: number;
-  createdAt: string;
+  yearsOfExperience?: number;
+  order?: number;
+  createdAt?: string;
 }
 
 export const SKILL_CATEGORY_LABELS: Record<SkillCategory, string> = {
