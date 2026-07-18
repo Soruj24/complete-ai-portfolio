@@ -29,7 +29,7 @@ export function Skills() {
           grouped[cat].push(s);
         }
         setSkillCategories(
-          Object.entries(grouped).map(([title, skills]) => ({ title, skills }))
+          Object.entries(grouped).map(([title, skills]) => ({ title, skills })),
         );
       })
       .catch(() => setSkillCategories([]));
@@ -53,11 +53,15 @@ export function Skills() {
                 "relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-300",
                 activeCategory === i
                   ? "text-accent-foreground"
-                  : "text-text-secondary hover:text-text-primary border border-border bg-surface"
+                  : "text-text-secondary hover:text-text-primary border border-border bg-surface",
               )}
-              style={activeCategory === i ? { background: "var(--accent)" } : undefined}
+              style={
+                activeCategory === i
+                  ? { background: "var(--accent)" }
+                  : undefined
+              }
             >
-              {categoryIcons[cat.title] ?? "💻"} {cat.title}
+              {categoryIcons[cat?.title] ?? "💻"} {cat.title}
             </button>
           ))}
         </div>
@@ -71,25 +75,33 @@ export function Skills() {
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
           >
-            {skillCategories[activeCategory]?.skills.map((skill: any, i: number) => (
-              <AnimatedSection key={skill.name} delay={i * 0.04}>
-                <GlassCard variant="interactive" className="p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg shrink-0" role="img" aria-label={skill.name}>
-                      {skill.icon}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-sm font-semibold truncate">{skill.name}</h3>
-                      {skill.description && (
-                        <p className="text-xs text-text-tertiary leading-relaxed mt-0.5 line-clamp-1">
-                          {skill.description}
-                        </p>
-                      )}
+            {skillCategories[activeCategory]?.skills.map(
+              (skill: any, i: number) => (
+                <AnimatedSection key={skill?.name} delay={i * 0.04}>
+                  <GlassCard variant="interactive" className="p-4">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="text-lg shrink-0"
+                        role="img"
+                        aria-label={skill?.name}
+                      >
+                        {skill?.icon}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm font-semibold truncate">
+                          {skill?.name}
+                        </h3>
+                        {skill?.description && (
+                          <p className="text-xs text-text-tertiary leading-relaxed mt-0.5 line-clamp-1">
+                            {skill?.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </GlassCard>
-              </AnimatedSection>
-            ))}
+                  </GlassCard>
+                </AnimatedSection>
+              ),
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
