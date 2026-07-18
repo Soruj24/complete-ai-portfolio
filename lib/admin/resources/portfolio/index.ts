@@ -8,3 +8,4 @@ import "./certificates";
 import "./achievements";
 import "./social-links";
 import "./testimonials";
+import "./downloads";

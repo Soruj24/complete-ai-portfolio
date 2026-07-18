@@ -28,7 +28,7 @@ export function ResourcePage({ config }: ResourcePageProps) {
     handleSubmit, handleDelete, handleBulkAction, handleExport,
   } = useResourceManager();
 
-  const endpoint = `/api${config.endpoint}`;
+  const endpoint = config.endpoint;
   const features = {
     create: true, update: true, del: true, archive: true, restore: true,
     bulkDelete: true, bulkArchive: true, bulkRestore: true,

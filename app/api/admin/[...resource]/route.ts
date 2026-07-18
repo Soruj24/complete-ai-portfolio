@@ -58,14 +58,8 @@ export async function PUT(request: NextRequest) {
   try {
     await dbConnect();
     const body = await request.json().catch(() => ({}));
-    const { id } = body;
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: { message: "ID is required" } },
-        { status: 400 },
-      );
-    }
-
+    const parts = request.nextUrl.pathname.split("/").filter(Boolean);
+    const id = body.id || parts[parts.length - 1];
     const key = getResourceKey(request.nextUrl.pathname);
     return isDedicatedModel(key) ? handleDedicatedPUT(key, id, body) : handleGenericPUT(id, body);
   } catch {

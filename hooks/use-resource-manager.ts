@@ -22,7 +22,7 @@ export function useResourceManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const resource = endpoint.replace("/api/", "");
+  const resource = endpoint.replace(/^\/api\/admin\//, "");
 
   const { data: response, isLoading: loading, refetch } = useGetAdminResourceQuery(
     { resource, params: { page, limit: pageSize, sort: sortKey, order: sortDir, search } },

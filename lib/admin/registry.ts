@@ -17,5 +17,3 @@ export function getResourceConfig(path: string): ResourceConfig | undefined {
 export function getAllResources(): ResourceConfig[] {
   return Array.from(configs.values());
 }
-
-import "./resources";
