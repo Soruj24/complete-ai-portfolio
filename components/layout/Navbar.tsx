@@ -2,20 +2,25 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LayoutDashboard } from "lucide-react";
+import { Menu, X, Github, Linkedin, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/lib/constants";
+import { NAV_ITEMS, SITE, SOCIAL } from "@/lib/constants";
 import { useScrolledPast, useSiteSettings } from "@/lib/hooks";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+const iconMap: Record<string, React.ElementType> = {
+  github: Github,
+  linkedin: Linkedin,
+};
+
 export function Navbar() {
   const scrolled = useScrolledPast(50);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const { settings } = useSiteSettings();
-  const siteName = settings?.siteName || "Soruj";
+  const { settings, socialLinks } = useSiteSettings();
+  const siteName = settings?.siteName?.split(" ")[0] || "Soruj";
   const navRef = useRef<HTMLElement>(null);
 
   const handleNavClick = useCallback(
@@ -63,6 +68,9 @@ export function Navbar() {
     };
   }, [mobileOpen]);
 
+  const githubLink = socialLinks.find((l) => l.platform.toLowerCase() === "github")?.url || SOCIAL.github.url;
+  const linkedinLink = socialLinks.find((l) => l.platform.toLowerCase() === "linkedin")?.url || SOCIAL.linkedin.url;
+
   return (
     <>
       <header
@@ -75,70 +83,107 @@ export function Navbar() {
         )}
       >
         <nav
-          className="container flex items-center justify-between h-14 md:h-16"
+          className="container flex items-center justify-between h-14"
           aria-label="Main navigation"
         >
+          {/* Logo */}
           <Link
             href="/"
-            className="text-[15px] font-semibold tracking-[-0.02em] text-text-primary hover:text-accent transition-colors duration-200"
+            className="text-[14px] font-semibold tracking-[-0.02em] text-text-primary hover:text-accent transition-colors duration-200"
           >
             {siteName}
             <span className="text-accent">.</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-0.5">
-            {NAV_ITEMS.map((item) => {
-              const isActive = item.href.startsWith("/#")
-                ? activeSection === item.href.slice(2)
-                : false;
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  onClick={(e) => handleNavClick(e, item.href)}
-                  className={cn(
-                    "relative px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors duration-200",
-                    isActive
-                      ? "text-text-primary"
-                      : "text-text-tertiary hover:text-text-secondary",
-                  )}
-                >
-                  {item.label}
-                  {isActive && (
-                    <motion.span
-                      layoutId="nav-indicator"
-                      className="absolute inset-0 bg-surface border border-border-subtle rounded-md -z-10"
-                      transition={{
-                        type: "spring",
-                        stiffness: 350,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
-            <div className="ml-3 pl-3 border-l border-border-subtle flex items-center gap-1">
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center">
+            {/* Nav links */}
+            <div className="flex items-center gap-0.5 mr-4">
+              {NAV_ITEMS.map((item) => {
+                const isActive = item.href.startsWith("/#")
+                  ? activeSection === item.href.slice(2)
+                  : false;
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={(e) => handleNavClick(e, item.href)}
+                    className={cn(
+                      "relative px-2.5 py-1 text-[13px] font-medium rounded-md transition-colors duration-200",
+                      isActive
+                        ? "text-text-primary"
+                        : "text-text-tertiary hover:text-text-secondary",
+                    )}
+                  >
+                    {item.label}
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-indicator"
+                        className="absolute inset-0 bg-surface border border-border-subtle rounded-md -z-10"
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 30,
+                        }}
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Separator */}
+            <div className="h-4 w-px bg-border-subtle" />
+
+            {/* Right side actions */}
+            <div className="flex items-center gap-0.5 ml-4">
+              {/* Social links */}
+              <a
+                href={githubLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                aria-label="GitHub"
+              >
+                <Github className="h-4 w-4" />
+              </a>
+              <a
+                href={linkedinLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-4 w-4" />
+              </a>
+
+              {/* Separator */}
+              <div className="h-4 w-px bg-border-subtle mx-1" />
+
+              {/* Theme toggle */}
               <ModeToggle />
+
+              {/* Resume */}
               <Button
                 asChild
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="gap-1.5 text-[13px] text-text-tertiary hover:text-text-secondary"
+                className="ml-1 gap-1.5"
               >
-                <Link href="/admin/dashboard">
-                  <LayoutDashboard className="h-3.5 w-3.5" />
-                  Dashboard
-                </Link>
+                <a href={SITE.resumeUrl} download>
+                  <Download className="h-3 w-3" />
+                  Resume
+                </a>
               </Button>
             </div>
           </div>
 
-          <div className="flex md:hidden items-center gap-1">
+          {/* Mobile controls */}
+          <div className="flex md:hidden items-center gap-0.5">
             <ModeToggle />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-md hover:bg-surface transition-colors duration-200"
+              className="p-1.5 rounded-md hover:bg-surface transition-colors duration-200 text-text-secondary"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
             >
@@ -152,17 +197,18 @@ export function Navbar() {
         </nav>
       </header>
 
+      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 top-14 z-40 bg-background/95 backdrop-blur-xl md:hidden"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="fixed inset-0 top-14 z-40 bg-background/95 backdrop-blur-xl border-b border-border-subtle md:hidden"
           >
             <nav
-              className="container py-6 flex flex-col gap-0.5"
+              className="container py-4 flex flex-col gap-0.5"
               aria-label="Mobile navigation"
             >
               {NAV_ITEMS.map((item) => (
@@ -171,7 +217,7 @@ export function Navbar() {
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
                   className={cn(
-                    "px-3 py-2.5 text-[15px] font-medium rounded-lg transition-colors duration-200",
+                    "px-3 py-2 text-[14px] font-medium rounded-lg transition-colors duration-200",
                     activeSection === item.href.slice(2)
                       ? "text-text-primary bg-surface"
                       : "text-text-secondary hover:text-text-primary hover:bg-surface/50",
@@ -180,15 +226,34 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
-              <div className="mt-4 pt-4 border-t border-border-subtle">
-                <Button asChild className="w-full gap-2">
-                  <Link
-                    href="/admin/dashboard"
-                    onClick={() => setMobileOpen(false)}
+
+              {/* Mobile actions */}
+              <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
+                <div className="flex items-center gap-2 px-3">
+                  <a
+                    href={githubLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                    aria-label="GitHub"
                   >
-                    <LayoutDashboard className="h-4 w-4" />
-                    Admin Dashboard
-                  </Link>
+                    <Github className="h-4 w-4" />
+                  </a>
+                  <a
+                    href={linkedinLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                </div>
+                <Button asChild variant="outline" className="w-full gap-2">
+                  <a href={SITE.resumeUrl} download onClick={() => setMobileOpen(false)}>
+                    <Download className="h-3.5 w-3.5" />
+                    Download Resume
+                  </a>
                 </Button>
               </div>
             </nav>

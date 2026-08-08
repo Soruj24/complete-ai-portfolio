@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Menu, X, ArrowRight, LayoutDashboard, User } from "lucide-react";
-import { motion, useScroll } from "framer-motion";
+import { Menu, X, Github, Linkedin, Download } from "lucide-react";
+import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { MobileMenu } from "./navbar-mobile-menu";
 import { useSiteSettings } from "@/lib/hooks";
+import { SITE, SOCIAL } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 const navLinks = [
   { name: "Home", href: "#home" },
@@ -23,8 +24,7 @@ export function Navbar() {
   const { data: session } = useSession();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const { settings } = useSiteSettings();
+  const { settings, socialLinks } = useSiteSettings();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -32,67 +32,99 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const logoText = (settings?.siteName as string) || "SORUJ";
+  const logoText = (settings?.siteName as string)?.split(" ")[0] || "Soruj";
   const isAdmin = session?.user?.role === "admin";
+
+  const githubLink = socialLinks.find((l) => l.platform.toLowerCase() === "github")?.url || SOCIAL.github.url;
+  const linkedinLink = socialLinks.find((l) => l.platform.toLowerCase() === "linkedin")?.url || SOCIAL.linkedin.url;
 
   return (
     <>
-      <motion.div className="fixed top-0 left-0 right-0 h-[1px] bg-accent origin-left z-[100]" style={{ scaleX: scrollYProgress }} />
-      <motion.nav initial={{ y: -100 }} animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+      <header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-200",
           isScrolled
-            ? "py-3 bg-background/80 backdrop-blur-xl border-b border-border-subtle"
-            : "py-4 bg-transparent"
-        }`}
+            ? "bg-background/80 backdrop-blur-xl border-b border-border-subtle"
+            : "bg-transparent",
+        )}
       >
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <Link href="#home" className="text-[15px] font-semibold text-text-primary tracking-[-0.02em] group">
-              {logoText}<span className="text-accent group-hover:animate-pulse">.</span>
-            </Link>
+        <nav className="container mx-auto px-4 flex items-center justify-between h-14" aria-label="Main navigation">
+          {/* Logo */}
+          <Link href="#home" className="text-[14px] font-semibold text-text-primary tracking-[-0.02em]">
+            {logoText}<span className="text-accent">.</span>
+          </Link>
 
-            <div className="hidden md:flex items-center gap-8">
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center">
+            <div className="flex items-center gap-0.5 mr-4">
               {navLinks.map((link) => (
-                <Link key={link.name} href={link.href}
-                  className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-tertiary hover:text-accent transition-colors duration-200">
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="px-2.5 py-1 text-[13px] font-medium text-text-tertiary hover:text-text-secondary rounded-md transition-colors duration-200"
+                >
                   {link.name}
                 </Link>
               ))}
-
-              <div className="flex items-center gap-2 border-l border-border-subtle pl-6">
-                <ModeToggle />
-                {session ? (
-                  <Button asChild variant="ghost" size="sm" className="gap-1.5 text-[13px]">
-                    <Link href={isAdmin ? "/admin/dashboard" : "/dashboard"}>
-                      {isAdmin ? <LayoutDashboard className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
-                      {isAdmin ? "Admin" : "Dashboard"}
-                    </Link>
-                  </Button>
-                ) : (
-                  <Button asChild variant="ghost" size="sm" className="text-[13px]">
-                    <Link href="/login">Login</Link>
-                  </Button>
-                )}
-
-                <Button asChild className="gap-2">
-                  <Link href="#contact">
-                    Let&apos;s Work <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </Button>
-              </div>
             </div>
 
-            <div className="md:hidden flex items-center gap-2">
+            <div className="h-4 w-px bg-border-subtle" />
+
+            <div className="flex items-center gap-0.5 ml-4">
+              <a
+                href={githubLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                aria-label="GitHub"
+              >
+                <Github className="h-4 w-4" />
+              </a>
+              <a
+                href={linkedinLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-4 w-4" />
+              </a>
+
+              <div className="h-4 w-px bg-border-subtle mx-1" />
+
               <ModeToggle />
-              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-text-primary hover:bg-surface rounded-lg transition-colors duration-200">
-                {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-              </button>
+
+              <Link
+                href={isAdmin ? "/admin/dashboard" : "/login"}
+                className="ml-1 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-medium border border-border-subtle text-text-secondary hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200"
+              >
+                {isAdmin ? "Dashboard" : "Login"}
+              </Link>
             </div>
           </div>
-        </div>
-      </motion.nav>
 
-      <MobileMenu open={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} logoText={logoText} />
+          {/* Mobile controls */}
+          <div className="flex md:hidden items-center gap-0.5">
+            <ModeToggle />
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-1.5 rounded-md hover:bg-surface transition-colors duration-200 text-text-secondary"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileMenuOpen}
+            >
+              {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      <MobileMenu
+        open={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        logoText={logoText}
+        githubLink={githubLink}
+        linkedinLink={linkedinLink}
+      />
     </>
   );
 }
