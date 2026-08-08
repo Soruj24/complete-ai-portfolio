@@ -123,7 +123,7 @@ export function Contact() {
               {contactMethods.map((method) => {
                 const Icon = method.icon;
                 const content = (
-                  <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-surface border border-border-subtle hover:border-border transition-all duration-200 group">
+                  <div className="flex items-center gap-3.5 p-3.5 sm:p-4 rounded-xl bg-surface border border-border-subtle hover:border-border transition-all duration-200 group min-h-[52px]">
                     <div className="p-2.5 rounded-lg bg-accent/8 text-accent group-hover:bg-accent/12 transition-colors duration-200">
                       <Icon className="w-4 h-4" />
                     </div>
@@ -167,13 +167,13 @@ export function Contact() {
 
           {/* Right — Form */}
           <AnimatedSection className="lg:col-span-3" delay={0.08}>
-            <div className="p-5 md:p-7 rounded-2xl bg-surface border border-border-subtle">
+            <div className="p-4 sm:p-5 md:p-7 rounded-2xl bg-surface border border-border-subtle">
               <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="space-y-4"
                 noValidate
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
                   <InputField
                     id="contact-name"
                     label="Name"
@@ -209,7 +209,7 @@ export function Contact() {
                   type="submit"
                   disabled={submitState === "loading"}
                   className={cn(
-                    "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-[13px] transition-all duration-200",
+                    "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium text-[13px] transition-all duration-200 min-h-[44px]",
                     "bg-accent text-accent-foreground hover:brightness-110 active:scale-[0.98]",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
                     submitState === "success" && "bg-success text-white",

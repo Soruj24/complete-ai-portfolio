@@ -147,14 +147,14 @@ function FeaturedCard({ project }: { project: Project }) {
             </div>
 
             {/* Links */}
-            <div className="flex items-center gap-2 mt-5 pt-4 border-t border-border-subtle">
+            <div className="flex flex-wrap items-center gap-2 mt-5 pt-4 border-t border-border-subtle">
               {project.githubUrl && (
                 <a
                   href={project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-text-secondary bg-background border border-border-subtle hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium text-text-secondary bg-background border border-border-subtle hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 min-h-[36px]"
                 >
                   <Github className="w-3.5 h-3.5" />
                   Code
@@ -166,7 +166,7 @@ function FeaturedCard({ project }: { project: Project }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-accent-foreground bg-accent hover:brightness-110 transition-all duration-200"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium text-accent-foreground bg-accent hover:brightness-110 transition-all duration-200 min-h-[36px]"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                   Live Demo
@@ -278,13 +278,13 @@ export function Projects() {
         />
 
         {/* Filters */}
-        <div className="flex flex-wrap justify-center gap-1.5 mb-10">
+        <div className="flex flex-wrap justify-center gap-1 sm:gap-1.5 mb-8 sm:mb-10">
           {FILTERS.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveFilter(cat)}
               className={cn(
-                "relative px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200",
+                "relative px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-lg text-[12px] sm:text-[13px] font-medium transition-all duration-200 min-h-[36px]",
                 activeFilter === cat
                   ? "text-text-primary bg-surface border border-border-subtle"
                   : "text-text-tertiary hover:text-text-secondary"
@@ -326,7 +326,7 @@ export function Projects() {
               href={SOCIAL.github.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-text-secondary border border-border-subtle hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-medium text-text-secondary border border-border-subtle hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 min-h-[44px]"
             >
               View More on GitHub
               <Github className="w-4 h-4" />

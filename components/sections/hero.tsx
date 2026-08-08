@@ -133,11 +133,11 @@ export function Hero() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.16, ease }}
-            className="mt-7 flex flex-wrap items-center justify-center gap-2.5"
+            className="mt-7 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2.5 w-full"
           >
             <button
               onClick={() => scrollToSection("projects")}
-              className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-subtle bg-background text-text-primary text-[13px] font-medium hover:bg-surface hover:border-border transition-all duration-200 active:scale-[0.98]"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-border-subtle bg-background text-text-primary text-[13px] font-medium hover:bg-surface hover:border-border transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               View Projects
               <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -145,14 +145,14 @@ export function Hero() {
             <a
               href={SITE.resumeUrl}
               download
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               <Download className="w-3.5 h-3.5" />
               Download Resume
             </a>
             <button
               onClick={() => scrollToSection("contact")}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-text-tertiary text-[13px] font-medium hover:text-text-secondary hover:bg-surface transition-all duration-200 active:scale-[0.98]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-text-tertiary text-[13px] font-medium hover:text-text-secondary hover:bg-surface transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               <Mail className="w-3.5 h-3.5" />
               Contact Me
@@ -186,7 +186,7 @@ export function Hero() {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                    className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label={item.label}
                   >
                     <item.icon className="w-4 h-4" />

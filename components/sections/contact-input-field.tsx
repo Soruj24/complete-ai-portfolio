@@ -14,7 +14,7 @@ export function InputField({
       <input id={id} type={type} placeholder={placeholder}
         aria-invalid={!!error} aria-describedby={error ? `${id}-error` : undefined}
         className={cn(
-          "w-full px-3 py-2 text-[13px] rounded-lg border bg-background transition-colors duration-200",
+          "w-full px-3 py-2.5 text-[13px] rounded-lg border bg-background transition-colors duration-200 min-h-[44px]",
           "placeholder:text-text-tertiary",
           "focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/40",
           error ? "border-error" : "border-border-subtle"

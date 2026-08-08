@@ -217,28 +217,28 @@ export function OpenSource() {
             {/* Profile + Stats */}
             {data?.user && (
               <AnimatedSection>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-5 rounded-2xl bg-surface border border-border-subtle">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 p-4 sm:p-5 rounded-2xl bg-surface border border-border-subtle">
                   <img
                     src={data.user.avatar_url}
                     alt={data.user.login}
-                    className="w-14 h-14 rounded-full border border-border-subtle"
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-border-subtle shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-[15px] font-semibold text-text-primary">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-[14px] sm:text-[15px] font-semibold text-text-primary">
                         {data.user.name || data.user.login}
                       </h3>
                       <a
                         href={data.user.html_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[12px] text-text-tertiary hover:text-accent transition-colors"
+                        className="text-[11px] sm:text-[12px] text-text-tertiary hover:text-accent transition-colors"
                       >
                         @{data.user.login}
                       </a>
                     </div>
                     {data.user.bio && (
-                      <p className="text-[12.5px] text-text-secondary mt-0.5 line-clamp-1">
+                      <p className="text-[12px] sm:text-[12.5px] text-text-secondary mt-0.5 line-clamp-1">
                         {data.user.bio}
                       </p>
                     )}
@@ -247,7 +247,7 @@ export function OpenSource() {
                     href={data.user.html_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all shrink-0"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all shrink-0 min-h-[44px]"
                   >
                     <Github className="w-3.5 h-3.5" />
                     View GitHub Profile

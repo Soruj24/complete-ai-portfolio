@@ -20,7 +20,7 @@ export function Section({
       id={id}
       data-section
       className={cn(
-        "relative py-20 md:py-28",
+        "relative py-14 sm:py-20 md:py-28",
         variant === "default" && "bg-background",
         variant === "alt" && "bg-background border-t border-border-subtle",
         variant === "gradient" && "bg-background border-t border-border-subtle",
@@ -49,7 +49,7 @@ export function SectionHeader({
   return (
     <div
       className={cn(
-        "max-w-2xl mb-14 md:mb-16 space-y-3",
+        "max-w-2xl mb-10 sm:mb-14 md:mb-16 space-y-3",
         align === "center" && "mx-auto text-center"
       )}
     >

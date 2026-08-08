@@ -135,14 +135,14 @@ const AI_PROJECTS: AiProject[] = [
 
 function ArchitectureFlow({ steps }: { steps: AiProject["architecture"] }) {
   return (
-    <div className="flex items-center gap-1 overflow-x-auto pb-1">
+    <div className="flex items-center gap-1 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin">
       {steps.map((step, i) => {
         const Icon = step.icon;
         return (
           <div key={step.step} className="flex items-center gap-1 shrink-0">
-            <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-background border border-border-subtle min-w-[60px]">
+            <div className="flex flex-col items-center gap-1 p-2 sm:p-2.5 rounded-lg bg-background border border-border-subtle min-w-[56px] sm:min-w-[64px]">
               <Icon className="w-3.5 h-3.5 text-accent" />
-              <span className="text-[9px] font-medium text-text-tertiary text-center leading-tight">
+              <span className="text-[8px] sm:text-[9px] font-medium text-text-tertiary text-center leading-tight">
                 {step.label}
               </span>
             </div>
@@ -192,7 +192,7 @@ function ProjectCard({ project, index }: { project: AiProject; index: number }) 
         </div>
 
         {/* Tech Details */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-text-tertiary">
               Model
@@ -278,7 +278,7 @@ export function AiEngineering() {
               return (
                 <div
                   key={item.label}
-                  className="flex flex-col items-center gap-2 p-3 rounded-xl bg-surface border border-border-subtle"
+                  className="flex flex-col items-center gap-2 p-3 sm:p-3.5 rounded-xl bg-surface border border-border-subtle min-h-[72px] justify-center"
                 >
                   <Icon className="w-4 h-4 text-accent" />
                   <span className="text-[11px] font-medium text-text-secondary text-center">

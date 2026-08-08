@@ -69,7 +69,7 @@ export function Certificates() {
                     <Award className="w-4 h-4" />
                   </div>
                   {cert.credentialUrl && (
-                    <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="p-1 rounded-md text-text-tertiary hover:text-accent transition-colors duration-200">
+                    <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-md text-text-tertiary hover:text-accent transition-colors duration-200 min-h-[32px] min-w-[32px] flex items-center justify-center">
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   )}

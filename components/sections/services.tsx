@@ -177,7 +177,7 @@ export function Services() {
           <div className="mt-10 text-center">
             <button
               onClick={scrollToContact}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               Start a Conversation
               <ArrowRight className="w-3.5 h-3.5" />

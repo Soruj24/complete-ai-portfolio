@@ -20,7 +20,7 @@ export function SectionCard({
 }) {
   return (
     <section id={id} className="scroll-mt-24">
-      <div className="p-6 md:p-8 rounded-2xl bg-surface border border-border-subtle">
+      <div className="p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl bg-surface border border-border-subtle">
         <div className="flex items-center gap-3 mb-5">
           <div className="p-2 rounded-xl bg-accent/8 text-accent">
             <Icon className="w-4.5 h-4.5" />
@@ -45,8 +45,8 @@ export function ResultCard({
   label?: string;
 }) {
   return (
-    <div className="text-center p-4 rounded-xl bg-background border border-border-subtle">
-      <div className="text-xl md:text-2xl font-bold text-accent">{value}</div>
+    <div className="text-center p-3 sm:p-4 rounded-xl bg-background border border-border-subtle">
+      <div className="text-lg sm:text-xl md:text-2xl font-bold text-accent">{value}</div>
       <div className="text-[12px] font-medium text-text-secondary mt-1">{metric}</div>
       {label && (
         <div className="text-[10px] text-text-tertiary mt-0.5">{label}</div>

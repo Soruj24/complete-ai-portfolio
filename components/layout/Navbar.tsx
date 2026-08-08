@@ -142,7 +142,7 @@ export function Navbar() {
                 href={githubLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                className="p-2 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[36px] min-w-[36px] flex items-center justify-center"
                 aria-label="GitHub"
               >
                 <Github className="h-4 w-4" />
@@ -151,7 +151,7 @@ export function Navbar() {
                 href={linkedinLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-1.5 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                className="p-2 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[36px] min-w-[36px] flex items-center justify-center"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="h-4 w-4" />
@@ -179,18 +179,18 @@ export function Navbar() {
           </div>
 
           {/* Mobile controls */}
-          <div className="flex md:hidden items-center gap-0.5">
+          <div className="flex md:hidden items-center gap-1">
             <ModeToggle />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-1.5 rounded-md hover:bg-surface transition-colors duration-200 text-text-secondary"
+              className="p-2.5 rounded-lg hover:bg-surface transition-colors duration-200 text-text-secondary min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
             >
               {mobileOpen ? (
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               ) : (
-                <Menu className="w-4 h-4" />
+                <Menu className="w-5 h-5" />
               )}
             </button>
           </div>
@@ -208,7 +208,7 @@ export function Navbar() {
             className="fixed inset-0 top-14 z-40 bg-background/95 backdrop-blur-xl border-b border-border-subtle md:hidden"
           >
             <nav
-              className="container py-4 flex flex-col gap-0.5"
+              className="container py-5 flex flex-col gap-1"
               aria-label="Mobile navigation"
             >
               {NAV_ITEMS.map((item) => (
@@ -217,7 +217,7 @@ export function Navbar() {
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
                   className={cn(
-                    "px-3 py-2 text-[14px] font-medium rounded-lg transition-colors duration-200",
+                    "px-4 py-3 text-[15px] font-medium rounded-lg transition-colors duration-200 min-h-[44px] flex items-center",
                     activeSection === item.href.slice(2)
                       ? "text-text-primary bg-surface"
                       : "text-text-secondary hover:text-text-primary hover:bg-surface/50",
@@ -228,30 +228,30 @@ export function Navbar() {
               ))}
 
               {/* Mobile actions */}
-              <div className="mt-3 pt-3 border-t border-border-subtle flex flex-col gap-2">
+              <div className="mt-4 pt-4 border-t border-border-subtle flex flex-col gap-3">
                 <div className="flex items-center gap-2 px-3">
                   <a
                     href={githubLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                    className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label="GitHub"
                   >
-                    <Github className="h-4 w-4" />
+                    <Github className="w-5 h-5" />
                   </a>
                   <a
                     href={linkedinLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                    className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label="LinkedIn"
                   >
-                    <Linkedin className="h-4 w-4" />
+                    <Linkedin className="w-5 h-5" />
                   </a>
                 </div>
-                <Button asChild variant="outline" className="w-full gap-2">
+                <Button asChild variant="outline" className="w-full gap-2 min-h-[44px] text-[14px]">
                   <a href={SITE.resumeUrl} download onClick={() => setMobileOpen(false)}>
-                    <Download className="h-3.5 w-3.5" />
+                    <Download className="h-4 w-4" />
                     Download Resume
                   </a>
                 </Button>

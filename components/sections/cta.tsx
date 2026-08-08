@@ -35,10 +35,10 @@ export function CTA() {
             I&apos;m currently open to new opportunities and collaborations.
             Let&apos;s discuss how I can contribute to your team&apos;s success.
           </p>
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
+          <div className="mt-7 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2.5 w-full">
             <a
               href={`mailto:${email}`}
-              className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98]"
+              className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               Start a Conversation
               <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -46,7 +46,7 @@ export function CTA() {
             <a
               href={resumeUrl}
               download
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-subtle text-text-secondary text-[13px] font-medium hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 active:scale-[0.98]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-border-subtle text-text-secondary text-[13px] font-medium hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               Download Resume
             </a>

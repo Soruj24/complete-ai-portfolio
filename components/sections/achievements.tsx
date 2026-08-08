@@ -74,7 +74,7 @@ export function Achievements() {
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-medium text-text-primary text-[13px]">{item.title}</h3>
                       {item.url && (
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="p-1 rounded-md text-text-tertiary hover:text-accent shrink-0">
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-md text-text-tertiary hover:text-accent shrink-0 min-h-[32px] min-w-[32px] flex items-center justify-center">
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       )}
