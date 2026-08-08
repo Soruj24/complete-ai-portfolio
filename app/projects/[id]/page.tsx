@@ -15,7 +15,7 @@ import { TableOfContents } from "@/components/projects/table-of-contents";
 async function getProject(id: string) {
   try {
     await dbConnect();
-    const project = await Project.findById(id).catch(() => null);
+    const project = await Project.findById(id).lean().catch(() => null);
     return project;
   } catch {
     return null;
@@ -24,10 +24,10 @@ async function getProject(id: string) {
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const project = (await getProject(id)) as (IProject & { _doc?: IProject }) | null;
+  const project = await getProject(id) as IProject | null;
   if (!project) notFound();
 
-  const p = project._doc ?? project;
+  const p = project;
 
   return (
     <main className="min-h-screen bg-background">
