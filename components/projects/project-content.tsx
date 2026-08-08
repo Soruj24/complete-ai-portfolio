@@ -59,9 +59,9 @@ function CheckList({ items }: { items: string[] }) {
 
 function CodeBlock({ code, language }: { code: string; language?: string }) {
   return (
-    <div className="rounded-xl bg-background border border-border-subtle overflow-hidden">
+    <div className="rounded-xl bg-code-bg border border-border-subtle overflow-hidden">
       {language && (
-        <div className="px-4 py-1.5 border-b border-border-subtle bg-surface">
+        <div className="px-4 py-1.5 border-b border-border-subtle">
           <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-wider">
             {language}
           </span>
