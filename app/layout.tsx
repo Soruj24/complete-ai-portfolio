@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Providers from "./providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ScrollProgress } from "@/components/layout/scroll-progress";
+import { SkipLink } from "@/components/layout/skip-link";
 import { Suspense, lazy } from "react";
 import { METADATA, SITE } from "@/lib/constants";
 
@@ -116,6 +117,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <ScrollProgress />
+            <SkipLink />
             <Suspense fallback={null}>
               <PageViewTracker />
             </Suspense>

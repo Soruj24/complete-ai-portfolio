@@ -22,6 +22,8 @@ export function Navbar() {
   const { settings, socialLinks } = useSiteSettings();
   const siteName = settings?.siteName?.split(" ")[0] || "Soruj";
   const navRef = useRef<HTMLElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const handleNavClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -60,12 +62,48 @@ export function Navbar() {
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
+      const firstFocusable = menuRef.current?.querySelector<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      firstFocusable?.focus();
     } else {
       document.body.style.overflow = "";
+      triggerRef.current?.focus();
     }
     return () => {
       document.body.style.overflow = "";
     };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMobileOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+
+      const focusable = menuRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [mobileOpen]);
 
   const githubLink = socialLinks.find((l) => l.platform.toLowerCase() === "github")?.url || SOCIAL.github.url;
@@ -182,6 +220,7 @@ export function Navbar() {
           <div className="flex md:hidden items-center gap-1">
             <ModeToggle />
             <button
+              ref={triggerRef}
               onClick={() => setMobileOpen(!mobileOpen)}
               className="p-2.5 rounded-lg hover:bg-surface transition-colors duration-200 text-text-secondary min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -201,11 +240,15 @@ export function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            ref={menuRef}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             className="fixed inset-0 top-14 z-40 bg-background/95 backdrop-blur-xl border-b border-border-subtle md:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation"
           >
             <nav
               className="container py-5 flex flex-col gap-1"

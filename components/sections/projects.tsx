@@ -72,7 +72,7 @@ function FeaturedCard({ project }: { project: Project }) {
 
   return (
     <AnimatedSection>
-      <a href={`/projects/${projectId}`} className="block group">
+      <div className="block group">
         <div className="grid grid-cols-1 lg:grid-cols-2 rounded-2xl bg-surface border border-border-subtle overflow-hidden hover:border-border transition-all duration-300">
           {/* Image */}
           <div className="relative aspect-[16/10] lg:aspect-auto lg:min-h-[360px] overflow-hidden bg-background">
@@ -97,8 +97,13 @@ function FeaturedCard({ project }: { project: Project }) {
                     {project.category || "Project"}
                   </span>
                 </div>
-                <h3 className="text-[clamp(1.1rem,2vw,1.5rem)] font-semibold text-text-primary tracking-[-0.02em] leading-snug group-hover:text-accent transition-colors duration-200">
-                  {project.title}
+                <h3 className="text-[clamp(1.1rem,2vw,1.5rem)] font-semibold text-text-primary tracking-[-0.02em] leading-snug">
+                  <a
+                    href={`/projects/${projectId}`}
+                    className="hover:text-accent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+                  >
+                    {project.title}
+                  </a>
                 </h3>
               </div>
 
@@ -153,8 +158,7 @@ function FeaturedCard({ project }: { project: Project }) {
                   href={project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium text-text-secondary bg-background border border-border-subtle hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 min-h-[36px]"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium text-text-secondary bg-background border border-border-subtle hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   <Github className="w-3.5 h-3.5" aria-hidden="true" />
                   Code
@@ -165,21 +169,23 @@ function FeaturedCard({ project }: { project: Project }) {
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium text-accent-foreground bg-accent hover:brightness-110 transition-all duration-200 min-h-[36px]"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium text-accent-foreground bg-accent hover:brightness-110 transition-all duration-200 min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                   Live Demo
                 </a>
               )}
-              <span className="ml-auto inline-flex items-center gap-1 text-[12px] font-medium text-text-tertiary group-hover:text-accent transition-colors duration-200">
+              <a
+                href={`/projects/${projectId}`}
+                className="ml-auto inline-flex items-center gap-1 text-[12px] font-medium text-text-tertiary hover:text-accent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+              >
                 View Details
                 <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
-              </span>
+              </a>
             </div>
           </div>
         </div>
-      </a>
+      </div>
     </AnimatedSection>
   );
 }
@@ -189,7 +195,7 @@ function ProjectCard({ project }: { project: Project }) {
 
   return (
     <AnimatedSection>
-      <a href={`/projects/${projectId}`} className="block group h-full">
+      <div className="block group h-full">
         <div className="h-full rounded-2xl bg-surface border border-border-subtle overflow-hidden hover:border-border transition-all duration-300 flex flex-col">
           {/* Image */}
           <div className="relative aspect-[16/10] overflow-hidden bg-background">
@@ -201,11 +207,10 @@ function ProjectCard({ project }: { project: Project }) {
                   href={project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
                   className="p-1.5 rounded-md bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                   aria-label={`View source code for ${project.title}`}
                 >
-                  <Github className="w-3 h-3" />
+                  <Github className="w-3 h-3" aria-hidden="true" />
                 </a>
               )}
               {project.liveUrl && (
@@ -213,11 +218,10 @@ function ProjectCard({ project }: { project: Project }) {
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
                   className="p-1.5 rounded-md bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                   aria-label={`View live demo for ${project.title}`}
                 >
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 </a>
               )}
             </div>
@@ -228,8 +232,13 @@ function ProjectCard({ project }: { project: Project }) {
             <div className="flex items-start justify-between gap-2 mb-1.5">
               <div className="flex items-center gap-2">
                 {project.emoji && <span className="text-sm">{project.emoji}</span>}
-                <h3 className="text-[14px] font-semibold text-text-primary tracking-[-0.01em] line-clamp-1 group-hover:text-accent transition-colors duration-200">
-                  {project.title}
+                <h3 className="text-[14px] font-semibold text-text-primary tracking-[-0.01em] line-clamp-1">
+                  <a
+                    href={`/projects/${projectId}`}
+                    className="hover:text-accent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+                  >
+                    {project.title}
+                  </a>
                 </h3>
               </div>
               <ArrowUpRight className="w-4 h-4 text-text-tertiary group-hover:text-accent transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" aria-hidden="true" />
@@ -243,7 +252,7 @@ function ProjectCard({ project }: { project: Project }) {
             <TechStack technologies={project.technologies} limit={3} />
           </div>
         </div>
-      </a>
+      </div>
     </AnimatedSection>
   );
 }
