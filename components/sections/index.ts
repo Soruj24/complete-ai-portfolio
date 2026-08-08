@@ -1,6 +1,7 @@
 export { Hero } from "./hero";
 export { About } from "./about";
 export { Skills } from "./skills";
+export { Services } from "./services";
 export { Projects } from "./projects";
 export { Experience } from "./experience";
 export { AiEngineering } from "./ai-engineering";

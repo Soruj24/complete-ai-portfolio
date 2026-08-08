@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/footer";
 import {
-  Hero, About, Skills, Projects, Experience,
+  Hero, About, Skills, Services, Projects, Experience,
   AiEngineering, Contact, Certificates, Achievements, Testimonials,
   OpenSource, CTA,
 } from "@/components/sections";
@@ -39,6 +39,7 @@ export default async function PortfolioPage() {
       <Hero />
       <About />
       <Skills />
+      <Services />
       <Projects />
       <Experience />
       <AiEngineering />
