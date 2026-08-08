@@ -43,7 +43,7 @@ export function Achievements() {
     return (
       <Section id="achievements">
         <div className="container flex items-center justify-center py-20">
-          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" />
+          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" role="status" aria-label="Loading achievements" />
         </div>
       </Section>
     );
@@ -68,14 +68,14 @@ export function Achievements() {
               <GlassCard variant="interactive" className="p-4 h-full">
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-lg bg-accent/8 text-accent shrink-0">
-                    <Trophy className="w-4 h-4" />
+                    <Trophy className="w-4 h-4" aria-hidden="true" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-medium text-text-primary text-[13px]">{item.title}</h3>
                       {item.url && (
                         <a href={item.url} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-md text-text-tertiary hover:text-accent shrink-0 min-h-[32px] min-w-[32px] flex items-center justify-center">
-                          <ExternalLink className="w-3 h-3" />
+                          <ExternalLink className="w-3 h-3" aria-hidden="true" />
                         </a>
                       )}
                     </div>

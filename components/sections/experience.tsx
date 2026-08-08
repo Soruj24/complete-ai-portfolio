@@ -86,7 +86,7 @@ function ExperienceCard({ exp }: { exp: Experience }) {
                 >
                   {exp.icon && <span>{exp.icon}</span>}
                   {exp.company}
-                  <ArrowUpRight className="w-3 h-3" />
+                  <ArrowUpRight className="w-3 h-3" aria-hidden="true" />
                 </a>
               ) : (
                 <span className="inline-flex items-center gap-1 text-[12.5px] font-medium text-text-secondary">
@@ -96,7 +96,7 @@ function ExperienceCard({ exp }: { exp: Experience }) {
               )}
               {exp.location && (
                 <span className="inline-flex items-center gap-0.5 text-[11px] text-text-tertiary">
-                  <MapPin className="w-3 h-3" />
+                  <MapPin className="w-3 h-3" aria-hidden="true" />
                   {exp.location}
                 </span>
               )}
@@ -120,7 +120,7 @@ function ExperienceCard({ exp }: { exp: Experience }) {
                 key={i}
                 className="flex items-start gap-2 text-[12px] text-text-secondary leading-relaxed"
               >
-                <CheckCircle2 className="w-3 h-3 text-accent shrink-0 mt-[3px]" />
+                <CheckCircle2 className="w-3 h-3 text-accent shrink-0 mt-[3px]" aria-hidden="true" />
                 <span>{h}</span>
               </li>
             ))}
@@ -168,7 +168,7 @@ export function Experience() {
 
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" />
+                <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" role="status" aria-label="Loading experience" />
               </div>
             ) : experiences.length === 0 ? (
               <div className="text-center py-20">

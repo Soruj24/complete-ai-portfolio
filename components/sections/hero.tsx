@@ -12,7 +12,7 @@ import {
   Globe,
 } from "lucide-react";
 import { SITE, SOCIAL } from "@/lib/constants";
-import { useSiteSettings } from "@/lib/hooks";
+import { useSiteSettings, useReducedMotion } from "@/lib/hooks";
 import { TechBadge } from "@/components/ui/tech-icon";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -49,11 +49,12 @@ const scrollToSection = (id: string) => {
 export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { settings, socialLinks, loading } = useSiteSettings();
+  const reducedMotion = useReducedMotion();
 
   if (loading) {
     return (
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
-        <div className="w-5 h-5 border-[1.5px] border-border-strong/30 border-t-accent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-[1.5px] border-border-strong/30 border-t-accent rounded-full animate-spin" role="status" aria-label="Loading" />
       </section>
     );
   }
@@ -70,6 +71,34 @@ export function Hero() {
         { icon: Mail, href: `mailto:${SITE.email}`, label: "Email" },
       ];
 
+  const anim = reducedMotion
+    ? { initial: false, animate: undefined, transition: undefined }
+    : { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, ease } };
+
+  const animUp = reducedMotion
+    ? { initial: false, animate: undefined, transition: undefined }
+    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.5, delay: 0.04, ease } };
+
+  const animBio = reducedMotion
+    ? { initial: false, animate: undefined, transition: undefined }
+    : { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.5, delay: 0.12, ease } };
+
+  const animCta = reducedMotion
+    ? { initial: false, animate: undefined, transition: undefined }
+    : { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.5, delay: 0.16, ease } };
+
+  const animStack = reducedMotion
+    ? { initial: false, animate: undefined, transition: undefined }
+    : { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.5, delay: 0.2, ease } };
+
+  const animSocial = reducedMotion
+    ? { initial: false, animate: undefined, transition: undefined }
+    : { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.5, delay: 0.24 } };
+
+  const animScroll = reducedMotion
+    ? { initial: false, animate: undefined, transition: undefined }
+    : { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.6, delay: 0.4 } };
+
   return (
     <section
       id="home"
@@ -82,9 +111,7 @@ export function Hero() {
         <div className="max-w-2xl mx-auto text-center">
           {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease }}
+            {...anim}
             className="mb-5"
           >
             <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] font-medium tracking-wide text-text-secondary bg-surface border border-border-subtle rounded-full">
@@ -95,9 +122,7 @@ export function Hero() {
 
           {/* Heading */}
           <motion.h1
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.04, ease }}
+            {...animUp}
             className="text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-[-0.03em] leading-[1.1]"
           >
             <span className="text-text-primary">
@@ -110,9 +135,9 @@ export function Hero() {
 
           {/* Name */}
           <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.08, ease }}
+            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+            animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+            transition={reducedMotion ? undefined : { duration: 0.5, delay: 0.08, ease }}
             className="mt-3 text-[clamp(0.8rem,1.2vw,0.95rem)] font-medium text-text-tertiary uppercase tracking-[0.06em]"
           >
             {settings?.fullName || SITE.name}
@@ -120,9 +145,7 @@ export function Hero() {
 
           {/* Bio */}
           <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.12, ease }}
+            {...animBio}
             className="mt-4 text-[clamp(0.875rem,1.3vw,1rem)] text-text-secondary leading-relaxed max-w-md mx-auto"
           >
             {settings?.bio || "I architect production-grade AI systems and full-stack applications with LangChain, MCP servers, and scalable infrastructure."}
@@ -130,9 +153,7 @@ export function Hero() {
 
           {/* CTAs */}
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.16, ease }}
+            {...animCta}
             className="mt-7 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2.5 w-full"
           >
             <button
@@ -140,30 +161,28 @@ export function Hero() {
               className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-border-subtle bg-background text-text-primary text-[13px] font-medium hover:bg-surface hover:border-border transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               View Projects
-              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
             </button>
             <a
               href={SITE.resumeUrl}
               download
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5" aria-hidden="true" />
               Download Resume
             </a>
             <button
               onClick={() => scrollToSection("contact")}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-text-tertiary text-[13px] font-medium hover:text-text-secondary hover:bg-surface transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
-              <Mail className="w-3.5 h-3.5" />
+              <Mail className="w-3.5 h-3.5" aria-hidden="true" />
               Contact Me
             </button>
           </motion.div>
 
           {/* Tech Stack */}
           <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2, ease }}
+            {...animStack}
             className="mt-6 flex flex-wrap items-center justify-center gap-1.5"
           >
             {CORE_STACK.map((tech) => (
@@ -173,9 +192,7 @@ export function Hero() {
 
           {/* Socials */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.24 }}
+            {...animSocial}
             className="mt-6 flex items-center justify-center gap-1"
           >
             {socialIcons.map(
@@ -199,9 +216,7 @@ export function Hero() {
 
       {/* Scroll indicator */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
+        {...animScroll}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
         <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-text-disabled">

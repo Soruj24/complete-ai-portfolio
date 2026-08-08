@@ -141,13 +141,13 @@ function ArchitectureFlow({ steps }: { steps: AiProject["architecture"] }) {
         return (
           <div key={step.step} className="flex items-center gap-1 shrink-0">
             <div className="flex flex-col items-center gap-1 p-2 sm:p-2.5 rounded-lg bg-background border border-border-subtle min-w-[56px] sm:min-w-[64px]">
-              <Icon className="w-3.5 h-3.5 text-accent" />
+              <Icon className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
               <span className="text-[8px] sm:text-[9px] font-medium text-text-tertiary text-center leading-tight">
                 {step.label}
               </span>
             </div>
             {i < steps.length - 1 && (
-              <ArrowRight className="w-3 h-3 text-border-strong shrink-0" />
+              <ArrowRight className="w-3 h-3 text-border-strong shrink-0" aria-hidden="true" />
             )}
           </div>
         );
@@ -172,7 +172,7 @@ function ProjectCard({ project, index }: { project: AiProject; index: number }) 
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="p-1.5 rounded-lg bg-accent/8 text-accent">
-              <Brain className="w-3.5 h-3.5" />
+              <Brain className="w-3.5 h-3.5" aria-hidden="true" />
             </div>
             <h3 className="text-[15px] font-semibold text-text-primary tracking-[-0.01em]">
               {project.name}
@@ -280,7 +280,7 @@ export function AiEngineering() {
                   key={item.label}
                   className="flex flex-col items-center gap-2 p-3 sm:p-3.5 rounded-xl bg-surface border border-border-subtle min-h-[72px] justify-center"
                 >
-                  <Icon className="w-4 h-4 text-accent" />
+                  <Icon className="w-4 h-4 text-accent" aria-hidden="true" />
                   <span className="text-[11px] font-medium text-text-secondary text-center">
                     {item.label}
                   </span>

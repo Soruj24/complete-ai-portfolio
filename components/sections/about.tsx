@@ -32,7 +32,7 @@ function InfoCard({
   return (
     <div className="flex items-start gap-3 p-3.5 rounded-xl bg-surface border border-border-subtle">
       <div className="p-2 rounded-lg bg-accent/8 text-accent shrink-0">
-        <Icon className="w-4 h-4" />
+        <Icon className="w-4 h-4" aria-hidden="true" />
       </div>
       <div className="min-w-0">
         <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-text-tertiary mb-0.5">
@@ -56,7 +56,7 @@ export function About() {
     return (
       <Section id="about">
         <div className="container flex items-center justify-center py-20">
-          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" />
+          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" role="status" aria-label="Loading" />
         </div>
       </Section>
     );
@@ -112,7 +112,7 @@ export function About() {
                     key={item}
                     className="flex items-start gap-2 p-2.5 rounded-lg bg-surface border border-border-subtle"
                   >
-                    <Zap className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" />
+                    <Zap className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" aria-hidden="true" />
                     <span className="text-[12.5px] text-text-secondary leading-snug">
                       {item}
                     </span>
@@ -195,7 +195,7 @@ export function About() {
                     </p>
                     {group.items.map((item) => (
                       <div key={item} className="flex items-start gap-2">
-                        <ArrowUpRight className="w-3 h-3 text-text-tertiary shrink-0 mt-0.5" />
+                        <ArrowUpRight className="w-3 h-3 text-text-tertiary shrink-0 mt-0.5" aria-hidden="true" />
                         <span className="text-[12.5px] text-text-secondary leading-snug">
                           {item}
                         </span>
@@ -225,7 +225,7 @@ export function About() {
             </InfoCard>
             <InfoCard icon={BookOpen} label="Availability">
               <div className="flex items-center gap-2 mt-1">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" aria-hidden="true" />
                 <span className="text-[13px] font-medium text-success">
                   Open to opportunities
                 </span>

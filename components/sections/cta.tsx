@@ -3,28 +3,29 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkle } from "lucide-react";
 import { SITE } from "@/lib/constants";
-import { useInView, useSiteSettings } from "@/lib/hooks";
+import { useInView, useReducedMotion, useSiteSettings } from "@/lib/hooks";
 
 export function CTA() {
   const [ref, isVisible] = useInView();
   const { settings } = useSiteSettings();
+  const reducedMotion = useReducedMotion();
 
   const email = settings?.contactEmail || "sorujmahmudb2h@gmail.com";
   const resumeUrl = SITE.resumeUrl;
 
   return (
     <section className="relative py-20 md:py-28 overflow-hidden bg-background border-t border-border-subtle">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--accent-subtle),transparent_60%)] pointer-events-none opacity-50" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--accent-subtle),transparent_60%)] pointer-events-none opacity-50" aria-hidden="true" />
 
       <div ref={ref} className="container relative text-center">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={isVisible ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : undefined}
+          transition={reducedMotion ? undefined : { duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="flex justify-center mb-5">
             <span className="p-2 rounded-lg bg-accent/8 text-accent">
-              <Sparkle className="w-4 h-4" />
+              <Sparkle className="w-4 h-4" aria-hidden="true" />
             </span>
           </div>
           <h2 className="text-[clamp(1.5rem,3.5vw,2.75rem)] font-semibold tracking-[-0.02em] leading-[1.15] text-balance">
@@ -41,7 +42,7 @@ export function CTA() {
               className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               Start a Conversation
-              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
             </a>
             <a
               href={resumeUrl}

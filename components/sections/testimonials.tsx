@@ -44,7 +44,7 @@ export function Testimonials() {
     return (
       <Section id="testimonials">
         <div className="container flex items-center justify-center py-20">
-          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" />
+          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" role="status" aria-label="Loading testimonials" />
         </div>
       </Section>
     );
@@ -64,11 +64,11 @@ export function Testimonials() {
           {testimonials.slice(0, 4).map((item, i) => (
             <AnimatedSection key={item._id} delay={i * 0.05}>
               <GlassCard variant="interactive" className="p-5 h-full">
-                <Quote className="w-5 h-5 text-text-disabled mb-2.5" />
+                <Quote className="w-5 h-5 text-text-disabled mb-2.5" aria-hidden="true" />
                 <p className="text-[13px] text-text-secondary leading-relaxed line-clamp-4">
                   &ldquo;{item.content}&rdquo;
                 </p>
-                <div className="flex items-center gap-0.5 mt-3">
+                <div className="flex items-center gap-0.5 mt-3" role="img" aria-label={`Rating: ${item.rating} out of 5 stars`}>
                   {Array.from({ length: 5 }).map((_, j) => (
                     <Star key={j} size={11} className={j < item.rating ? "text-warning fill-warning" : "text-text-disabled"} />
                   ))}

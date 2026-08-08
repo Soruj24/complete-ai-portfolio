@@ -40,7 +40,7 @@ function ProjectImage({ src, alt }: { src: string; alt: string }) {
   if (error) {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-surface text-text-tertiary">
-        <ImageOff className="w-6 h-6" />
+        <ImageOff className="w-6 h-6" aria-hidden="true" />
       </div>
     );
   }
@@ -49,7 +49,7 @@ function ProjectImage({ src, alt }: { src: string; alt: string }) {
     <>
       {!loaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-surface">
-          <Loader2 className="w-4 h-4 animate-spin text-text-tertiary" />
+          <Loader2 className="w-4 h-4 animate-spin text-text-tertiary" role="status" aria-label="Loading image" />
         </div>
       )}
       <img
@@ -156,7 +156,7 @@ function FeaturedCard({ project }: { project: Project }) {
                   onClick={(e) => e.stopPropagation()}
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium text-text-secondary bg-background border border-border-subtle hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 min-h-[36px]"
                 >
-                  <Github className="w-3.5 h-3.5" />
+                  <Github className="w-3.5 h-3.5" aria-hidden="true" />
                   Code
                 </a>
               )}
@@ -168,13 +168,13 @@ function FeaturedCard({ project }: { project: Project }) {
                   onClick={(e) => e.stopPropagation()}
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium text-accent-foreground bg-accent hover:brightness-110 transition-all duration-200 min-h-[36px]"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
                   Live Demo
                 </a>
               )}
               <span className="ml-auto inline-flex items-center gap-1 text-[12px] font-medium text-text-tertiary group-hover:text-accent transition-colors duration-200">
                 View Details
-                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
               </span>
             </div>
           </div>
@@ -197,20 +197,28 @@ function ProjectCard({ project }: { project: Project }) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="absolute top-2.5 right-2.5 flex gap-1 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300">
               {project.githubUrl && (
-                <span
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="p-1.5 rounded-md bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-md bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                  aria-label={`View source code for ${project.title}`}
                 >
                   <Github className="w-3 h-3" />
-                </span>
+                </a>
               )}
               {project.liveUrl && (
-                <span
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="p-1.5 rounded-md bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-md bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                  aria-label={`View live demo for ${project.title}`}
                 >
                   <ExternalLink className="w-3 h-3" />
-                </span>
+                </a>
               )}
             </div>
           </div>
@@ -224,7 +232,7 @@ function ProjectCard({ project }: { project: Project }) {
                   {project.title}
                 </h3>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-text-tertiary group-hover:text-accent transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
+              <ArrowUpRight className="w-4 h-4 text-text-tertiary group-hover:text-accent transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" aria-hidden="true" />
             </div>
 
             <p className="text-[12px] text-text-secondary line-clamp-2 leading-relaxed mb-3 flex-1">
@@ -297,7 +305,7 @@ export function Projects() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" />
+            <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" role="status" aria-label="Loading projects" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
@@ -329,7 +337,7 @@ export function Projects() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-medium text-text-secondary border border-border-subtle hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 min-h-[44px]"
             >
               View More on GitHub
-              <Github className="w-4 h-4" />
+              <Github className="w-4 h-4" aria-hidden="true" />
             </a>
           </div>
         </AnimatedSection>

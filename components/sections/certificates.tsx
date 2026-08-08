@@ -44,7 +44,7 @@ export function Certificates() {
     return (
       <Section id="certificates">
         <div className="container flex items-center justify-center py-20">
-          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" />
+          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" role="status" aria-label="Loading certificates" />
         </div>
       </Section>
     );
@@ -66,11 +66,11 @@ export function Certificates() {
               <GlassCard variant="interactive" className="p-4 h-full">
                 <div className="flex items-start justify-between mb-2.5">
                   <div className="p-2 rounded-lg bg-accent/8 text-accent">
-                    <Award className="w-4 h-4" />
+                    <Award className="w-4 h-4" aria-hidden="true" />
                   </div>
                   {cert.credentialUrl && (
                     <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-md text-text-tertiary hover:text-accent transition-colors duration-200 min-h-[32px] min-w-[32px] flex items-center justify-center">
-                      <ExternalLink className="w-3 h-3" />
+                      <ExternalLink className="w-3 h-3" aria-hidden="true" />
                     </a>
                   )}
                 </div>

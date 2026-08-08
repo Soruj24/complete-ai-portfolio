@@ -125,7 +125,7 @@ export function Contact() {
                 const content = (
                   <div className="flex items-center gap-3.5 p-3.5 sm:p-4 rounded-xl bg-surface border border-border-subtle hover:border-border transition-all duration-200 group min-h-[52px]">
                     <div className="p-2.5 rounded-lg bg-accent/8 text-accent group-hover:bg-accent/12 transition-colors duration-200">
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-4 h-4" aria-hidden="true" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-text-tertiary">
@@ -136,7 +136,7 @@ export function Contact() {
                       </p>
                     </div>
                     {method.href && (
-                      <ArrowUpRight className="w-3.5 h-3.5 text-text-tertiary group-hover:text-accent transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <ArrowUpRight className="w-3.5 h-3.5 text-text-tertiary group-hover:text-accent transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
                     )}
                   </div>
                 );
@@ -157,7 +157,7 @@ export function Contact() {
                 Availability
               </p>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" aria-hidden="true" />
                 <span className="text-[13px] font-medium text-success">
                   Open to opportunities
                 </span>
@@ -218,22 +218,22 @@ export function Contact() {
                 >
                   {submitState === "loading" ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
                       Sending...
                     </>
                   ) : submitState === "success" ? (
                     <>
-                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
                       Sent! I&apos;ll respond within 24h
                     </>
                   ) : submitState === "error" ? (
                     <>
-                      <AlertCircle className="w-3.5 h-3.5" />
+                      <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
                       Failed. Try email directly
                     </>
                   ) : (
                     <>
-                      <Send className="w-3.5 h-3.5" />
+                      <Send className="w-3.5 h-3.5" aria-hidden="true" />
                       Send Message
                     </>
                   )}

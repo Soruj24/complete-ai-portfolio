@@ -145,7 +145,7 @@ export function Navbar() {
                 className="p-2 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[36px] min-w-[36px] flex items-center justify-center"
                 aria-label="GitHub"
               >
-                <Github className="h-4 w-4" />
+                <Github className="h-4 w-4" aria-hidden="true" />
               </a>
               <a
                 href={linkedinLink}
@@ -154,7 +154,7 @@ export function Navbar() {
                 className="p-2 rounded-md text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[36px] min-w-[36px] flex items-center justify-center"
                 aria-label="LinkedIn"
               >
-                <Linkedin className="h-4 w-4" />
+                <Linkedin className="h-4 w-4" aria-hidden="true" />
               </a>
 
               {/* Separator */}
@@ -171,7 +171,7 @@ export function Navbar() {
                 className="ml-1 gap-1.5"
               >
                 <a href={SITE.resumeUrl} download>
-                  <Download className="h-3 w-3" />
+                  <Download className="h-3 w-3" aria-hidden="true" />
                   Resume
                 </a>
               </Button>
@@ -237,7 +237,7 @@ export function Navbar() {
                     className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label="GitHub"
                   >
-                    <Github className="w-5 h-5" />
+                    <Github className="w-5 h-5" aria-hidden="true" />
                   </a>
                   <a
                     href={linkedinLink}
@@ -246,12 +246,12 @@ export function Navbar() {
                     className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label="LinkedIn"
                   >
-                    <Linkedin className="w-5 h-5" />
+                    <Linkedin className="w-5 h-5" aria-hidden="true" />
                   </a>
                 </div>
                 <Button asChild variant="outline" className="w-full gap-2 min-h-[44px] text-[14px]">
                   <a href={SITE.resumeUrl} download onClick={() => setMobileOpen(false)}>
-                    <Download className="h-4 w-4" />
+                    <Download className="h-4 w-4" aria-hidden="true" />
                     Download Resume
                   </a>
                 </Button>

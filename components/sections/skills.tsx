@@ -216,7 +216,7 @@ function TechCard({ item }: { item: TechItem }) {
     <div className="group p-3.5 rounded-xl bg-surface border border-border-subtle hover:border-border hover:bg-surface-hover transition-all duration-200 cursor-default">
       <div className="flex items-start gap-3">
         <div className="p-2 rounded-lg bg-accent/8 text-accent shrink-0 group-hover:bg-accent/12 transition-colors duration-200">
-          <Icon className="w-4 h-4" />
+          <Icon className="w-4 h-4" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -246,7 +246,7 @@ function CategorySection({ category, index }: { category: Category; index: numbe
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-surface border border-border-subtle">
-            <Icon className="w-5 h-5 text-accent" />
+            <Icon className="w-5 h-5 text-accent" aria-hidden="true" />
           </div>
           <div>
             <h3 className="text-[15px] font-semibold text-text-primary tracking-[-0.01em]">

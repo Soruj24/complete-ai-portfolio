@@ -69,7 +69,7 @@ export function Footer() {
                 className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[40px] min-w-[40px] flex items-center justify-center"
                 aria-label="GitHub"
               >
-                <Github className="w-3.5 h-3.5" />
+                <Github className="w-3.5 h-3.5" aria-hidden="true" />
               </Link>
               <Link
                 href={SOCIAL.linkedin.url}
@@ -78,14 +78,14 @@ export function Footer() {
                 className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[40px] min-w-[40px] flex items-center justify-center"
                 aria-label="LinkedIn"
               >
-                <Linkedin className="w-3.5 h-3.5" />
+                <Linkedin className="w-3.5 h-3.5" aria-hidden="true" />
               </Link>
               <Link
                 href={`mailto:${email}`}
                 className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[40px] min-w-[40px] flex items-center justify-center"
                 aria-label="Email"
               >
-                <Mail className="w-3.5 h-3.5" />
+                <Mail className="w-3.5 h-3.5" aria-hidden="true" />
               </Link>
               <Link
                 href={SITE.resumeUrl}
@@ -93,7 +93,7 @@ export function Footer() {
                 className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[40px] min-w-[40px] flex items-center justify-center"
                 aria-label="Download Resume"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-3.5 h-3.5" aria-hidden="true" />
               </Link>
             </div>
 
@@ -110,7 +110,7 @@ export function Footer() {
         className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-40 p-3 rounded-lg bg-surface border border-border-subtle shadow-sm text-text-tertiary hover:text-text-secondary hover:border-border transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center"
         aria-label="Scroll to top"
       >
-        <ArrowUp className="w-4 h-4" />
+        <ArrowUp className="w-4 h-4" aria-hidden="true" />
       </button>
     </footer>
   );
