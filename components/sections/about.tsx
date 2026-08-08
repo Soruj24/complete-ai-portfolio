@@ -18,8 +18,6 @@ import { TechBadge } from "@/components/ui/tech-icon";
 
 const PRIMARY_STACK = ["Next.js", "TypeScript", "Node.js", "MongoDB", "AI"];
 
-const ease = [0.16, 1, 0.3, 1] as const;
-
 function InfoCard({
   icon: Icon,
   label,
@@ -64,7 +62,6 @@ export function About() {
     );
   }
 
-  const fullName = settings?.fullName || SITE.name;
   const title = settings?.professionalTitle || SITE.title;
   const bio =
     settings?.bio ||
@@ -120,6 +117,30 @@ export function About() {
                       {item}
                     </span>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Technical Focus */}
+            <div className="space-y-3">
+              <h3 className="text-[17px] font-semibold text-text-primary tracking-[-0.01em]">
+                Technical Focus
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "AI Systems (LangChain, MCP, RAG)",
+                  "Full-Stack Web (Next.js, React, TypeScript)",
+                  "Backend & APIs (Node.js, Express, REST)",
+                  "Databases (MongoDB, PostgreSQL, Redis)",
+                  "Infrastructure (Docker, CI/CD, AWS)",
+                  "Dev Tools (Git, VS Code, Linux)",
+                ].map((focus) => (
+                  <span
+                    key={focus}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11.5px] font-medium rounded-md bg-accent/8 text-accent border border-accent/15"
+                  >
+                    {focus}
+                  </span>
                 ))}
               </div>
             </div>
