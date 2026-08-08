@@ -7,9 +7,8 @@ import {
   Github,
   Linkedin,
   Mail,
-  Sparkles,
-  Loader2,
   LayoutDashboard,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import gsap from "gsap";
@@ -17,6 +16,16 @@ import { useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useSiteSettings } from "@/lib/hooks";
 import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
+import { SITE, SOCIAL } from "@/lib/constants";
+import { TechBadge } from "@/components/ui/tech-icon";
+
+const CORE_STACK = ["Next.js", "TypeScript", "Node.js", "MongoDB", "PostgreSQL", "AI"];
+
+const iconMap: Record<string, React.ElementType> = {
+  github: Github,
+  linkedin: Linkedin,
+  email: Mail,
+};
 
 export function Hero() {
   const { data: session } = useSession();
@@ -29,160 +38,143 @@ export function Hero() {
     (tl) => {
       if (loading) return;
 
-      tl.from(".reveal-text", {
-        y: 100,
-        opacity: 0,
-        duration: 1.2,
-        ease: "power4.out",
-        stagger: 0.2,
-      })
-        .from(
-          ".reveal-subtext",
-          { y: 20, opacity: 0, duration: 0.8, ease: "power3.out" },
-          "-=0.6",
-        )
-        .from(
-          ".reveal-button",
-          { y: 20, opacity: 0, duration: 0.8, ease: "power3.out", stagger: 0.1 },
-          "-=0.4",
-        );
-
-      gsap.to(".float-element", {
-        y: 20,
-        duration: 2,
-        repeat: -1,
-        yoyo: true,
-        ease: "power1.inOut",
-        stagger: 0.5,
-      });
+      tl.from(".hero-badge", { y: 8, opacity: 0, duration: 0.4, ease: "power3.out" })
+        .from(".hero-heading", { y: 10, opacity: 0, duration: 0.5, ease: "power3.out" }, "-=0.2")
+        .from(".hero-name", { y: 8, opacity: 0, duration: 0.4, ease: "power3.out" }, "-=0.3")
+        .from(".hero-bio", { y: 8, opacity: 0, duration: 0.4, ease: "power3.out" }, "-=0.3")
+        .from(".hero-ctas", { y: 8, opacity: 0, duration: 0.4, ease: "power3.out" }, "-=0.2")
+        .from(".hero-stack", { y: 6, opacity: 0, duration: 0.4, ease: "power3.out" }, "-=0.2")
+        .from(".hero-socials", { opacity: 0, duration: 0.4, ease: "power3.out" }, "-=0.2");
     },
     { deps: [loading], scrollTrigger: false },
   );
 
   if (loading) {
     return (
-      <section className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-accent" />
       </section>
     );
   }
 
-  const siteName = settings?.siteName || "Soruj Mahmud";
-  const fullName = settings?.fullName || "Soruj Mahmud";
-  const professionalTitle = settings?.professionalTitle || "Full-Stack Developer";
-  const email = settings?.contactEmail || "sorujmahmudb2h@gmail.com";
-  const githubUrl = settings?.githubUrl || "https://github.com/sorujmahmud";
-  const linkedinUrl = settings?.linkedinUrl || "#";
+  const fullName = settings?.fullName || SITE.name;
+  const email = settings?.contactEmail || SITE.email;
+  const githubUrl = settings?.githubUrl || SOCIAL.github.url;
+  const linkedinUrl = settings?.linkedinUrl || SOCIAL.linkedin.url;
 
   const socialFromLinks = socialLinks.length > 0 ? socialLinks : [];
   const githubLink = socialFromLinks.find((l) => l.platform.toLowerCase() === "github")?.url || githubUrl;
   const linkedinLink = socialFromLinks.find((l) => l.platform.toLowerCase() === "linkedin")?.url || linkedinUrl;
   const emailLink = socialFromLinks.find((l) => l.platform.toLowerCase() === "email")?.url || `mailto:${email}`;
 
+  const socialIcons = [
+    { icon: Github, href: githubLink, label: "GitHub" },
+    { icon: Linkedin, href: linkedinLink, label: "LinkedIn" },
+    { icon: Mail, href: emailLink, label: "Email" },
+  ];
+
   return (
     <section
       id="home"
       ref={containerRef}
-      className="relative min-h-screen flex items-center pt-24 md:pt-32 overflow-hidden bg-background"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background"
     >
-      <div className="absolute inset-0 z-0">
-        <div className="absolute -top-[10%] -left-[10%] w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] bg-accent/[0.03] blur-[80px] md:blur-[120px] rounded-full float-element" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] bg-accent/[0.02] blur-[80px] md:blur-[120px] rounded-full float-element" />
-      </div>
+      {/* Subtle grid */}
+      <div
+        className="absolute inset-0 pointer-events-none select-none"
+        aria-hidden="true"
+        style={{
+          backgroundImage: `linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px)`,
+          backgroundSize: "64px 64px",
+          maskImage: "radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 100%)",
+        }}
+      />
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-surface border border-border-subtle text-[11px] font-semibold tracking-[0.12em] uppercase text-text-tertiary mb-6 reveal-button">
-            <Sparkles className="h-3 w-3" />
-            {siteName}
+      <div className="container relative z-10">
+        <div className="max-w-2xl mx-auto text-center">
+          {/* Badge */}
+          <div className="mb-5 hero-badge">
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] font-medium tracking-wide text-text-secondary bg-surface border border-border-subtle rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              Available for opportunities
+            </span>
           </div>
 
-          <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-[-0.03em] text-text-primary leading-[1.1] mb-5 reveal-text">
-            Design<span className="text-accent">.</span> Code
-            <span className="text-accent">.</span>{" "}
-            <br className="hidden sm:block" />
-            <span className="gradient-text">
-              Innovate.
-            </span>
+          {/* Heading */}
+          <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-[-0.03em] leading-[1.1] hero-heading">
+            <span className="text-text-primary">Building Scalable Web Apps</span>
+            <span className="block text-text-primary">&amp; AI Products</span>
           </h1>
 
-          <p className="text-[clamp(0.875rem,1.3vw,1.05rem)] text-text-secondary max-w-xl mx-auto leading-relaxed mb-7 reveal-subtext">
-            Hello, I&apos;m{" "}
-            <span className="text-text-primary font-semibold">
-              {fullName}
-            </span>
-            . A {professionalTitle} dedicated to building
-            scalable, high-impact digital experiences.
+          {/* Name */}
+          <p className="mt-3 text-[clamp(0.8rem,1.2vw,0.95rem)] font-medium text-text-tertiary uppercase tracking-[0.06em] hero-name">
+            {fullName}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 reveal-button">
-            <Button
-              asChild
-              size="lg"
-              className="w-full sm:w-auto"
-            >
+          {/* Bio */}
+          <p className="mt-4 text-[clamp(0.875rem,1.3vw,1rem)] text-text-secondary leading-relaxed max-w-md mx-auto hero-bio">
+            {settings?.bio || "I architect production-grade AI systems and full-stack applications with LangChain, MCP servers, and scalable infrastructure."}
+          </p>
+
+          {/* CTAs */}
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5 hero-ctas">
+            <Button asChild variant="outline" size="lg">
               <Link href="#projects">
-                Explore Projects{" "}
-                <ArrowRight className="h-4 w-4" />
+                View Projects
+                <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </Button>
-
+            <Button asChild size="lg">
+              <Link href={SITE.resumeUrl} download="Soruj_Mahmud_CV.txt">
+                <Download className="h-3.5 w-3.5" />
+                Download Resume
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="lg">
+              <Link href="#contact">
+                <Mail className="h-3.5 w-3.5" />
+                Contact Me
+              </Link>
+            </Button>
             {isAdmin && (
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto"
-              >
-                <Link href="/admin/dashboard" className="flex items-center">
-                  Dashboard{" "}
-                  <LayoutDashboard className="h-4 w-4" />
+              <Button asChild variant="outline" size="lg">
+                <Link href="/admin/dashboard">
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  Dashboard
                 </Link>
               </Button>
             )}
-
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="w-full sm:w-auto"
-            >
-              <Link
-                href="/Soruj_Mahmud_CV.txt"
-                download="Soruj_Mahmud_CV.txt"
-                className="flex items-center"
-              >
-                Download CV <Download className="h-4 w-4" />
-              </Link>
-            </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-1 pt-10 reveal-button">
-            {[
-              { icon: Github, href: githubLink, label: "GitHub" },
-              { icon: Linkedin, href: linkedinLink, label: "LinkedIn" },
-              { icon: Mail, href: emailLink, label: "Email" },
-            ].map((social, i) => (
+          {/* Tech Stack */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-1.5 hero-stack">
+            {CORE_STACK.map((tech) => (
+              <TechBadge key={tech} name={tech} />
+            ))}
+          </div>
+
+          {/* Socials */}
+          <div className="mt-6 flex items-center justify-center gap-1 hero-socials">
+            {socialIcons.map((item) => (
               <Link
-                key={i}
-                href={social.href}
+                key={item.label}
+                href={item.href}
                 target="_blank"
-                className="group flex flex-col items-center gap-1.5"
+                rel="noopener noreferrer"
+                className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                aria-label={item.label}
               >
-                <div className="p-2.5 rounded-lg bg-surface border border-border-subtle text-text-tertiary group-hover:text-accent group-hover:border-border transition-all duration-200">
-                  <social.icon className="h-4 w-4" />
-                </div>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-text-tertiary group-hover:text-accent transition-colors duration-200">
-                  {social.label}
-                </span>
+                <item.icon className="w-4 h-4" />
               </Link>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 reveal-subtext">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-text-disabled">
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 hero-bio">
+        <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-text-disabled">
           Scroll
         </span>
         <div className="w-px h-8 bg-gradient-to-b from-border to-transparent" />

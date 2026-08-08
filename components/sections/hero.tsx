@@ -2,10 +2,18 @@
 
 import { useRef } from "react";
 import { motion } from "framer-motion";
-import { Github, Linkedin, Mail, ArrowRight, Download, Sparkle, Globe, Twitter } from "lucide-react";
-import { SITE } from "@/lib/constants";
-import { cn } from "@/lib/utils";
+import {
+  ArrowRight,
+  Download,
+  Mail,
+  Github,
+  Linkedin,
+  Twitter,
+  Globe,
+} from "lucide-react";
+import { SITE, SOCIAL } from "@/lib/constants";
 import { useSiteSettings } from "@/lib/hooks";
+import { TechBadge } from "@/components/ui/tech-icon";
 
 const iconMap: Record<string, React.ElementType> = {
   github: Github,
@@ -15,12 +23,22 @@ const iconMap: Record<string, React.ElementType> = {
   website: Globe,
 };
 
-function GradientOrbs() {
+const CORE_STACK = ["Next.js", "TypeScript", "Node.js", "MongoDB", "PostgreSQL", "AI"];
+
+const ease = [0.16, 1, 0.3, 1] as const;
+
+function HeroGrid() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
-      <div className="absolute -top-32 -right-32 w-[400px] h-[400px] rounded-full bg-accent/[0.04] blur-[80px]" />
-      <div className="absolute -bottom-32 -left-32 w-[350px] h-[350px] rounded-full bg-blue-500/[0.03] blur-[80px]" />
-    </div>
+    <div
+      className="absolute inset-0 pointer-events-none select-none"
+      aria-hidden="true"
+      style={{
+        backgroundImage: `linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px)`,
+        backgroundSize: "64px 64px",
+        maskImage: "radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 100%)",
+        WebkitMaskImage: "radial-gradient(ellipse 60% 50% at 50% 50%, black 20%, transparent 100%)",
+      }}
+    />
   );
 }
 
@@ -35,7 +53,6 @@ export function Hero() {
   if (loading) {
     return (
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
-        <GradientOrbs />
         <div className="w-5 h-5 border-[1.5px] border-border-strong/30 border-t-accent rounded-full animate-spin" />
       </section>
     );
@@ -48,9 +65,9 @@ export function Hero() {
         return { icon: Icon, href: link.url, label: link.label };
       }).filter(Boolean)
     : [
-        { icon: Github, href: "https://github.com/Soruj24", label: "GitHub" },
-        { icon: Linkedin, href: "https://linkedin.com/in/soruj-mahmud", label: "LinkedIn" },
-        { icon: Mail, href: "mailto:sorujmahmudb2h@gmail.com", label: "Email" },
+        { icon: Github, href: SOCIAL.github.url, label: "GitHub" },
+        { icon: Linkedin, href: SOCIAL.linkedin.url, label: "LinkedIn" },
+        { icon: Mail, href: `mailto:${SITE.email}`, label: "Email" },
       ];
 
   return (
@@ -59,94 +76,128 @@ export function Hero() {
       ref={containerRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background"
     >
-      <GradientOrbs />
+      <HeroGrid />
 
       <div className="container relative z-10">
         <div className="max-w-2xl mx-auto text-center">
+          {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-6"
+            transition={{ duration: 0.4, ease }}
+            className="mb-5"
           >
-            <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] font-semibold tracking-[0.08em] uppercase text-text-tertiary">
-              <Sparkle className="w-3 h-3" />
-              {settings?.professionalTitle?.includes("Available") ? "Available for opportunities" : "Open to opportunities"}
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] font-medium tracking-wide text-text-secondary bg-surface border border-border-subtle rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              Available for opportunities
             </span>
           </motion.div>
 
+          {/* Heading */}
           <motion.h1
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[clamp(2rem,5.5vw,4rem)] font-semibold tracking-[-0.03em] leading-[1.08]"
+            transition={{ duration: 0.5, delay: 0.04, ease }}
+            className="text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-[-0.03em] leading-[1.1]"
           >
-            <span className="text-text-primary">{settings?.fullName || "Soruj Mahmud"}</span>
-            <span className="block mt-1.5 gradient-text text-[clamp(1.1rem,3vw,2.25rem)] font-medium tracking-[-0.02em]">
-              {settings?.professionalTitle || "AI Engineer & Full-Stack Developer"}
+            <span className="text-text-primary">
+              Building Scalable Web Apps
+            </span>
+            <span className="block text-text-primary">
+              &amp; AI Products
             </span>
           </motion.h1>
 
+          {/* Name */}
           <motion.p
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-5 text-[clamp(0.875rem,1.3vw,1.05rem)] text-text-secondary leading-relaxed max-w-md mx-auto"
+            transition={{ duration: 0.5, delay: 0.08, ease }}
+            className="mt-3 text-[clamp(0.8rem,1.2vw,0.95rem)] font-medium text-text-tertiary uppercase tracking-[0.06em]"
+          >
+            {settings?.fullName || SITE.name}
+          </motion.p>
+
+          {/* Bio */}
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.12, ease }}
+            className="mt-4 text-[clamp(0.875rem,1.3vw,1rem)] text-text-secondary leading-relaxed max-w-md mx-auto"
           >
             {settings?.bio || "I architect production-grade AI systems and full-stack applications with LangChain, MCP servers, and scalable infrastructure."}
           </motion.p>
 
+          {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.5, delay: 0.16, ease }}
             className="mt-7 flex flex-wrap items-center justify-center gap-2.5"
           >
             <button
-              onClick={() => scrollToSection("contact")}
-              className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98]"
-            >
-              Get in Touch
-              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-            </button>
-            <button
               onClick={() => scrollToSection("projects")}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-subtle text-text-secondary text-[13px] font-medium hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 active:scale-[0.98]"
+              className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-subtle bg-background text-text-primary text-[13px] font-medium hover:bg-surface hover:border-border transition-all duration-200 active:scale-[0.98]"
             >
               View Projects
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </button>
             <a
               href={SITE.resumeUrl}
               download
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-text-tertiary text-[13px] font-medium hover:text-text-secondary transition-colors duration-200"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98]"
             >
               <Download className="w-3.5 h-3.5" />
-              Resume
+              Download Resume
             </a>
+            <button
+              onClick={() => scrollToSection("contact")}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-text-tertiary text-[13px] font-medium hover:text-text-secondary hover:bg-surface transition-all duration-200 active:scale-[0.98]"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              Contact Me
+            </button>
           </motion.div>
 
+          {/* Tech Stack */}
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease }}
+            className="mt-6 flex flex-wrap items-center justify-center gap-1.5"
+          >
+            {CORE_STACK.map((tech) => (
+              <TechBadge key={tech} name={tech} />
+            ))}
+          </motion.div>
+
+          {/* Socials */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.24 }}
-            className="mt-8 flex items-center justify-center gap-1"
+            className="mt-6 flex items-center justify-center gap-1"
           >
-            {socialIcons.map((item) => item && (
-              <a
-                key={item.label}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
-                aria-label={item.label}
-              >
-                <item.icon className="w-4 h-4" />
-              </a>
-            ))}
+            {socialIcons.map(
+              (item) =>
+                item && (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
+                    aria-label={item.label}
+                  >
+                    <item.icon className="w-4 h-4" />
+                  </a>
+                )
+            )}
           </motion.div>
         </div>
       </div>
 
+      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
