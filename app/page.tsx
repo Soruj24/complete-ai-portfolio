@@ -3,7 +3,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/footer";
 import {
   Hero, About, Skills, Projects, Experience,
-  Contact, Certificates, Achievements, Testimonials,
+  AiEngineering, Contact, Certificates, Achievements, Testimonials,
   OpenSource, CTA,
 } from "@/components/sections";
 import { dbConnect } from "@/config/db";
@@ -41,6 +41,7 @@ export default async function PortfolioPage() {
       <Skills />
       <Projects />
       <Experience />
+      <AiEngineering />
       <Achievements />
       <Certificates />
       <Testimonials />
