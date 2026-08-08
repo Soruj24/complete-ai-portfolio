@@ -46,10 +46,10 @@ export function AIChatBot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className={cn(
-              "flex flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-gray-200/50 dark:bg-slate-900 dark:ring-slate-700/50",
-              isMinimized ? "w-80" : "w-[440px] max-w-[95vw]"
+              "flex flex-col overflow-hidden rounded-xl bg-background border border-border-subtle shadow-xl",
+              isMinimized ? "w-72" : "w-[400px] max-w-[95vw]"
             )}
-            style={{ height: isMinimized ? "auto" : "680px" }}
+            style={{ height: isMinimized ? "auto" : "600px" }}
           >
             <ChatHeader
               isMinimized={isMinimized}
@@ -70,9 +70,9 @@ export function AIChatBot() {
 
                 <div
                   ref={viewportRef}
-                  className="flex-1 overflow-y-auto px-4 py-4"
+                  className="flex-1 overflow-y-auto px-4 py-3"
                 >
-                  <div ref={messagesContainerRef} className="space-y-4">
+                  <div ref={messagesContainerRef} className="space-y-3">
                     {messages.map((msg) => (
                       <ChatMessage key={msg.id} message={msg} onCopy={copyMessage} />
                     ))}
@@ -83,9 +83,9 @@ export function AIChatBot() {
                 {showScrollButton && (
                   <button
                     onClick={handleScrollToBottom}
-                    className="absolute bottom-20 right-6 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-gray-200 transition-all hover:bg-gray-50 dark:bg-slate-800 dark:ring-slate-700"
+                    className="absolute bottom-16 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-surface border border-border-subtle shadow-sm transition-all hover:bg-surface-hover"
                   >
-                    <ArrowDown className="h-4 w-4 text-gray-600 dark:text-slate-300" />
+                    <ArrowDown className="h-3.5 w-3.5 text-text-secondary" />
                   </button>
                 )}
 
@@ -105,9 +105,9 @@ export function AIChatBot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-200 transition-all hover:scale-105 hover:bg-blue-700 active:scale-95 dark:shadow-none"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lg transition-all duration-200 hover:brightness-110 active:scale-95"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-5 w-5" />
         </button>
       )}
     </div>

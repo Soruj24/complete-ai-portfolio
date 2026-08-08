@@ -14,19 +14,19 @@ export function ChatMessage({ message, onCopy }: ChatMessageProps) {
   const isUser = message.role === "user";
 
   return (
-    <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
+    <div className={cn("flex gap-2", isUser ? "justify-end" : "justify-start")}>
       {!isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 to-slate-700 shadow-sm">
-          <Bot className="h-4 w-4 text-white" />
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+          <Bot className="h-3.5 w-3.5" />
         </div>
       )}
       <div className={cn("group relative max-w-[80%]", isUser ? "order-1" : "order-2")}>
         <div
           className={cn(
-            "rounded-2xl px-4 py-3 text-sm leading-relaxed",
+            "rounded-xl px-3 py-2 text-[13px] leading-relaxed",
             isUser
-              ? "bg-blue-600 text-white shadow-sm"
-              : "bg-gray-100 text-gray-800 dark:bg-slate-800 dark:text-slate-200"
+              ? "bg-accent text-accent-foreground"
+              : "bg-surface border border-border-subtle text-text-primary"
           )}
         >
           {isUser ? (
@@ -40,7 +40,7 @@ export function ChatMessage({ message, onCopy }: ChatMessageProps) {
         <button
           onClick={() => onCopy(message.content)}
           className={cn(
-            "absolute -bottom-6 rounded-lg p-1 text-gray-400 opacity-0 transition-opacity hover:text-gray-600 group-hover:opacity-100 dark:hover:text-slate-300",
+            "absolute -bottom-5 rounded-md p-1 text-text-tertiary opacity-0 transition-opacity duration-200 hover:text-text-secondary group-hover:opacity-100",
             isUser ? "right-0" : "left-0"
           )}
           title="Copy message"
@@ -49,8 +49,8 @@ export function ChatMessage({ message, onCopy }: ChatMessageProps) {
         </button>
       </div>
       {isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30 shadow-sm">
-          <UserIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+          <UserIcon className="h-3.5 w-3.5" />
         </div>
       )}
     </div>

@@ -27,47 +27,48 @@ export function Contact() {
 
   if (loading) {
     return (
-      <section className="py-32 flex items-center justify-center bg-white dark:bg-gray-900 transition-colors duration-500">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400" />
+      <section className="py-20 md:py-28 flex items-center justify-center bg-background border-t border-border-subtle">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
       </section>
     );
   }
 
   return (
-    <section id="contact" ref={sectionRef} className="py-20 md:py-32 bg-white dark:bg-gray-900 relative overflow-hidden transition-colors duration-500">
+    <section id="contact" ref={sectionRef} className="py-20 md:py-28 bg-background border-t border-border-subtle relative overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto text-center mb-10 md:mb-24">
-          <h2 className="text-[10px] md:text-sm font-black uppercase tracking-[0.4em] text-blue-600 dark:text-blue-400 mb-4 md:mb-6 contact-reveal-text">
-            Get In Touch
+        <div className="max-w-2xl mx-auto text-center mb-10 contact-reveal-text">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-tertiary mb-2 block">
+            Contact
+          </span>
+          <h2 className="text-[clamp(1.5rem,3.5vw,2.75rem)] font-semibold tracking-[-0.02em] text-text-primary">
+            Let&apos;s build something{" "}
+            <span className="text-text-tertiary">extraordinary together.</span>
           </h2>
-          <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 md:mb-8 contact-reveal-text">
-            Let&apos;s build something <br />
-            <span className="text-gray-400 dark:text-gray-500">extraordinary together.</span>
-          </h3>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-20 max-w-6xl mx-auto">
-          <div className="space-y-8 md:space-y-12">
-            <div className="space-y-4 md:space-y-8 contact-reveal-text text-center lg:text-left">
-              <h4 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Contact Information</h4>
-              <p className="text-sm md:text-lg text-gray-500 dark:text-gray-400 font-medium leading-relaxed max-w-md mx-auto lg:mx-0">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 max-w-4xl mx-auto">
+          <div className="lg:col-span-2 space-y-3 contact-reveal-text">
+            <div className="mb-4">
+              <h4 className="text-[15px] font-semibold text-text-primary mb-1">Contact Information</h4>
+              <p className="text-[12px] text-text-secondary leading-relaxed">
                 I&apos;m always open to discussing new projects, creative ideas or opportunities to be part of your visions.
               </p>
             </div>
             <ContactInfo settings={settings} />
           </div>
 
-          <ContactForm
-            formData={formData}
-            isSubmitting={isSubmitting}
-            isSubmitted={isSubmitted}
-            onFieldChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-            onSubmit={handleSubmit}
-            onReset={() => setIsSubmitted(false)}
-          />
+          <div className="lg:col-span-3 contact-form-card">
+            <ContactForm
+              formData={formData}
+              isSubmitting={isSubmitting}
+              isSubmitted={isSubmitted}
+              onFieldChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+              onSubmit={handleSubmit}
+              onReset={() => setIsSubmitted(false)}
+            />
+          </div>
         </div>
       </div>
-      <div className="absolute left-0 bottom-0 w-64 h-64 bg-blue-50/50 dark:bg-blue-900/10 rounded-tr-[100px] -z-10" />
     </section>
   );
 }

@@ -18,20 +18,20 @@ export function ChatNudge({ show, onOpen, onDismiss }: ChatNudgeProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9 }}
           onClick={onOpen}
-          className="cursor-pointer select-none mb-2 flex max-w-[240px] items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-xl ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700"
+          className="cursor-pointer select-none mb-2 flex max-w-[220px] items-center gap-2.5 rounded-xl bg-background border border-border-subtle px-4 py-3 shadow-lg"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30">
-            <Sparkles className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/8 text-accent shrink-0">
+            <Sparkles className="h-4 w-4" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">Hi there!</p>
-            <p className="text-xs text-gray-500 dark:text-slate-400">Ask Soruj anything</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-medium text-text-primary">Hi there!</p>
+            <p className="text-[11px] text-text-secondary">Ask Soruj anything</p>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); onDismiss(); }}
-            className="flex h-6 w-6 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700"
+            className="flex h-5 w-5 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-secondary transition-colors duration-200 shrink-0"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3" />
           </button>
         </motion.div>
       )}

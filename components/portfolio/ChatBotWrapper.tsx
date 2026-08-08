@@ -6,7 +6,7 @@ const AIChatBot = dynamic(() => import("./AIChatBot").then((m) => ({ default: m.
   ssr: false,
   loading: () => (
     <div className="fixed bottom-6 right-6 z-[100]">
-      <div className="h-16 w-16 animate-pulse rounded-full bg-gradient-to-r from-blue-600 to-purple-600 opacity-50" />
+      <div className="h-12 w-12 animate-pulse rounded-full bg-accent opacity-50" />
     </div>
   ),
 });

@@ -7,7 +7,7 @@ import {
   Github,
   ExternalLink,
   Star,
-  ArrowUpRight, 
+  ArrowUpRight,
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
@@ -16,7 +16,6 @@ import { useState, useRef, useEffect } from "react";
 import { IProject } from "@/types";
 import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
 import { CustomPagination } from "@/components/shared/CustomPagination";
-// import { projects } from "@/data/projects"; // Removed static import
 
 export function Projects() {
   const [projects, setProjects] = useState<IProject[]>([]);
@@ -33,7 +32,6 @@ export function Projects() {
         const res = await fetch(
           `/api/projects?page=${currentPage}&limit=${projectsPerPage}&featured=true`,
         );
-
         const data = await res.json();
         if (data.success) {
           setProjects(data.projects);
@@ -71,101 +69,88 @@ export function Projects() {
     <section
       id="projects"
       ref={sectionRef}
-      className="py-32 bg-white dark:bg-gray-900 transition-colors duration-500"
+      className="py-20 md:py-28 bg-background border-t border-border-subtle"
     >
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto text-center mb-12 md:mb-24">
-          <h2 className="text-[10px] md:text-sm font-black uppercase tracking-[0.4em] text-blue-600 dark:text-blue-400 mb-4 md:mb-6 projects-reveal-text">
-            Selected Works
+        <div className="max-w-2xl mx-auto text-center mb-10 projects-reveal-text">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-tertiary mb-2 block">
+            Projects
+          </span>
+          <h2 className="text-[clamp(1.5rem,3.5vw,2.75rem)] font-semibold tracking-[-0.02em] text-text-primary">
+            Built with purpose,{" "}
+            <span className="text-text-tertiary">scaled with precision.</span>
           </h2>
-          <h3 className="text-3xl sm:text-4xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 md:mb-8 projects-reveal-text">
-            Built with purpose, <br />
-            <span className="text-gray-400 dark:text-gray-500">
-              scaled with precision.
-            </span>
-          </h3>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {loading ? (
             <div className="col-span-full flex justify-center py-20">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
             </div>
           ) : currentProjects.length === 0 ? (
-            <div className="col-span-full text-center py-20 text-gray-500 dark:text-gray-400">
+            <div className="col-span-full text-center py-20 text-text-secondary">
               No projects to display.
             </div>
           ) : (
             currentProjects.map((project, index) => (
               <div key={`${currentPage}-${index}`} className="project-card">
-                <Card className="border-none shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] dark:shadow-none rounded-[32px] md:rounded-[48px] overflow-hidden bg-white dark:bg-gray-800/50 group hover:shadow-[0_48px_96px_-32px_rgba(0,0,0,0.12)] dark:hover:bg-gray-800 transition-all duration-700 h-full">
-                  <div className="relative aspect-[16/10] overflow-hidden">
+                <Card className="border border-border-subtle rounded-xl overflow-hidden bg-surface hover:border-border transition-all duration-200 h-full">
+                  <div className="relative aspect-[16/10] overflow-hidden border-b border-border-subtle">
                     <Link href={`/projects/${project._id || project.id}`}>
                       <Image
                         src={project.image}
                         alt={project.title}
                         fill
-                        className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                       />
                     </Link>
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 backdrop-blur-sm pointer-events-none group-hover:pointer-events-auto p-4">
-                      <Button
-                        asChild
-                        variant="secondary"
-                        className="w-full sm:w-auto rounded-xl md:rounded-2xl font-black h-12 md:h-14 px-6 md:px-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all hover:scale-105"
-                      >
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 pointer-events-none group-hover:pointer-events-auto">
+                      <Button asChild variant="secondary" size="sm" className="pointer-events-auto">
                         <Link href={project.githubUrl || "#"} target="_blank">
-                          <Github className="mr-2 h-4 w-4 md:h-5 md:w-5" /> Code
+                          <Github className="h-3.5 w-3.5" /> Code
                         </Link>
                       </Button>
-                      <Button
-                        asChild
-                        className="w-full sm:w-auto rounded-xl md:rounded-2xl bg-blue-600 hover:bg-blue-700 h-12 md:h-14 px-6 md:px-8 text-white font-black transition-all hover:scale-105"
-                      >
+                      <Button asChild size="sm" className="pointer-events-auto">
                         <Link href={project.liveUrl || "#"} target="_blank">
-                          <ExternalLink className="mr-2 h-4 w-4 md:h-5 md:w-5" />{" "}
-                          Live Demo
+                          <ExternalLink className="h-3.5 w-3.5" /> Live Demo
                         </Link>
                       </Button>
                     </div>
-                    <div className="absolute top-4 left-4 md:top-8 md:left-8">
-                      <Badge className="bg-white/90 dark:bg-gray-900/90 text-gray-900 dark:text-white backdrop-blur-md px-3 py-1 md:px-5 md:py-2 rounded-xl md:rounded-2xl font-black shadow-xl text-[9px] md:text-xs uppercase tracking-widest border-none">
+                    <div className="absolute top-2.5 left-2.5">
+                      <Badge className="bg-background/90 text-text-primary border border-border-subtle px-2.5 py-0.5 rounded-md text-[10px] font-medium">
                         {project.category}
                       </Badge>
                     </div>
                   </div>
-                  <CardContent className="p-6 md:p-12">
-                    <div className="flex justify-between items-start mb-4 md:mb-6">
-                      <Link
-                        href={`/projects/${project._id || project.id}`}
-                        className="block group/title flex-1 min-w-0"
-                      >
-                        <h3 className="text-xl md:text-4xl font-black text-gray-900 dark:text-white leading-tight mb-1 md:mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <Link href={`/projects/${project._id || project.id}`} className="block flex-1 min-w-0">
+                        <h3 className="text-[15px] font-semibold text-text-primary leading-snug mb-1 group-hover:text-accent transition-colors duration-200 truncate">
                           {project.title}
                         </h3>
-                        <div className="flex items-center gap-1.5 md:gap-2">
-                          <Star className="h-3 w-3 md:h-4 md:w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-[9px] md:text-sm font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-                            Featured Project
+                        <div className="flex items-center gap-1.5">
+                          <Star className="h-3 w-3 fill-warning text-warning" />
+                          <span className="text-[10px] font-medium text-text-tertiary uppercase tracking-wider">
+                            Featured
                           </span>
                         </div>
                       </Link>
                       <Link
                         href={`/projects/${project._id || project.id}`}
-                        className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gray-50 dark:bg-gray-700/50 flex items-center justify-center text-gray-900 dark:text-white group-hover:bg-blue-600 dark:group-hover:bg-blue-500 group-hover:text-white transition-all ml-4 shrink-0"
+                        className="w-8 h-8 rounded-lg bg-surface-hover flex items-center justify-center text-text-secondary hover:bg-accent hover:text-accent-foreground transition-all duration-200 ml-3 shrink-0"
                       >
-                        <ArrowUpRight className="h-5 w-5 md:h-6 md:w-6" />
+                        <ArrowUpRight className="h-4 w-4" />
                       </Link>
                     </div>
-                    <p className="text-sm md:text-xl text-gray-500 dark:text-gray-400 font-medium mb-6 md:mb-10 leading-relaxed line-clamp-2">
+                    <p className="text-[12px] text-text-secondary mb-3 leading-relaxed line-clamp-2">
                       {project.description}
                     </p>
-                    <div className="flex flex-wrap gap-2 md:gap-3">
+                    <div className="flex flex-wrap gap-1">
                       {project.technologies.map((tech, tIndex) => (
                         <Badge
                           key={tIndex}
                           variant="secondary"
-                          className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 border-none font-black px-3 py-1 md:px-4 md:py-2 rounded-lg md:rounded-xl text-[9px] md:text-xs uppercase tracking-tighter group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                          className="px-2 py-0.5 rounded-md text-[10px] font-medium border border-border-subtle"
                         >
                           {tech}
                         </Badge>
@@ -178,8 +163,7 @@ export function Projects() {
           )}
         </div>
 
-        {/* Pagination Controls */}
-        <div className="mt-12 md:mt-20 projects-reveal-text">
+        <div className="mt-8 projects-reveal-text">
           <CustomPagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -187,20 +171,11 @@ export function Projects() {
           />
         </div>
 
-        <div className="mt-12 md:mt-24 text-center projects-reveal-text">
-          <Button
-            asChild
-            variant="outline"
-            size="lg"
-            className="w-full sm:w-auto h-12 md:h-16 px-6 md:px-12 rounded-xl md:rounded-2xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black hover:bg-gray-900 dark:hover:bg-white hover:text-white dark:hover:text-gray-900 transition-all text-sm md:text-lg group"
-          >
-            <Link
-              href="https://github.com/sorujmahmud"
-              target="_blank"
-              className="flex items-center justify-center gap-2 md:gap-3"
-            >
+        <div className="mt-8 text-center projects-reveal-text">
+          <Button asChild variant="outline" size="lg" className="gap-2">
+            <Link href="https://github.com/sorujmahmud" target="_blank">
               View More Projects{" "}
-              <Github className="h-4 w-4 md:h-6 md:w-6 group-hover:rotate-12 transition-transform" />
+              <Github className="h-4 w-4" />
             </Link>
           </Button>
         </div>

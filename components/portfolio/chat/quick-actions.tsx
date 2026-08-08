@@ -12,7 +12,7 @@ export function QuickActions({ onSelect, visible }: QuickActionsProps) {
   if (!visible) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 p-4">
+    <div className="flex flex-wrap gap-1.5 p-3">
       {QUICK_ACTIONS.map((action) => {
         const Icon = action.icon;
         return (
@@ -21,9 +21,9 @@ export function QuickActions({ onSelect, visible }: QuickActionsProps) {
             variant="outline"
             size="sm"
             onClick={() => onSelect(action.prompt)}
-            className="rounded-full border-gray-200 bg-white text-xs font-medium text-gray-600 shadow-sm hover:bg-gray-50 hover:text-gray-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            className="rounded-lg text-[11px] font-medium gap-1.5"
           >
-            <Icon className="mr-1.5 h-3.5 w-3.5" />
+            <Icon className="h-3 w-3" />
             {action.label}
           </Button>
         );

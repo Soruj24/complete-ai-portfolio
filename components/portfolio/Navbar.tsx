@@ -37,55 +37,55 @@ export function Navbar() {
 
   return (
     <>
-      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-blue-600 origin-left z-[100]" style={{ scaleX: scrollYProgress }} />
+      <motion.div className="fixed top-0 left-0 right-0 h-[1px] bg-accent origin-left z-[100]" style={{ scaleX: scrollYProgress }} />
       <motion.nav initial={{ y: -100 }} animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
           isScrolled
-            ? "py-3 md:py-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-            : "py-6 md:py-8 bg-transparent"
+            ? "py-3 bg-background/80 backdrop-blur-xl border-b border-border-subtle"
+            : "py-4 bg-transparent"
         }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
-            <Link href="#home" className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tighter group">
-              {logoText}<span className="text-blue-600 group-hover:animate-pulse">.</span>
+            <Link href="#home" className="text-[15px] font-semibold text-text-primary tracking-[-0.02em] group">
+              {logoText}<span className="text-accent group-hover:animate-pulse">.</span>
             </Link>
 
-            <div className="hidden md:flex items-center gap-10">
+            <div className="hidden md:flex items-center gap-8">
               {navLinks.map((link) => (
                 <Link key={link.name} href={link.href}
-                  className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all hover:scale-105">
+                  className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-tertiary hover:text-accent transition-colors duration-200">
                   {link.name}
                 </Link>
               ))}
 
-              <div className="flex items-center gap-4 border-l border-gray-100 dark:border-gray-800 pl-8">
+              <div className="flex items-center gap-2 border-l border-border-subtle pl-6">
                 <ModeToggle />
                 {session ? (
-                  <Button asChild variant="ghost" className="rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white font-black flex items-center gap-2">
+                  <Button asChild variant="ghost" size="sm" className="gap-1.5 text-[13px]">
                     <Link href={isAdmin ? "/admin/dashboard" : "/dashboard"}>
-                      {isAdmin ? <LayoutDashboard className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                      {isAdmin ? <LayoutDashboard className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
                       {isAdmin ? "Admin" : "Dashboard"}
                     </Link>
                   </Button>
                 ) : (
-                  <Button asChild variant="ghost" className="rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white font-black flex items-center gap-2">
+                  <Button asChild variant="ghost" size="sm" className="text-[13px]">
                     <Link href="/login">Login</Link>
                   </Button>
                 )}
 
-                <Button asChild className="rounded-2xl bg-gray-900 hover:bg-blue-600 text-white px-8 h-12 font-black transition-all hover:-translate-y-1 shadow-lg shadow-gray-200">
-                  <Link href="#contact" className="flex items-center gap-2">
-                    Let&apos;s Work <ArrowRight className="h-4 w-4" />
+                <Button asChild className="gap-2">
+                  <Link href="#contact">
+                    Let&apos;s Work <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </Button>
               </div>
             </div>
 
-            <div className="md:hidden flex items-center gap-4">
+            <div className="md:hidden flex items-center gap-2">
               <ModeToggle />
-              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-900 dark:text-white">
-                {isMobileMenuOpen ? <X /> : <Menu />}
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-text-primary hover:bg-surface rounded-lg transition-colors duration-200">
+                {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
             </div>
           </div>

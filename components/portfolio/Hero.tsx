@@ -61,8 +61,8 @@ export function Hero() {
 
   if (loading) {
     return (
-      <section className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+      <section className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
       </section>
     );
   }
@@ -83,51 +83,47 @@ export function Hero() {
     <section
       id="home"
       ref={containerRef}
-      className="relative min-h-screen flex items-center pt-24 md:pt-32 overflow-hidden bg-white dark:bg-gray-900 transition-colors duration-500"
+      className="relative min-h-screen flex items-center pt-24 md:pt-32 overflow-hidden bg-background"
     >
-      {/* Premium Background Elements */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:44px_44px] dark:bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)]" />
-        <div className="absolute -top-[10%] -left-[10%] w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] bg-blue-400/10 dark:bg-blue-600/5 blur-[80px] md:blur-[120px] rounded-full float-element" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] bg-indigo-400/10 dark:bg-indigo-600/5 blur-[80px] md:blur-[120px] rounded-full float-element" />
+        <div className="absolute -top-[10%] -left-[10%] w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] bg-accent/[0.03] blur-[80px] md:blur-[120px] rounded-full float-element" />
+        <div className="absolute -bottom-[10%] -right-[10%] w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] bg-accent/[0.02] blur-[80px] md:blur-[120px] rounded-full float-element" />
       </div>
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-5 md:px-6 py-2 md:py-2.5 rounded-full bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm text-blue-600 dark:text-blue-400 text-xs md:text-sm font-black mb-6 md:mb-10 reveal-button">
-            <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4 animate-pulse" />
-            <span className="uppercase tracking-[0.2em]">
-              {siteName}
-            </span>
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-surface border border-border-subtle text-[11px] font-semibold tracking-[0.12em] uppercase text-text-tertiary mb-6 reveal-button">
+            <Sparkles className="h-3 w-3" />
+            {siteName}
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-8xl lg:text-9xl font-black tracking-tight text-gray-900 dark:text-white leading-[0.95] md:leading-[0.9] mb-6 md:mb-10 reveal-text">
-            Design<span className="text-blue-600">.</span> Code
-            <span className="text-blue-600">.</span>{" "}
+          <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-[-0.03em] text-text-primary leading-[1.1] mb-5 reveal-text">
+            Design<span className="text-accent">.</span> Code
+            <span className="text-accent">.</span>{" "}
             <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-blue-900 to-gray-900 dark:from-white dark:via-blue-400 dark:to-white">
+            <span className="gradient-text">
               Innovate.
             </span>
           </h1>
 
-          <p className="text-sm sm:text-base md:text-2xl lg:text-3xl text-gray-500 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed font-medium mb-8 md:mb-12 reveal-subtext px-4 sm:px-0">
+          <p className="text-[clamp(0.875rem,1.3vw,1.05rem)] text-text-secondary max-w-xl mx-auto leading-relaxed mb-7 reveal-subtext">
             Hello, I&apos;m{" "}
-            <span className="text-gray-900 dark:text-white font-black">
+            <span className="text-text-primary font-semibold">
               {fullName}
             </span>
             . A {professionalTitle} dedicated to building
             scalable, high-impact digital experiences.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 reveal-button px-4 sm:px-0">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 reveal-button">
             <Button
               asChild
               size="lg"
-              className="w-full sm:w-auto h-12 sm:h-14 md:h-16 px-6 sm:px-8 md:px-10 rounded-xl md:rounded-2xl bg-gray-900 dark:bg-white hover:bg-blue-600 dark:hover:bg-blue-500 text-white dark:text-gray-900 shadow-2xl shadow-gray-200 dark:shadow-none transition-all hover:-translate-y-1 font-black text-sm sm:text-base md:text-lg"
+              className="w-full sm:w-auto"
             >
               <Link href="#projects">
                 Explore Projects{" "}
-                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
 
@@ -136,11 +132,11 @@ export function Hero() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="w-full sm:w-auto h-12 sm:h-14 md:h-16 px-6 sm:px-8 md:px-10 rounded-xl md:rounded-2xl border-2 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all hover:-translate-y-1 font-black text-sm sm:text-base md:text-lg shadow-lg shadow-blue-50 dark:shadow-none"
+                className="w-full sm:w-auto"
               >
                 <Link href="/admin/dashboard" className="flex items-center">
                   Dashboard{" "}
-                  <LayoutDashboard className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  <LayoutDashboard className="h-4 w-4" />
                 </Link>
               </Button>
             )}
@@ -149,19 +145,19 @@ export function Hero() {
               asChild
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto h-12 sm:h-14 md:h-16 px-6 sm:px-8 md:px-10 rounded-xl md:rounded-2xl border-2 border-gray-100 dark:border-gray-800 font-black hover:bg-gray-50 dark:hover:bg-gray-800 transition-all hover:-translate-y-1 text-sm sm:text-base md:text-lg dark:text-white"
+              className="w-full sm:w-auto"
             >
               <Link
                 href="/Soruj_Mahmud_CV.txt"
                 download="Soruj_Mahmud_CV.txt"
                 className="flex items-center"
               >
-                Download CV <Download className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                Download CV <Download className="h-4 w-4" />
               </Link>
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-6 md:gap-10 pt-12 md:pt-20 reveal-button">
+          <div className="flex items-center justify-center gap-1 pt-10 reveal-button">
             {[
               { icon: Github, href: githubLink, label: "GitHub" },
               { icon: Linkedin, href: linkedinLink, label: "LinkedIn" },
@@ -171,12 +167,12 @@ export function Hero() {
                 key={i}
                 href={social.href}
                 target="_blank"
-                className="group flex flex-col items-center gap-2"
+                className="group flex flex-col items-center gap-1.5"
               >
-                <div className="p-3 md:p-4 rounded-xl md:rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:border-blue-100 dark:group-hover:border-blue-900/50 group-hover:shadow-md transition-all duration-300">
-                  <social.icon className="h-5 w-5 md:h-6 md:w-6" />
+                <div className="p-2.5 rounded-lg bg-surface border border-border-subtle text-text-tertiary group-hover:text-accent group-hover:border-border transition-all duration-200">
+                  <social.icon className="h-4 w-4" />
                 </div>
-                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-text-tertiary group-hover:text-accent transition-colors duration-200">
                   {social.label}
                 </span>
               </Link>
@@ -185,14 +181,11 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 reveal-subtext">
-        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 dark:text-gray-500">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 reveal-subtext">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-text-disabled">
           Scroll
         </span>
-        <div className="w-6 h-10 rounded-full border-2 border-gray-100 dark:border-gray-800 p-1">
-          <div className="w-1 h-2 bg-blue-600 rounded-full mx-auto animate-bounce" />
-        </div>
+        <div className="w-px h-8 bg-gradient-to-b from-border to-transparent" />
       </div>
     </section>
   );

@@ -26,7 +26,7 @@ export function ChatInput({ value, onChange, onSend, isLoading, isMinimized }: C
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-gray-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+    <form onSubmit={handleSubmit} className="border-t border-border-subtle bg-background p-3">
       <div className="flex gap-2">
         <Input
           ref={inputRef}
@@ -34,15 +34,15 @@ export function ChatInput({ value, onChange, onSend, isLoading, isMinimized }: C
           onChange={(e) => onChange(e.target.value)}
           placeholder="Ask about projects, skills..."
           disabled={isLoading}
-          className="flex-1 rounded-xl border-gray-200 bg-gray-50 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+          className="flex-1 rounded-lg border border-border-subtle bg-surface text-[13px]"
         />
         <Button
           type="submit"
           disabled={!value.trim() || isLoading}
-          size="icon"
-          className="h-10 w-10 shrink-0 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
+          size="icon-sm"
+          className="shrink-0"
         >
-          <Send className="h-4 w-4" />
+          <Send className="h-3.5 w-3.5" />
         </Button>
       </div>
     </form>

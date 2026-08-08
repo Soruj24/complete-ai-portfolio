@@ -5,7 +5,6 @@ import { useRef, useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { ISkill } from "@/types";
 import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
-// import { skillCategories } from "@/data/skills"; // Removed static import
 
 export function Skills() {
   const [skills, setSkills] = useState<ISkill[]>([]);
@@ -16,14 +15,11 @@ export function Skills() {
     const fetchSkills = async () => {
       try {
         const res = await fetch("/api/skills");
-        
-        // Check if response is JSON
         const contentType = res.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
           console.error("Non-JSON response received from /api/skills");
           return;
         }
-
         const data = await res.json();
         if (data.success) {
           setSkills(data.skills);
@@ -37,7 +33,6 @@ export function Skills() {
     fetchSkills();
   }, []);
 
-  // Group skills by category
   interface SkillCategory {
     title: string;
     icon: string;
@@ -65,58 +60,58 @@ export function Skills() {
   });
 
   return (
-    <section id="skills" ref={sectionRef} className="py-20 md:py-32 bg-[#fafafa] dark:bg-gray-900 transition-colors duration-500">
+    <section id="skills" ref={sectionRef} className="py-20 md:py-28 bg-background border-t border-border-subtle">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto text-center mb-10 md:mb-24">
-          <h2 className="text-[10px] md:text-sm font-black uppercase tracking-[0.4em] text-blue-600 dark:text-blue-400 mb-4 md:mb-6 skills-reveal-text">
-            Technical Arsenal
+        <div className="max-w-2xl mx-auto text-center mb-10 skills-reveal-text">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-tertiary mb-2 block">
+            Skills
+          </span>
+          <h2 className="text-[clamp(1.5rem,3.5vw,2.75rem)] font-semibold tracking-[-0.02em] text-text-primary">
+            Modern tools for{" "}
+            <span className="text-text-tertiary">complex problems.</span>
           </h2>
-          <h3 className="text-3xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 md:mb-8 skills-reveal-text">
-            Modern tools for <br />
-            <span className="text-gray-400 dark:text-gray-500">complex problems.</span>
-          </h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {loading ? (
             <div className="col-span-full flex justify-center py-20">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-600 dark:text-blue-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
             </div>
           ) : categories.length === 0 ? (
-            <div className="col-span-full text-center py-20 text-gray-500 dark:text-gray-400">
+            <div className="col-span-full text-center py-20 text-text-secondary">
               No skills found.
             </div>
           ) : (
             categories.map((category: SkillCategory, index: number) => (
               <div key={index} className="skill-card h-full">
-                <Card className="border-none shadow-2xl shadow-gray-200/50 dark:shadow-none rounded-[24px] md:rounded-[40px] overflow-hidden bg-white dark:bg-gray-800/50 hover:-translate-y-2 transition-all duration-500 h-full">
-                  <CardContent className="p-6 md:p-10">
-                    <div className="flex items-center gap-3 md:gap-5 mb-6 md:mb-10">
-                      <div className="w-10 h-10 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-xl md:text-3xl">
+                <Card className="border border-border-subtle rounded-xl overflow-hidden bg-surface hover:border-border transition-all duration-200 h-full">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="w-10 h-10 rounded-lg bg-accent/8 flex items-center justify-center text-xl">
                         {category.icon}
                       </div>
-                      <h3 className="text-lg md:text-2xl font-black text-gray-900 dark:text-white tracking-tight">{category.title}</h3>
+                      <h3 className="text-[15px] font-semibold text-text-primary tracking-[-0.01em]">{category.title}</h3>
                     </div>
-                    <div className="space-y-4 md:space-y-8">
+                    <div className="space-y-4">
                       {category.skills.map((skill: ISkill, sIndex: number) => (
                         <div key={sIndex} className="group">
-                          <div className="flex justify-between items-center mb-1.5 md:mb-3">
-                            <span className="font-bold text-xs md:text-base text-gray-700 dark:text-gray-300 flex items-center gap-2 md:gap-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                              <span className="text-base md:text-xl">{skill.icon}</span> 
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="font-medium text-[12px] text-text-secondary flex items-center gap-2 group-hover:text-accent transition-colors duration-200">
+                              <span className="text-base">{skill.icon}</span>
                               <span>{skill.name}</span>
                             </span>
-                            <span className="text-[10px] md:text-sm font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 md:px-3 py-0.5 md:py-1 rounded-full">
+                            <span className="text-[10px] font-semibold text-accent bg-accent/8 px-2 py-0.5 rounded-md">
                               {skill.level}%
                             </span>
                           </div>
-                          <div className="h-1.5 md:h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                            <div 
+                          <div className="h-1.5 bg-surface-hover rounded-full overflow-hidden">
+                            <div
                               style={{ width: `${skill.level}%` }}
                               className={`h-full bg-gradient-to-r ${skill.color} rounded-full skill-progress-bar origin-left`}
                             />
                           </div>
                           {skill.description && (
-                            <p className="text-[9px] text-gray-400 dark:text-gray-500 font-bold mt-2 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0 hidden md:block">
+                            <p className="text-[10px] text-text-tertiary font-medium mt-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 hidden md:block">
                               {skill.description}
                             </p>
                           )}
