@@ -32,20 +32,18 @@ export function Footer() {
   const displaySocialLinks = socialLinks.length > 0 ? socialLinks : [];
 
   return (
-    <footer id="footer" data-section className="relative border-t border-border bg-surface">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
-
-      <div className="container py-16 md:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
-          <div className="space-y-4">
-            <Link href="/" className="text-xl font-semibold tracking-tight">
+    <footer id="footer" data-section className="relative border-t border-border-subtle bg-background">
+      <div className="container py-14 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+          <div className="space-y-3">
+            <Link href="/" className="text-[15px] font-semibold tracking-[-0.02em]">
               {siteName}
               <span className="text-accent">.</span>
             </Link>
-            <p className="text-sm text-text-secondary leading-relaxed max-w-xs">
+            <p className="text-[13px] text-text-secondary leading-relaxed max-w-xs">
               {description}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5">
               {displaySocialLinks.map((link) => {
                 const Icon = iconMap[link.platform.toLowerCase()];
                 if (!Icon) return null;
@@ -55,33 +53,33 @@ export function Footer() {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-all"
+                    className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
                     aria-label={link.label}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3.5 h-3.5" />
                   </Link>
                 );
               })}
               {displaySocialLinks.length === 0 && (
                 <>
-                  <Link href="https://github.com/Soruj24" target="_blank" className="p-2 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-all" aria-label="GitHub"><Github className="w-4 h-4" /></Link>
-                  <Link href="https://linkedin.com/in/soruj-mahmud" target="_blank" className="p-2 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-all" aria-label="LinkedIn"><Linkedin className="w-4 h-4" /></Link>
-                  <Link href={`mailto:${email}`} className="p-2 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-all" aria-label="Email"><Mail className="w-4 h-4" /></Link>
+                  <Link href="https://github.com/Soruj24" target="_blank" className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200" aria-label="GitHub"><Github className="w-3.5 h-3.5" /></Link>
+                  <Link href="https://linkedin.com/in/soruj-mahmud" target="_blank" className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200" aria-label="LinkedIn"><Linkedin className="w-3.5 h-3.5" /></Link>
+                  <Link href={`mailto:${email}`} className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200" aria-label="Email"><Mail className="w-3.5 h-3.5" /></Link>
                 </>
               )}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold tracking-widest uppercase text-text-tertiary">
+          <div className="space-y-3">
+            <h3 className="text-[11px] font-semibold tracking-[0.1em] uppercase text-text-tertiary">
               Navigation
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-1.5">
               {NAV_ITEMS.map((item) => (
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                    className="text-[13px] text-text-secondary hover:text-text-primary transition-colors duration-200"
                   >
                     {item.label}
                   </Link>
@@ -90,28 +88,28 @@ export function Footer() {
             </ul>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold tracking-widest uppercase text-text-tertiary">
+          <div className="space-y-3">
+            <h3 className="text-[11px] font-semibold tracking-[0.1em] uppercase text-text-tertiary">
               Contact
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-1.5">
               <li>
                 <Link
                   href={`mailto:${email}`}
-                  className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  className="text-[13px] text-text-secondary hover:text-text-primary transition-colors duration-200"
                 >
                   {email}
                 </Link>
               </li>
               <li>
-                <span className="text-sm text-text-secondary">{location}</span>
+                <span className="text-[13px] text-text-secondary">{location}</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 md:mt-16 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-text-tertiary">
+        <div className="mt-10 md:mt-12 pt-6 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-[11px] text-text-tertiary">
             &copy; {year} {siteName}. All rights reserved.
           </p>
           <p className="text-[10px] text-text-disabled tracking-wider uppercase">
@@ -122,10 +120,10 @@ export function Footer() {
 
       <button
         onClick={scrollToTop}
-        className="fixed bottom-6 right-6 z-40 p-3 rounded-full glass glass-hover shadow-lg text-text-secondary hover:text-accent transition-all duration-300"
+        className="fixed bottom-5 right-5 z-40 p-2.5 rounded-lg bg-surface border border-border-subtle shadow-sm text-text-tertiary hover:text-text-secondary hover:border-border transition-all duration-200"
         aria-label="Scroll to top"
       >
-        <ArrowUp className="w-4 h-4" />
+        <ArrowUp className="w-3.5 h-3.5" />
       </button>
     </footer>
   );

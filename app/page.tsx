@@ -34,7 +34,7 @@ async function getSettings() {
 
 export default async function PortfolioPage() {
   return (
-    <main className="min-h-screen bg-background selection:bg-accent/20 selection:text-accent">
+    <main className="min-h-screen bg-background">
       <Navbar />
       <Hero />
       <About />

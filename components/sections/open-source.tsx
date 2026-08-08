@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Github, Star, GitFork, ExternalLink, Loader2 } from "lucide-react";
+import { Github, Star, GitFork, Loader2 } from "lucide-react";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -43,9 +43,9 @@ export function OpenSource() {
 
   if (loading) {
     return (
-      <Section id="opensource" variant="alt">
+      <Section id="opensource">
         <div className="container flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-accent" />
+          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" />
         </div>
       </Section>
     );
@@ -54,42 +54,42 @@ export function OpenSource() {
   if (error || repos.length === 0) return null;
 
   return (
-    <Section id="opensource" variant="alt">
+    <Section id="opensource">
       <SectionHeader
         label="Open Source"
         title="Projects & Contributions"
         description="Open source projects I've built and contributed to on GitHub."
       />
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {repos.map((repo, i) => (
             <AnimatedSection key={repo.id} delay={i * 0.05}>
               <a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="block h-full">
-                <GlassCard variant="interactive" className="p-5 h-full">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="p-2 rounded-lg bg-accent/10 text-accent">
-                      <Github className="w-4 h-4" />
+                <GlassCard variant="interactive" className="p-4 h-full">
+                  <div className="flex items-start gap-2.5 mb-2.5">
+                    <div className="p-1.5 rounded-md bg-accent/8 text-accent">
+                      <Github className="w-3.5 h-3.5" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-text-primary text-sm truncate">{repo.name}</h3>
-                      <p className="text-xs text-text-secondary line-clamp-2 mt-0.5">
+                      <h3 className="font-medium text-text-primary text-[13px] truncate">{repo.name}</h3>
+                      <p className="text-[11px] text-text-secondary line-clamp-2 mt-0.5">
                         {repo.description || "No description"}
                       </p>
                     </div>
                   </div>
                   {repo.topics && repo.topics.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
+                    <div className="flex flex-wrap gap-1 mb-2.5">
                       {repo.topics.slice(0, 4).map((topic) => (
-                        <span key={topic} className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-accent/10 text-accent">
+                        <span key={topic} className="px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-surface text-text-secondary border border-border-subtle">
                           {topic}
                         </span>
                       ))}
                     </div>
                   )}
-                  <div className="flex items-center gap-4 text-xs text-text-tertiary">
+                  <div className="flex items-center gap-3 text-[11px] text-text-tertiary">
                     {repo.language && (
                       <span className="flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-accent" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                         {repo.language}
                       </span>
                     )}

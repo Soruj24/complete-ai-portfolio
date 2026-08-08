@@ -20,10 +20,10 @@ export function Section({
       id={id}
       data-section
       className={cn(
-        "relative py-24 md:py-32",
+        "relative py-20 md:py-28",
         variant === "default" && "bg-background",
-        variant === "alt" && "bg-surface",
-        variant === "gradient" && "bg-gradient-to-b from-background via-surface to-background",
+        variant === "alt" && "bg-background border-t border-border-subtle",
+        variant === "gradient" && "bg-background border-t border-border-subtle",
         className
       )}
       {...props}
@@ -49,21 +49,20 @@ export function SectionHeader({
   return (
     <div
       className={cn(
-        "max-w-2xl mb-16 md:mb-20 space-y-4",
+        "max-w-2xl mb-14 md:mb-16 space-y-3",
         align === "center" && "mx-auto text-center"
       )}
     >
       {label && (
-        <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium tracking-wide text-accent bg-accent/8 rounded-full">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+        <span className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.12em] uppercase text-text-tertiary">
           {label}
         </span>
       )}
-      <h2 className="text-[clamp(1.75rem,4vw,3.25rem)] font-semibold tracking-tight leading-[1.1] text-text-primary">
+      <h2 className="text-[clamp(1.5rem,3.5vw,2.75rem)] font-semibold tracking-[-0.02em] leading-[1.15] text-text-primary">
         {title}
       </h2>
       {description && (
-        <p className="text-[clamp(0.9rem,1.5vw,1.1rem)] text-text-secondary leading-relaxed max-w-xl mx-auto">
+        <p className="text-[clamp(0.875rem,1.3vw,1rem)] text-text-secondary leading-relaxed max-w-lg mx-auto">
           {description}
         </p>
       )}

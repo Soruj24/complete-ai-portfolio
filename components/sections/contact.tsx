@@ -66,56 +66,54 @@ export function Contact() {
   };
 
   return (
-    <Section id="contact" variant="alt">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,var(--accent-subtle),transparent_50%)] pointer-events-none" />
-
-      <div className="container relative">
+    <Section id="contact">
+      <div className="container">
         <SectionHeader label="Contact" title="Let's Work Together"
           description="Have a project, opportunity, or just want to connect? I respond within 24 hours."
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 max-w-4xl mx-auto">
-          <div className="lg:col-span-2 space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 max-w-4xl mx-auto">
+          <div className="lg:col-span-2 space-y-2.5">
             {contactMethods.map((method) => {
               const Icon = method.icon;
               return method.href ? (
                 <a key={method.label} href={method.href}>
-                  <GlassCard variant="interactive" className="p-4 flex items-center gap-4">
-                    <div className="p-2.5 rounded-xl bg-accent/10 text-accent shrink-0">
+                  <GlassCard variant="interactive" className="p-3.5 flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-accent/8 text-accent shrink-0">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] text-text-tertiary font-medium">{method.label}</p>
-                      <p className="text-sm font-medium truncate">{method.value}</p>
+                      <p className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider">{method.label}</p>
+                      <p className="text-[13px] font-medium truncate">{method.value}</p>
                     </div>
                   </GlassCard>
                 </a>
               ) : (
-                <GlassCard key={method.label} className="p-4 flex items-center gap-4">
-                  <div className="p-2.5 rounded-xl bg-accent/10 text-accent shrink-0">
+                <GlassCard key={method.label} className="p-3.5 flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-accent/8 text-accent shrink-0">
                     <Icon className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[11px] text-text-tertiary font-medium">{method.label}</p>
-                    <p className="text-sm font-medium truncate">{method.value}</p>
+                    <p className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider">{method.label}</p>
+                    <p className="text-[13px] font-medium truncate">{method.value}</p>
                   </div>
                 </GlassCard>
               );
             })}
 
-            <GlassCard className="p-4">
-              <p className="text-[11px] text-text-tertiary font-medium mb-2">Availability</p>
+            <GlassCard className="p-3.5">
+              <p className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider mb-1.5">Availability</p>
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-success" />
-                <span className="text-sm font-medium text-success">Open to opportunities</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                <span className="text-[13px] font-medium text-success">Open to opportunities</span>
               </div>
             </GlassCard>
           </div>
 
           <div className="lg:col-span-3">
-            <GlassCard className="p-6 md:p-8">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <GlassCard className="p-5 md:p-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5" noValidate>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <InputField id="contact-name" label="Name" error={errors.name?.message} placeholder="Your name" {...register("name")} />
                   <InputField id="contact-email" label="Email" type="email" error={errors.email?.message} placeholder="your@email.com" {...register("email")} />
                 </div>
@@ -123,15 +121,15 @@ export function Contact() {
                 <TextareaField id="contact-message" label="Message" error={errors.message?.message} placeholder="Tell me about your project or opportunity..." {...register("message")} />
                 <button type="submit" disabled={submitState === "loading"}
                   className={cn(
-                    "w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm",
-                    "bg-accent text-accent-foreground hover:brightness-110 transition-all",
+                    "w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-[13px]",
+                    "bg-accent text-accent-foreground hover:brightness-110 transition-all duration-200",
                     "disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                   )}
                 >
-                  {submitState === "loading" ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> :
-                   submitState === "success" ? <><CheckCircle2 className="w-4 h-4" /> Sent! I'll respond within 24h</> :
-                   submitState === "error" ? <><AlertCircle className="w-4 h-4" /> Failed. Try email directly</> :
-                   <><Send className="w-4 h-4" /> Send Message</>}
+                  {submitState === "loading" ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending...</> :
+                   submitState === "success" ? <><CheckCircle2 className="w-3.5 h-3.5" /> Sent! I'll respond within 24h</> :
+                   submitState === "error" ? <><AlertCircle className="w-3.5 h-3.5" /> Failed. Try email directly</> :
+                   <><Send className="w-3.5 h-3.5" /> Send Message</>}
                 </button>
               </form>
             </GlassCard>

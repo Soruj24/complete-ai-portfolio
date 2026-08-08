@@ -57,8 +57,8 @@ export function TechBadge({ name, className }: TechBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium",
-        "rounded-full bg-accent/10 text-accent border border-accent/15",
+        "inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium",
+        "rounded-md bg-surface text-text-secondary border border-border-subtle",
         className
       )}
     >
@@ -84,7 +84,7 @@ export function TechStack({ technologies, limit, className }: TechStackProps) {
         <TechBadge key={tech} name={tech} />
       ))}
       {remaining > 0 && (
-        <span className="inline-flex items-center px-2.5 py-1 text-[11px] font-medium rounded-full bg-surface text-text-tertiary border border-border">
+        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-md bg-surface text-text-tertiary border border-border-subtle">
           +{remaining}
         </span>
       )}

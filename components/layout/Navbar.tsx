@@ -68,23 +68,25 @@ export function Navbar() {
       <header
         ref={navRef}
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-          scrolled ? "glass border-b border-glass-border" : "bg-transparent",
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-200",
+          scrolled
+            ? "bg-background/80 backdrop-blur-xl border-b border-border-subtle"
+            : "bg-transparent",
         )}
       >
         <nav
-          className="container flex items-center justify-between h-16 md:h-18"
+          className="container flex items-center justify-between h-14 md:h-16"
           aria-label="Main navigation"
         >
           <Link
             href="/"
-            className="text-lg font-semibold tracking-tight text-text-primary hover:text-accent transition-colors"
+            className="text-[15px] font-semibold tracking-[-0.02em] text-text-primary hover:text-accent transition-colors duration-200"
           >
             {siteName}
             <span className="text-accent">.</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-0.5">
             {NAV_ITEMS.map((item) => {
               const isActive = item.href.startsWith("/#")
                 ? activeSection === item.href.slice(2)
@@ -95,20 +97,20 @@ export function Navbar() {
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
                   className={cn(
-                    "relative px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                    "relative px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors duration-200",
                     isActive
-                      ? "text-accent"
-                      : "text-text-secondary hover:text-text-primary hover:bg-surface",
+                      ? "text-text-primary"
+                      : "text-text-tertiary hover:text-text-secondary",
                   )}
                 >
                   {item.label}
                   {isActive && (
                     <motion.span
                       layoutId="nav-indicator"
-                      className="absolute inset-0 bg-accent/10 rounded-lg -z-10"
+                      className="absolute inset-0 bg-surface border border-border-subtle rounded-md -z-10"
                       transition={{
                         type: "spring",
-                        stiffness: 300,
+                        stiffness: 350,
                         damping: 30,
                       }}
                     />
@@ -116,34 +118,34 @@ export function Navbar() {
                 </Link>
               );
             })}
-            <div className="ml-2 pl-2 border-l border-border flex items-center gap-2">
+            <div className="ml-3 pl-3 border-l border-border-subtle flex items-center gap-1">
               <ModeToggle />
               <Button
                 asChild
                 variant="ghost"
                 size="sm"
-                className="gap-1.5 text-sm"
+                className="gap-1.5 text-[13px] text-text-tertiary hover:text-text-secondary"
               >
                 <Link href="/admin/dashboard">
-                  <LayoutDashboard className="h-4 w-4" />
+                  <LayoutDashboard className="h-3.5 w-3.5" />
                   Dashboard
                 </Link>
               </Button>
             </div>
           </div>
 
-          <div className="flex md:hidden items-center gap-2">
+          <div className="flex md:hidden items-center gap-1">
             <ModeToggle />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-lg hover:bg-surface transition-colors"
+              className="p-2 rounded-md hover:bg-surface transition-colors duration-200"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
             >
               {mobileOpen ? (
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               ) : (
-                <Menu className="w-5 h-5" />
+                <Menu className="w-4 h-4" />
               )}
             </button>
           </div>
@@ -153,14 +155,14 @@ export function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 top-16 z-40 glass md:hidden"
+            className="fixed inset-0 top-14 z-40 bg-background/95 backdrop-blur-xl md:hidden"
           >
             <nav
-              className="container py-8 flex flex-col gap-1"
+              className="container py-6 flex flex-col gap-0.5"
               aria-label="Mobile navigation"
             >
               {NAV_ITEMS.map((item) => (
@@ -169,23 +171,23 @@ export function Navbar() {
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
                   className={cn(
-                    "px-4 py-3 text-base font-medium rounded-xl transition-colors",
+                    "px-3 py-2.5 text-[15px] font-medium rounded-lg transition-colors duration-200",
                     activeSection === item.href.slice(2)
-                      ? "bg-accent/10 text-accent"
-                      : "text-text-secondary hover:text-text-primary hover:bg-surface",
+                      ? "text-text-primary bg-surface"
+                      : "text-text-secondary hover:text-text-primary hover:bg-surface/50",
                   )}
                 >
                   {item.label}
                 </Link>
               ))}
-              <div className="mt-4 pt-4 border-t border-border">
+              <div className="mt-4 pt-4 border-t border-border-subtle">
                 <Button asChild className="w-full gap-2">
                   <Link
                     href="/admin/dashboard"
                     onClick={() => setMobileOpen(false)}
                   >
                     <LayoutDashboard className="h-4 w-4" />
-                    Admin Dashboards
+                    Admin Dashboard
                   </Link>
                 </Button>
               </div>

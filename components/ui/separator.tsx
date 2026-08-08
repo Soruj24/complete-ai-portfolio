@@ -12,8 +12,8 @@ export function Separator({ className, gradient = false }: SeparatorProps) {
       className={cn(
         "h-px w-full border-0",
         gradient
-          ? "bg-gradient-to-r from-transparent via-border to-transparent"
-          : "bg-border",
+          ? "bg-gradient-to-r from-transparent via-border-subtle to-transparent"
+          : "bg-border-subtle",
         className
       )}
     />

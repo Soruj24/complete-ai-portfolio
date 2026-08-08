@@ -15,7 +15,7 @@ export function AnimatedSection({
   className,
   delay = 0,
   direction = "up",
-  duration = 0.6,
+  duration = 0.5,
   children,
   ...props
 }: AnimatedSectionProps) {
@@ -27,9 +27,9 @@ export function AnimatedSection({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: direction === "up" ? 20 : 0 }}
+      initial={{ opacity: 0, y: direction === "up" ? 12 : 0 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
+      viewport={{ once: true, margin: "-30px" }}
       transition={{ duration, delay, ease: [0.16, 1, 0.3, 1] }}
       className={cn(className)}
     >

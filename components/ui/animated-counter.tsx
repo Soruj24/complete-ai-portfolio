@@ -26,12 +26,12 @@ export function AnimatedCounter({
 
   return (
     <div ref={ref} className={cn("text-center", className)}>
-      <div className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-text-primary tabular-nums">
+      <div className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-text-primary tabular-nums">
         {prefix}
         {count}
         {suffix}
       </div>
-      <div className={cn("mt-1 text-sm text-text-secondary font-medium", labelClassName)}>
+      <div className={cn("mt-0.5 text-[11px] text-text-tertiary font-medium", labelClassName)}>
         {label}
       </div>
     </div>

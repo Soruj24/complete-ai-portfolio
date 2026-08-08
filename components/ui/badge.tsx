@@ -14,11 +14,11 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full",
-        variant === "default" && "bg-accent/10 text-accent",
-        variant === "secondary" && "bg-surface text-text-secondary border border-border",
+        "inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-medium rounded-full",
+        variant === "default" && "bg-accent/8 text-accent",
+        variant === "secondary" && "bg-surface text-text-secondary border border-border-subtle",
         variant === "outline" && "border border-border text-text-secondary",
-        variant === "dot" && "bg-accent/10 text-accent",
+        variant === "dot" && "bg-accent/8 text-accent",
         className
       )}
       {...props}

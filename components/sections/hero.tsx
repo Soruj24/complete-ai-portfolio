@@ -18,9 +18,8 @@ const iconMap: Record<string, React.ElementType> = {
 function GradientOrbs() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
-      <div className="absolute -top-48 -right-48 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-accent/12 via-accent/8 to-transparent blur-[100px]" />
-      <div className="absolute -bottom-48 -left-48 w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-blue-500/10 via-cyan-500/8 to-transparent blur-[100px]" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[350px] h-[350px] rounded-full bg-gradient-to-r from-violet-500/8 to-fuchsia-500/8 blur-[80px]" />
+      <div className="absolute -top-32 -right-32 w-[400px] h-[400px] rounded-full bg-accent/[0.04] blur-[80px]" />
+      <div className="absolute -bottom-32 -left-32 w-[350px] h-[350px] rounded-full bg-blue-500/[0.03] blur-[80px]" />
     </div>
   );
 }
@@ -37,7 +36,7 @@ export function Hero() {
     return (
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
         <GradientOrbs />
-        <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-[1.5px] border-border-strong/30 border-t-accent rounded-full animate-spin" />
       </section>
     );
   }
@@ -63,63 +62,63 @@ export function Hero() {
       <GradientOrbs />
 
       <div className="container relative z-10">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-2xl mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-8"
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-6"
           >
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium tracking-wide text-accent bg-accent/8 rounded-full ring-1 ring-accent/10">
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] font-semibold tracking-[0.08em] uppercase text-text-tertiary">
               <Sparkle className="w-3 h-3" />
               {settings?.professionalTitle?.includes("Available") ? "Available for opportunities" : "Open to opportunities"}
             </span>
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[clamp(2.2rem,6vw,4.5rem)] font-semibold tracking-tight leading-[1.05]"
+            transition={{ duration: 0.5, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+            className="text-[clamp(2rem,5.5vw,4rem)] font-semibold tracking-[-0.03em] leading-[1.08]"
           >
             <span className="text-text-primary">{settings?.fullName || "Soruj Mahmud"}</span>
-            <span className="block mt-2 gradient-text text-[clamp(1.3rem,3.5vw,2.75rem)] font-medium">
+            <span className="block mt-1.5 gradient-text text-[clamp(1.1rem,3vw,2.25rem)] font-medium tracking-[-0.02em]">
               {settings?.professionalTitle || "AI Engineer & Full-Stack Developer"}
             </span>
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-6 text-[clamp(0.95rem,1.5vw,1.15rem)] text-text-secondary leading-relaxed max-w-lg mx-auto"
+            transition={{ duration: 0.5, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-5 text-[clamp(0.875rem,1.3vw,1.05rem)] text-text-secondary leading-relaxed max-w-md mx-auto"
           >
             {settings?.bio || "I architect production-grade AI systems and full-stack applications with LangChain, MCP servers, and scalable infrastructure."}
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 flex flex-wrap items-center justify-center gap-3"
+            transition={{ duration: 0.5, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-7 flex flex-wrap items-center justify-center gap-2.5"
           >
             <button
               onClick={() => scrollToSection("contact")}
-              className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent text-accent-foreground text-sm font-medium hover:brightness-110 transition-all active:scale-[0.98]"
+              className="group inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98]"
             >
               Get in Touch
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </button>
             <button
               onClick={() => scrollToSection("projects")}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border text-text-secondary text-sm font-medium hover:bg-surface hover:text-text-primary transition-all active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-subtle text-text-secondary text-[13px] font-medium hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 active:scale-[0.98]"
             >
               View Projects
             </button>
             <a
               href={SITE.resumeUrl}
               download
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-text-tertiary text-sm font-medium hover:text-accent transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-text-tertiary text-[13px] font-medium hover:text-text-secondary transition-colors duration-200"
             >
               <Download className="w-3.5 h-3.5" />
               Resume
@@ -129,8 +128,8 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.32 }}
-            className="mt-10 flex items-center justify-center gap-3"
+            transition={{ duration: 0.5, delay: 0.24 }}
+            className="mt-8 flex items-center justify-center gap-1"
           >
             {socialIcons.map((item) => item && (
               <a
@@ -138,7 +137,7 @@ export function Hero() {
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2.5 rounded-xl text-text-tertiary hover:text-accent hover:bg-accent/8 transition-all"
+                className="p-2 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200"
                 aria-label={item.label}
               >
                 <item.icon className="w-4 h-4" />
@@ -151,13 +150,13 @@ export function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
-        <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-text-tertiary/60">
+        <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-text-disabled">
           Scroll
         </span>
-        <div className="w-px h-10 bg-gradient-to-b from-text-tertiary/30 to-transparent" />
+        <div className="w-px h-8 bg-gradient-to-b from-border to-transparent" />
       </motion.div>
     </section>
   );

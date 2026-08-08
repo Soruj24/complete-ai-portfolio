@@ -36,7 +36,7 @@ export function Skills() {
   }, []);
 
   return (
-    <Section id="skills" variant="alt">
+    <Section id="skills">
       <div className="container">
         <SectionHeader
           label="Skills"
@@ -44,22 +44,17 @@ export function Skills() {
           description="Core technologies I use to build production-grade applications."
         />
 
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
+        <div className="flex flex-wrap justify-center gap-1.5 mb-8">
           {skillCategories.map((cat, i) => (
             <button
               key={cat.title}
               onClick={() => setActiveCategory(i)}
               className={cn(
-                "relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-300",
+                "relative px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200",
                 activeCategory === i
-                  ? "text-accent-foreground"
-                  : "text-text-secondary hover:text-text-primary border border-border bg-surface",
+                  ? "text-text-primary bg-surface border border-border-subtle"
+                  : "text-text-tertiary hover:text-text-secondary",
               )}
-              style={
-                activeCategory === i
-                  ? { background: "var(--accent)" }
-                  : undefined
-              }
             >
               {categoryIcons[cat?.title] ?? "💻"} {cat.title}
             </button>
@@ -69,30 +64,30 @@ export function Skills() {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeCategory}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"
           >
             {skillCategories[activeCategory]?.skills.map(
               (skill: any, i: number) => (
-                <AnimatedSection key={skill?.name} delay={i * 0.04}>
-                  <GlassCard variant="interactive" className="p-4">
-                    <div className="flex items-center gap-3">
+                <AnimatedSection key={skill?.name} delay={i * 0.03}>
+                  <GlassCard variant="interactive" className="p-3.5">
+                    <div className="flex items-center gap-2.5">
                       <span
-                        className="text-lg shrink-0"
+                        className="text-base shrink-0"
                         role="img"
                         aria-label={skill?.name}
                       >
                         {skill?.icon}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-semibold truncate">
+                        <h3 className="text-[13px] font-medium truncate">
                           {skill?.name}
                         </h3>
                         {skill?.description && (
-                          <p className="text-xs text-text-tertiary leading-relaxed mt-0.5 line-clamp-1">
+                          <p className="text-[11px] text-text-tertiary leading-relaxed mt-0.5 line-clamp-1">
                             {skill?.description}
                           </p>
                         )}

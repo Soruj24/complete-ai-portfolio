@@ -44,7 +44,7 @@ export function Certificates() {
     return (
       <Section id="certificates">
         <div className="container flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-accent" />
+          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" />
         </div>
       </Section>
     );
@@ -53,43 +53,43 @@ export function Certificates() {
   if (certificates.length === 0) return null;
 
   return (
-    <Section id="certificates" variant="alt">
+    <Section id="certificates">
       <SectionHeader
         label="Certificates"
         title="Professional Credentials"
         description="Certifications that validate my expertise and commitment to continuous learning."
       />
       <div className="container">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {certificates.map((cert, i) => (
             <AnimatedSection key={cert._id} delay={i * 0.05}>
-              <GlassCard variant="interactive" className="p-5 h-full">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="p-2.5 rounded-xl bg-accent/10 text-accent">
-                    <Award className="w-5 h-5" />
+              <GlassCard variant="interactive" className="p-4 h-full">
+                <div className="flex items-start justify-between mb-2.5">
+                  <div className="p-2 rounded-lg bg-accent/8 text-accent">
+                    <Award className="w-4 h-4" />
                   </div>
                   {cert.credentialUrl && (
-                    <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg text-text-tertiary hover:text-accent hover:bg-accent/10 transition-colors">
-                      <ExternalLink className="w-3.5 h-3.5" />
+                    <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer" className="p-1 rounded-md text-text-tertiary hover:text-accent transition-colors duration-200">
+                      <ExternalLink className="w-3 h-3" />
                     </a>
                   )}
                 </div>
-                <h3 className="font-semibold text-text-primary text-sm leading-snug">{cert.name}</h3>
-                <p className="text-xs text-text-tertiary mt-1">{cert.providerLabel || cert.provider}</p>
+                <h3 className="font-medium text-text-primary text-[13px] leading-snug">{cert.name}</h3>
+                <p className="text-[11px] text-text-tertiary mt-0.5">{cert.providerLabel || cert.provider}</p>
                 {cert.description && (
-                  <p className="text-xs text-text-secondary mt-2 line-clamp-2">{cert.description}</p>
+                  <p className="text-[12px] text-text-secondary mt-1.5 line-clamp-2">{cert.description}</p>
                 )}
                 {cert.skills && cert.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-3">
+                  <div className="flex flex-wrap gap-1 mt-2.5">
                     {cert.skills.slice(0, 4).map((skill) => (
-                      <span key={skill} className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-accent/10 text-accent">
+                      <span key={skill} className="px-1.5 py-0.5 text-[10px] font-medium rounded-md bg-surface text-text-secondary border border-border-subtle">
                         {skill}
                       </span>
                     ))}
                   </div>
                 )}
                 {cert.issueDate && (
-                  <p className="text-[11px] text-text-tertiary mt-3">
+                  <p className="text-[10px] text-text-tertiary mt-2.5">
                     Issued {new Date(cert.issueDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                     {cert.expiryDate && ` · Expires ${new Date(cert.expiryDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}`}
                   </p>
