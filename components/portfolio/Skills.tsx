@@ -1,128 +1,297 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { useRef, useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
-import { ISkill } from "@/types";
+import {
+  Layout,
+  Server,
+  Database,
+  Brain,
+  Wrench,
+  Layers,
+  Component,
+  Paintbrush,
+  RefreshCw,
+  Cog,
+  Workflow,
+  Globe,
+  Radio,
+  HardDrive,
+  Table2,
+  MemoryStick,
+  Bot,
+  Network,
+  Plug,
+  Boxes,
+  Cloud,
+  Container,
+  GitBranch,
+  Github,
+  CloudCog,
+  Blocks,
+} from "lucide-react";
+import { useRef } from "react";
 import { useSectionAnimation } from "@/lib/hooks/use-section-animation";
 
+interface TechItem {
+  name: string;
+  icon: React.ElementType;
+  description: string;
+  context?: string;
+}
+
+interface Category {
+  title: string;
+  icon: React.ElementType;
+  description: string;
+  items: TechItem[];
+}
+
+const CATEGORIES: Category[] = [
+  {
+    title: "Frontend",
+    icon: Layout,
+    description: "Building responsive, performant user interfaces",
+    items: [
+      {
+        name: "Next.js",
+        icon: Blocks,
+        description: "React framework for production apps with SSR, SSG, and App Router",
+        context: "Primary framework",
+      },
+      {
+        name: "React",
+        icon: Component,
+        description: "Component-based UI library for building interactive interfaces",
+        context: "Core expertise",
+      },
+      {
+        name: "TypeScript",
+        icon: Layers,
+        description: "Static type system for scalable, maintainable codebases",
+        context: "Daily driver",
+      },
+      {
+        name: "Tailwind CSS",
+        icon: Paintbrush,
+        description: "Utility-first CSS framework for rapid UI development",
+        context: "Styling standard",
+      },
+      {
+        name: "Redux Toolkit",
+        icon: RefreshCw,
+        description: "Predictable state management for complex application logic",
+        context: "When needed",
+      },
+    ],
+  },
+  {
+    title: "Backend",
+    icon: Server,
+    description: "Building APIs and server-side logic",
+    items: [
+      {
+        name: "Node.js",
+        icon: Cog,
+        description: "JavaScript runtime for scalable network applications",
+        context: "Primary runtime",
+      },
+      {
+        name: "Express.js",
+        icon: Workflow,
+        description: "Minimal web framework for building REST APIs and middleware",
+        context: "API development",
+      },
+      {
+        name: "REST API",
+        icon: Globe,
+        description: "Architecting clean, documented RESTful interfaces",
+        context: "API design",
+      },
+      {
+        name: "WebSockets",
+        icon: Radio,
+        description: "Real-time bidirectional communication for live features",
+        context: "Real-time apps",
+      },
+    ],
+  },
+  {
+    title: "Database",
+    icon: Database,
+    description: "Data modeling, storage, and retrieval",
+    items: [
+      {
+        name: "MongoDB",
+        icon: HardDrive,
+        description: "Document database for flexible, schema-less data storage",
+        context: "Primary database",
+      },
+      {
+        name: "PostgreSQL",
+        icon: Table2,
+        description: "Relational database for complex queries and data integrity",
+        context: "When relational needed",
+      },
+      {
+        name: "Redis",
+        icon: MemoryStick,
+        description: "In-memory store for caching, sessions, and queuing",
+        context: "Caching layer",
+      },
+    ],
+  },
+  {
+    title: "AI Engineering",
+    icon: Brain,
+    description: "Building intelligent systems with LLMs and agents",
+    items: [
+      {
+        name: "LangChain",
+        icon: Bot,
+        description: "Framework for building context-aware AI applications with LLMs",
+        context: "Core AI tool",
+      },
+      {
+        name: "LangGraph",
+        icon: Network,
+        description: "Stateful, multi-agent orchestration for complex AI workflows",
+        context: "Agent systems",
+      },
+      {
+        name: "MCP",
+        icon: Plug,
+        description: "Model Context Protocol for connecting AI models to external tools",
+        context: "Tool integration",
+      },
+      {
+        name: "Vector Databases",
+        icon: Boxes,
+        description: "Semantic search and retrieval for RAG applications",
+        context: "RAG pipelines",
+      },
+      {
+        name: "LLM APIs",
+        icon: Cloud,
+        description: "Integration with OpenAI, Anthropic, and other LLM providers",
+        context: "API integration",
+      },
+    ],
+  },
+  {
+    title: "DevOps / Tools",
+    icon: Wrench,
+    description: "Development workflow and infrastructure",
+    items: [
+      {
+        name: "Docker",
+        icon: Container,
+        description: "Containerization for consistent development and deployment",
+        context: "Containerization",
+      },
+      {
+        name: "Git",
+        icon: GitBranch,
+        description: "Version control for collaborative development workflows",
+        context: "Daily workflow",
+      },
+      {
+        name: "GitHub",
+        icon: Github,
+        description: "Code hosting, CI/CD pipelines, and project management",
+        context: "Collaboration",
+      },
+      {
+        name: "Cloud Platforms",
+        icon: CloudCog,
+        description: "Deployment and infrastructure on AWS and Vercel",
+        context: "Deployment",
+      },
+    ],
+  },
+];
+
+function TechCard({ item }: { item: TechItem }) {
+  const Icon = item.icon;
+
+  return (
+    <div className="group p-3.5 rounded-xl bg-surface border border-border-subtle hover:border-border hover:bg-surface-hover transition-all duration-200 cursor-default">
+      <div className="flex items-start gap-3">
+        <div className="p-2 rounded-lg bg-accent/8 text-accent shrink-0 group-hover:bg-accent/12 transition-colors duration-200">
+          <Icon className="w-4 h-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h4 className="text-[13px] font-medium text-text-primary truncate">
+              {item.name}
+            </h4>
+            {item.context && (
+              <span className="text-[10px] font-medium text-text-tertiary bg-surface-hover px-1.5 py-0.5 rounded shrink-0 hidden group-hover:inline-block transition-all duration-200">
+                {item.context}
+              </span>
+            )}
+          </div>
+          <p className="text-[11.5px] text-text-tertiary leading-relaxed mt-1 line-clamp-2 group-hover:text-text-secondary transition-colors duration-200">
+            {item.description}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Skills() {
-  const [skills, setSkills] = useState<ISkill[]>([]);
-  const [loading, setLoading] = useState(true);
   const sectionRef = useRef(null);
 
-  useEffect(() => {
-    const fetchSkills = async () => {
-      try {
-        const res = await fetch("/api/skills");
-        const contentType = res.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          console.error("Non-JSON response received from /api/skills");
-          return;
-        }
-        const data = await res.json();
-        if (data.success) {
-          setSkills(data.skills);
-        }
-      } catch (error) {
-        console.error("Failed to fetch skills:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSkills();
-  }, []);
-
-  interface SkillCategory {
-    title: string;
-    icon: string;
-    skills: ISkill[];
-  }
-
-  const categories = skills.reduce((acc: SkillCategory[], skill: ISkill) => {
-    const category = acc.find((c) => c.title === skill.category);
-    if (category) {
-      category.skills.push(skill);
-    } else {
-      acc.push({
-        title: skill.category,
-        icon: skill.icon || "🛠️",
-        skills: [skill]
-      });
-    }
-    return acc;
-  }, []);
-
   useSectionAnimation(sectionRef, (tl) => {
-    tl.from(".skills-reveal-text", { y: 50, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out" })
-      .from(".skill-card", { y: 30, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power2.out" }, "-=0.5")
-      .from(".skill-progress-bar", { width: 0, duration: 1.5, stagger: 0.05, ease: "power4.out" }, "-=0.8");
+    tl.from(".skills-heading", { y: 10, opacity: 0, duration: 0.5, ease: "power3.out" })
+      .from(".skills-category", { y: 12, opacity: 0, duration: 0.4, stagger: 0.08, ease: "power3.out" }, "-=0.3");
   });
 
   return (
-    <section id="skills" ref={sectionRef} className="py-20 md:py-28 bg-background border-t border-border-subtle">
+    <section
+      id="skills"
+      ref={sectionRef}
+      className="py-20 md:py-28 bg-background border-t border-border-subtle"
+    >
       <div className="container mx-auto px-4">
-        <div className="max-w-2xl mx-auto text-center mb-10 skills-reveal-text">
+        <div className="max-w-2xl mx-auto text-center mb-14 skills-heading">
           <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-tertiary mb-2 block">
             Skills
           </span>
           <h2 className="text-[clamp(1.5rem,3.5vw,2.75rem)] font-semibold tracking-[-0.02em] text-text-primary">
-            Modern tools for{" "}
-            <span className="text-text-tertiary">complex problems.</span>
+            Technologies &amp; Tools
           </h2>
+          <p className="text-[14px] text-text-secondary mt-2">
+            Organized by engineering domain. Every tool here is used in production-level projects.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {loading ? (
-            <div className="col-span-full flex justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-accent" />
-            </div>
-          ) : categories.length === 0 ? (
-            <div className="col-span-full text-center py-20 text-text-secondary">
-              No skills found.
-            </div>
-          ) : (
-            categories.map((category: SkillCategory, index: number) => (
-              <div key={index} className="skill-card h-full">
-                <Card className="border border-border-subtle rounded-xl overflow-hidden bg-surface hover:border-border transition-all duration-200 h-full">
-                  <CardContent className="p-5">
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-10 h-10 rounded-lg bg-accent/8 flex items-center justify-center text-xl">
-                        {category.icon}
-                      </div>
-                      <h3 className="text-[15px] font-semibold text-text-primary tracking-[-0.01em]">{category.title}</h3>
-                    </div>
-                    <div className="space-y-4">
-                      {category.skills.map((skill: ISkill, sIndex: number) => (
-                        <div key={sIndex} className="group">
-                          <div className="flex justify-between items-center mb-1.5">
-                            <span className="font-medium text-[12px] text-text-secondary flex items-center gap-2 group-hover:text-accent transition-colors duration-200">
-                              <span className="text-base">{skill.icon}</span>
-                              <span>{skill.name}</span>
-                            </span>
-                            <span className="text-[10px] font-semibold text-accent bg-accent/8 px-2 py-0.5 rounded-md">
-                              {skill.level}%
-                            </span>
-                          </div>
-                          <div className="h-1.5 bg-surface-hover rounded-full overflow-hidden">
-                            <div
-                              style={{ width: `${skill.level}%` }}
-                              className={`h-full bg-gradient-to-r ${skill.color} rounded-full skill-progress-bar origin-left`}
-                            />
-                          </div>
-                          {skill.description && (
-                            <p className="text-[10px] text-text-tertiary font-medium mt-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 hidden md:block">
-                              {skill.description}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+        <div className="space-y-12">
+          {CATEGORIES.map((category) => {
+            const Icon = category.icon;
+            return (
+              <div key={category.title} className="skills-category space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-surface border border-border-subtle">
+                    <Icon className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-text-primary tracking-[-0.01em]">
+                      {category.title}
+                    </h3>
+                    <p className="text-[12px] text-text-tertiary">
+                      {category.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {category.items.map((item) => (
+                    <TechCard key={item.name} item={item} />
+                  ))}
+                </div>
               </div>
-            ))
-          )}
+            );
+          })}
         </div>
       </div>
     </section>
