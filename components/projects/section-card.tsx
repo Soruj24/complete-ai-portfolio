@@ -1,40 +1,81 @@
-import { CheckCircle2, Calendar, Clock, Users, BarChart3 } from "lucide-react";
+import {
+  CheckCircle2,
+  Calendar,
+  Clock,
+  Users,
+  BarChart3,
+  type LucideIcon,
+} from "lucide-react";
 
-export function SectionCard({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
+export function SectionCard({
+  icon: Icon,
+  title,
+  id,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  id?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="p-6 md:p-8 rounded-2xl bg-surface border border-border">
-      <div className="flex items-center gap-3 mb-5">
-        <div className="p-2 rounded-xl bg-accent/10 text-accent">
-          <Icon className="w-5 h-5" />
+    <section id={id} className="scroll-mt-24">
+      <div className="p-6 md:p-8 rounded-2xl bg-surface border border-border-subtle">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="p-2 rounded-xl bg-accent/8 text-accent">
+            <Icon className="w-4.5 h-4.5" />
+          </div>
+          <h2 className="text-[17px] font-semibold tracking-[-0.01em] text-text-primary">
+            {title}
+          </h2>
         </div>
-        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+        {children}
       </div>
-      {children}
-    </div>
+    </section>
   );
 }
 
-export function ResultCard({ metric, value, label }: { metric: string; value: string; label: string }) {
+export function ResultCard({
+  metric,
+  value,
+  label,
+}: {
+  metric: string;
+  value: string;
+  label?: string;
+}) {
   return (
-    <div className="text-center p-4 rounded-xl bg-accent/5 border border-accent/10">
+    <div className="text-center p-4 rounded-xl bg-background border border-border-subtle">
       <div className="text-xl md:text-2xl font-bold text-accent">{value}</div>
-      <div className="text-xs text-text-secondary mt-1">{metric}</div>
-      <div className="text-[10px] text-text-tertiary mt-0.5">{label}</div>
+      <div className="text-[12px] font-medium text-text-secondary mt-1">{metric}</div>
+      {label && (
+        <div className="text-[10px] text-text-tertiary mt-0.5">{label}</div>
+      )}
     </div>
   );
 }
 
-export function PhaseCard({ phase, tasks, i }: { phase: string; tasks: string[]; i: number }) {
+export function PhaseCard({
+  phase,
+  tasks,
+  i,
+}: {
+  phase: string;
+  tasks: string[];
+  i: number;
+}) {
   return (
-    <div className="p-5 rounded-xl bg-surface border border-border">
+    <div className="p-5 rounded-xl bg-background border border-border-subtle">
       <div className="flex items-center gap-3 mb-3">
-        <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10 text-accent text-sm font-bold">{i + 1}</span>
-        <h3 className="text-sm font-semibold">{phase}</h3>
+        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-accent/10 text-accent text-[12px] font-bold">
+          {i + 1}
+        </span>
+        <h3 className="text-[13px] font-semibold text-text-primary">{phase}</h3>
       </div>
-      <ul className="space-y-2">
+      <ul className="space-y-1.5">
         {tasks.map((task, j) => (
-          <li key={j} className="flex items-start gap-2 text-sm text-text-secondary">
-            <CheckCircle2 className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" />
+          <li key={j} className="flex items-start gap-2 text-[12.5px] text-text-secondary">
+            <CheckCircle2 className="w-3 h-3 text-accent shrink-0 mt-[3px]" />
             <span>{task}</span>
           </li>
         ))}
@@ -43,15 +84,26 @@ export function PhaseCard({ phase, tasks, i }: { phase: string; tasks: string[];
   );
 }
 
-export function DetailBlock({ label, value }: { label: string; value: string }) {
+export function DetailBlock({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value?: string;
+}) {
+  if (!value) return null;
   return (
     <div className="flex items-center gap-3">
-      <div className="p-2 rounded-lg bg-accent/10 text-accent shrink-0">
-        {label === "Completed" ? <Calendar className="w-4 h-4" /> : label === "Duration" ? <Clock className="w-4 h-4" /> : label === "Team" ? <Users className="w-4 h-4" /> : <BarChart3 className="w-4 h-4" />}
+      <div className="p-2 rounded-lg bg-accent/8 text-accent shrink-0">
+        <Icon className="w-3.5 h-3.5" />
       </div>
       <div>
-        <p className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">{label}</p>
-        <p className="text-sm font-semibold">{value}</p>
+        <p className="text-[10px] font-medium text-text-tertiary uppercase tracking-wider">
+          {label}
+        </p>
+        <p className="text-[13px] font-medium text-text-primary">{value}</p>
       </div>
     </div>
   );

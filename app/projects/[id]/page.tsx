@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Github, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Navbar } from "@/components/layout/Navbar";
@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import type { IProject } from "@/types";
 import { ProjectContent } from "@/components/projects/project-content";
 import { ProjectSidebar } from "@/components/projects/project-sidebar";
+import { TableOfContents } from "@/components/projects/table-of-contents";
 
 async function getProject(id: string) {
   try {
@@ -31,29 +32,88 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
   return (
     <main className="min-h-screen bg-background">
       <Navbar />
-      <article className="pt-24 pb-20 md:pb-32">
-        <div className="container">
-          <Link href="/#projects" className="inline-flex items-center gap-2 text-sm font-medium text-text-secondary hover:text-accent transition-colors mb-10 group">
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            Back to Projects
-          </Link>
+      <article className="pt-20 md:pt-24">
+        {/* Header */}
+        <div className="border-b border-border-subtle">
+          <div className="container py-10 md:py-14">
+            <Link
+              href="/#projects"
+              className="inline-flex items-center gap-2 text-[13px] font-medium text-text-tertiary hover:text-text-secondary transition-colors mb-6 group"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              Back to Projects
+            </Link>
 
-          <div className="max-w-3xl mb-12">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
               <Badge variant="default">{p.category}</Badge>
               <Badge variant="outline">{p.status}</Badge>
+              {p.featured && (
+                <Badge className="bg-accent/10 text-accent border-accent/20">Featured</Badge>
+              )}
             </div>
-            <h1 className="text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-tight leading-[1.1] mb-4">{p.title}</h1>
-            <p className="text-[clamp(1rem,1.5vw,1.2rem)] text-text-secondary leading-relaxed">{p.description}</p>
-          </div>
 
-          <div className="rounded-2xl overflow-hidden bg-surface mb-16 aspect-[16/9] relative">
-            <Image src={p.image} alt={p.title} fill className="object-cover" />
-          </div>
+            <h1 className="text-[clamp(1.75rem,4vw,3rem)] font-semibold tracking-[-0.03em] leading-[1.1] mb-4 max-w-3xl">
+              {p.emoji && <span className="mr-2">{p.emoji}</span>}
+              {p.title}
+            </h1>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 xl:gap-12">
+            <p className="text-[clamp(0.9rem,1.4vw,1.1rem)] text-text-secondary leading-relaxed max-w-2xl mb-6">
+              {p.description}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {p.liveUrl && (
+                <Link
+                  href={p.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Live Demo
+                </Link>
+              )}
+              {p.githubUrl && (
+                <Link
+                  href={p.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border-subtle text-text-secondary text-[13px] font-medium hover:bg-surface hover:text-text-primary hover:border-border transition-all"
+                >
+                  <Github className="w-3.5 h-3.5" />
+                  Source Code
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Image */}
+        <div className="container mt-8">
+          <div className="rounded-2xl overflow-hidden bg-surface border border-border-subtle aspect-[16/9] relative">
+            <Image src={p.image} alt={p.title} fill className="object-cover" priority />
+          </div>
+        </div>
+
+        {/* Main Content — 3-column: ToC | Content | Sidebar */}
+        <div className="container mt-10 md:mt-14 pb-20 md:pb-32">
+          <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr_260px] gap-8 xl:gap-12">
+            {/* Sticky Table of Contents */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">
+                <TableOfContents project={p} />
+              </div>
+            </aside>
+
+            {/* Main Content */}
             <ProjectContent project={p} />
-            <ProjectSidebar project={p} />
+
+            {/* Sidebar */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">
+                <ProjectSidebar project={p} />
+              </div>
+            </aside>
           </div>
         </div>
       </article>
