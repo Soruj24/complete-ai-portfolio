@@ -14,7 +14,7 @@ export function WelcomeHeader({ session }: Props) {
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-surface p-8 rounded-[32px] shadow-sm border border-border-subtle">
       <div className="flex items-center gap-6">
         <div className="relative group">
-          <Avatar className="h-24 w-24 border-4 border-accent/10 dark:border-accent/20 shadow-xl">
+          <Avatar className="h-24 w-24 border-4 border-accent/10 shadow-xl">
             <AvatarImage src={session.user.image || ""} />
             <AvatarFallback className="bg-gradient-to-br from-accent to-accent-hover text-accent-foreground text-3xl font-black">
               {session.user.name?.charAt(0) || session.user.email?.charAt(0).toUpperCase()}
@@ -37,7 +37,7 @@ export function WelcomeHeader({ session }: Props) {
           <Bell className="h-5 w-5 text-text-secondary" />
           Notifications
         </Button>
-        <Button className="rounded-2xl h-12 px-6 bg-accent hover:bg-accent-hover text-accent-foreground font-bold gap-2 shadow-lg shadow-accent/10 dark:shadow-none">
+        <Button className="rounded-2xl h-12 px-6 bg-accent hover:bg-accent-hover text-accent-foreground font-bold gap-2 shadow-lg shadow-accent/10">
           <Settings className="h-5 w-5" />
           Account Settings
         </Button>

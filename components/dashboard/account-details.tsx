@@ -11,7 +11,7 @@ interface Props {
 
 export function AccountDetails({ session }: Props) {
   return (
-    <Card className="border-none shadow-xl shadow-black/5 dark:shadow-none rounded-[32px] overflow-hidden bg-gradient-to-br from-accent/10 to-accent/5 dark:from-accent/15 dark:to-accent/5 border border-border-subtle">
+    <Card className="border-none shadow-xl shadow-black/5 rounded-[32px] overflow-hidden bg-gradient-to-br from-accent/10 to-accent/5 border border-border-subtle">
       <CardContent className="p-8 space-y-8">
         <div>
           <h3 className="text-lg font-black mb-6 flex items-center gap-2 text-text-primary">

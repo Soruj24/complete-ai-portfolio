@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSession } from "@/lib/auth/session";
 import { getAnalyticsService } from "@/lib/services/analytics";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const year = parseInt(request.nextUrl.searchParams.get("year") || String(new Date().getFullYear()), 10);
     const month = parseInt(request.nextUrl.searchParams.get("month") || String(new Date().getMonth() + 1), 10);
     const service = getAnalyticsService();

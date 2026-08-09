@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth/session";
 
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const baseUrl = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
     const res = await fetch(`${baseUrl}/api/tags`);
     

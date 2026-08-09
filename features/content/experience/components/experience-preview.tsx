@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, MapPin, Calendar, Briefcase, Award, Wrench, ListChecks } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import type { Experience } from "../types";
 import { EMPLOYMENT_LABELS } from "../types";
 
@@ -27,12 +28,7 @@ function getDuration(startDate: string, endDate: string | null, current: boolean
 
 export function ExperienceTimelinePreview({ experiences }: Props) {
   if (experiences.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-        <Briefcase className="h-10 w-10 mb-3 opacity-40" />
-        <p className="text-[13px] font-medium">No experience to preview</p>
-      </div>
-    );
+    return <EmptyState icon={Briefcase} title="No experience entries" description="Add your work experience to showcase your career." />;
   }
 
   return (

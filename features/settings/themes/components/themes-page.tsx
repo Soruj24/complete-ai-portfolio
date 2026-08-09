@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, Sun, Moon } from "lucide-react";
+import { Check, Sun, Moon, Palette } from "lucide-react";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+import { EmptyState } from "@/components/admin/shared-states";
 import type { ThemeConfig } from "../types";
 
 export function ThemesPage() {
@@ -43,10 +44,7 @@ export function ThemesPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-          <p className="text-lg font-medium">No themes available</p>
-          <p className="text-sm">No {mode} themes found.</p>
-        </div>
+        <EmptyState icon={Palette} title="No themes yet" description="Create your first custom theme." />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {filtered.map((t, i) => (

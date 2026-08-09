@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { RefreshCw, Database, Clock, CheckCircle, AlertTriangle, RotateCcw, Search, Loader2 } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import type { RestorePoint } from "../types";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
@@ -56,10 +57,7 @@ export function RestorePage() {
           </div>
           <div className="rounded-xl border border-border-primary bg-surface-primary overflow-hidden">
             {items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-                <Database size={40} className="mb-3 opacity-40" />
-                <p className="font-medium">No restore points found</p>
-              </div>
+              <EmptyState icon={RotateCcw} title="No restore points" description="Restore points will appear here when backups are created." />
             ) : (
               <table className="w-full text-sm"><thead><tr className="border-b border-border-primary bg-surface-secondary text-left text-xs text-text-tertiary">
                 <th className="p-3 font-medium">Backup</th><th className="p-3 font-medium">Type</th><th className="p-3 font-medium">Size</th><th className="p-3 font-medium">Verified</th><th className="p-3 font-medium">Date</th>

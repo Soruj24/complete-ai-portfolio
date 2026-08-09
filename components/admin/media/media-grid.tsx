@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Grid3X3, List, Search, SlidersHorizontal, ArrowUpDown,
-  Download, Copy, Trash2,
+  Download, Copy, Trash2, Image,
 } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import { FILE_TYPE_OPTIONS } from "./media-constants";
 import { MediaCard } from "./media-card";
 import { MediaListItem } from "./media-list-item";
@@ -166,13 +167,11 @@ export function MediaGrid({ selectedFolder, selectedTag, selectedCategory, searc
       )}
 
       {filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="p-3 rounded-xl bg-surface-hover mb-3">
-            <Search className="h-8 w-8 text-text-tertiary" />
-          </div>
-          <p className="text-sm font-medium text-text-primary">No files found</p>
-          <p className="text-xs text-text-tertiary mt-1">Try adjusting your search or filter criteria</p>
-        </div>
+        <EmptyState
+          icon={Image}
+          title="No media files"
+          description="Upload your first file to the media library."
+        />
       )}
     </div>
   );

@@ -17,7 +17,7 @@ interface Props {
 
 export function ProfileForm({ name, image, email, loading, onNameChange, onImageChange, onSubmit }: Props) {
   return (
-    <Card className="lg:col-span-2 border-none shadow-xl shadow-black/5 dark:shadow-none rounded-[32px] overflow-hidden">
+    <Card className="lg:col-span-2 border-none shadow-xl shadow-black/5 rounded-[32px] overflow-hidden">
       <CardHeader className="bg-surface border-b border-border-subtle p-8">
         <CardTitle className="text-2xl font-black text-text-primary">Profile Information</CardTitle>
         <CardDescription className="font-medium text-text-secondary">Update your personal details and how others see you.</CardDescription>
@@ -44,7 +44,7 @@ export function ProfileForm({ name, image, email, loading, onNameChange, onImage
             </div>
           </div>
           <div className="pt-4">
-            <Button disabled={loading} className="h-14 px-10 rounded-2xl bg-accent hover:bg-accent-hover font-black text-lg text-accent-foreground shadow-xl shadow-accent/10 dark:shadow-none gap-3 transition-all hover:scale-[1.02]">
+            <Button disabled={loading} className="h-14 px-10 rounded-2xl bg-accent hover:bg-accent-hover font-black text-lg text-accent-foreground shadow-xl shadow-accent/10 gap-3 transition-all hover:scale-[1.02]">
               {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Save className="h-6 w-6" />}
               Save Changes
             </Button>

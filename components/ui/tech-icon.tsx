@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 const techBase: Record<string, string> = {
-  "next.js": "bg-neutral-950 dark:bg-neutral-50",
+  "next.js": "bg-surface",
   react: "bg-sky-500",
   typescript: "bg-blue-600",
   javascript: "bg-amber-400",
@@ -20,13 +20,13 @@ const techBase: Record<string, string> = {
   graphql: "bg-pink-600",
   aws: "bg-orange-400",
   git: "bg-orange-600",
-  github: "bg-neutral-800 dark:bg-neutral-200",
+  github: "bg-surface-hover",
   jest: "bg-red-600",
   cypress: "bg-emerald-600",
   vite: "bg-violet-500",
   prisma: "bg-indigo-600",
   trpc: "bg-blue-600",
-  shadcn: "bg-neutral-950 dark:bg-neutral-50",
+  shadcn: "bg-surface",
   radix: "bg-red-500",
   zod: "bg-blue-500",
   "react-hook-form": "bg-pink-500",

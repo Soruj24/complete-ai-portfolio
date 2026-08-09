@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCheck, X, Info, AlertTriangle, CheckCircle2, AlertOctagon, Inbox, Settings2 } from "lucide-react";
+import { CheckCheck, X, Info, AlertTriangle, CheckCircle2, AlertOctagon, Bell, Settings2 } from "lucide-react";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+import { EmptyState } from "@/components/admin/shared-states";
 
 type NotificationType = "info" | "success" | "warning" | "error";
 type NotificationSource = "system" | "security" | "analytics" | "social" | "content";
@@ -105,11 +106,7 @@ export function NotificationsPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-          <Inbox size={48} className="mb-4 opacity-40" />
-          <p className="text-lg font-medium">No notifications</p>
-          <p className="text-sm">All caught up! You have no {filter !== "all" ? filter : ""} notifications.</p>
-        </div>
+        <EmptyState icon={Bell} title="No notification rules" description="Configure notification rules to stay informed." />
       ) : (
         <div className="space-y-1">
           <AnimatePresence>

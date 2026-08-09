@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, History, Plus, Edit3, Trash2, LogIn, LogOut, Download, Settings2, Filter, Loader2 } from "lucide-react";
+import { Search, Activity, Plus, Edit3, Trash2, LogIn, LogOut, Download, Settings2, Filter, Loader2 } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import type { ActivityEntry } from "../types";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
@@ -49,10 +50,7 @@ export function ActivityPage() {
 
       <div className="rounded-xl border border-border-primary bg-surface-primary overflow-hidden">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-            <History size={40} className="mb-3 opacity-40" />
-            <p className="font-medium">No activity found</p>
-          </div>
+          <EmptyState icon={Activity} title="No activity recorded" description="Activity will appear here as you use the admin panel." />
         ) : (
           <div className="divide-y divide-border-primary max-h-[600px] overflow-y-auto">
             {filtered.map((a: ActivityEntry, i: number) => {

@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Search, Shield, Check, X, Loader2 } from "lucide-react";
+import { Search, Lock, Check, X, Loader2 } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import type { PermissionGroup } from "../types";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
@@ -48,10 +49,7 @@ export function PermissionsPage() {
 
       <div className="overflow-x-auto rounded-xl border border-border-primary bg-surface-primary">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-            <Shield size={40} className="mb-3 opacity-40" />
-            <p className="font-medium">No permissions found</p>
-          </div>
+          <EmptyState icon={Lock} title="No permissions defined" description="Define permissions to control access to admin features." />
         ) : (
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border-primary bg-surface-secondary text-left text-xs text-text-tertiary">

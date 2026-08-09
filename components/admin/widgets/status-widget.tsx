@@ -38,7 +38,7 @@ export function StatusWidget({ title, description, data, loading, error, onRetry
               transition={{ delay: i * 0.05 }}
               className="group cursor-default"
             >
-              <div className={cn("flex items-start gap-3 p-3 rounded-lg transition-colors", cfg.bg, "hover:brightness-95 hover:dark:brightness-110")}>
+              <div className={cn("flex items-start gap-3 p-3 rounded-lg transition-colors", cfg.bg, "hover:brightness-95")}>
                 <div className={cn("p-1.5 rounded-md shrink-0", cfg.bg)}>
                   <Icon className={cn("h-4 w-4", cfg.color)} />
                 </div>

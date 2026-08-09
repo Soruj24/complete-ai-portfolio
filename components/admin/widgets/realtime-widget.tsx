@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Activity, Users, ArrowUp, ArrowDown } from "lucide-react";
 import { WidgetShell } from "./widget-shell";
@@ -15,9 +15,9 @@ interface RealtimeWidgetProps {
 }
 
 export function RealtimeWidget({ title, description, loading, error, onRetry }: RealtimeWidgetProps) {
-  const [count] = useState(0);
-  const [peak] = useState(0);
-  const [trend] = useState<"up" | "down">("up");
+  const count = 0;
+  const peak = 0;
+  const trend = "up" as const;
 
   return (
     <WidgetShell title={title} description={description} loading={loading} error={error} onRetry={onRetry}>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/config/db";
+import { getSession } from "@/lib/auth/session";
 import { getResourceKey, ANALYTICS_RESOURCES, isDedicatedModel } from "@/lib/admin/route-utils";
 import { handleAnalyticsGET } from "@/lib/admin/analytics-handler";
 import {
@@ -16,6 +17,10 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     await dbConnect();
     const key = getResourceKey(request.nextUrl.pathname);
     const search = request.nextUrl.searchParams.get("search")?.toLowerCase();
@@ -39,6 +44,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     await dbConnect();
     const body = await request.json().catch(() => ({}));
     const key = getResourceKey(request.nextUrl.pathname);
@@ -56,6 +65,10 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     await dbConnect();
     const body = await request.json().catch(() => ({}));
     const parts = request.nextUrl.pathname.split("/").filter(Boolean);
@@ -72,6 +85,10 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     await dbConnect();
     const parts = request.nextUrl.pathname.split("/").filter(Boolean);
     const key = getResourceKey(request.nextUrl.pathname);

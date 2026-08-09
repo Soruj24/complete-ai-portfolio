@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ScrollText, Search, Filter, Download, RefreshCw, Terminal, AlertTriangle, XCircle, Info, Loader2 } from "lucide-react";
+import { ScrollText, Search, Filter, Download, RefreshCw, Terminal, AlertTriangle, XCircle, Info, Loader2, FileText } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
 type LogLevel = "info" | "warn" | "error" | "debug";
@@ -112,10 +113,11 @@ export function LogsPage() {
 
       <div className="rounded-xl border border-border-primary bg-surface-primary overflow-hidden">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-            <ScrollText size={40} className="mb-3 opacity-40" />
-            <p className="font-medium">No logs found</p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="No logs found"
+            description="System logs will appear here."
+          />
         ) : (
           <>
             <div className="max-h-[600px] overflow-y-auto">

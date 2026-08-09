@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Search, EyeOff } from "lucide-react";
+import { Search, EyeOff, LayoutList } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -139,11 +140,11 @@ export function DataTable({
               ) : data.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={visibleFields.length + 2} className="h-48 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      {emptyIcon || <Search className="h-7 w-7 text-text-tertiary/30" />}
-                      <p className="text-[13px] font-medium text-text-secondary">{emptyMessage || "No data found"}</p>
-                      <p className="text-[12px] text-text-tertiary">Try adjusting your search or filters</p>
-                    </div>
+                    <EmptyState
+                      icon={LayoutList}
+                      title="No data found"
+                      description="There are no records to display."
+                    />
                   </TableCell>
                 </TableRow>
               ) : (

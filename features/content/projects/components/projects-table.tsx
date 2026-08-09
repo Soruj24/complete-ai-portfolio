@@ -14,8 +14,8 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
-  Search,
 } from "lucide-react";
+import { FilteredEmptyState } from "@/components/admin/shared-states";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -241,13 +241,7 @@ export function ProjectsTable({
   if (projects.length === 0) {
     return (
       <div className="rounded-lg border border-border-subtle overflow-hidden">
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface border border-border-subtle mb-3">
-            <Search className="h-6 w-6 text-text-tertiary" />
-          </div>
-          <p className="text-[13px] font-medium text-text-primary">No projects found</p>
-          <p className="text-[12px] text-text-tertiary mt-0.5">Try adjusting your search or filters</p>
-        </div>
+        <FilteredEmptyState />
       </div>
     );
   }

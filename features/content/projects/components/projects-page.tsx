@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Plus, RefreshCw, Trash2, FolderOpen } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects } from "../hooks/use-projects";
@@ -11,7 +12,6 @@ import { ProjectsToolbar } from "./projects-toolbar";
 import { ProjectsTable } from "./projects-table";
 import { ProjectsGrid } from "./projects-grid";
 import { ProjectsPagination } from "./projects-pagination";
-import { ProjectsEmptyState } from "./projects-empty-state";
 import { ProjectDeleteDialog } from "./project-delete-dialog";
 import type { Project } from "../types";
 
@@ -235,11 +235,24 @@ export function ProjectsPage() {
           </div>
         </div>
       ) : filteredProjects.length === 0 ? (
-        <ProjectsEmptyState
-          type={hasFilters ? "no-results" : "no-projects"}
-          onClearFilters={hasFilters ? clearFilters : undefined}
-          onAddProject={!hasFilters ? handleAddNew : undefined}
-        />
+        hasFilters ? (
+          <EmptyState
+            icon={FolderOpen}
+            title="No projects found"
+            description="Try adjusting your search or filters."
+          />
+        ) : (
+          <EmptyState
+            icon={FolderOpen}
+            title="No projects yet"
+            description="Create your first project to showcase your work."
+            action={{
+              label: "New Project",
+              onClick: handleAddNew,
+              icon: Plus,
+            }}
+          />
+        )
       ) : viewMode === "table" ? (
         <ProjectsTable
           projects={paginatedProjects}

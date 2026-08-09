@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/config/db";
+import { getSession } from "@/lib/auth/session";
 import { User } from "@/models/User";
 import { Project } from "@/models/Project";
 import { Skill } from "@/models/Skill";
@@ -66,6 +67,10 @@ async function runSeedAchievements() {
 }
 
 export async function GET(request: Request) {
+  const session = await getSession();
+  if (!session || session.user.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const { searchParams } = new URL(request.url);
   const all = searchParams.get("all");
   const users = searchParams.get("users");

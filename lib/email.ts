@@ -29,7 +29,6 @@ export async function sendEmail({
       subject,
       html,
     });
-    console.log(`Email sent successfully to ${to}. Message ID: ${info.messageId}`);
     return info;
   } catch (error) {
     console.error("Failed to send email via Nodemailer:", error);

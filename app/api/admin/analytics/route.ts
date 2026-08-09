@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/config/db";
+import { getSession } from "@/lib/auth/session";
 import { PageView } from "@/models/PageView";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     await dbConnect();
     const days = parseInt(request.nextUrl.searchParams.get("days") || "30", 10);
     const since = new Date(Date.now() - days * 86400000);

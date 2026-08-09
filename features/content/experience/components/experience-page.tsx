@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, RefreshCw, AlertCircle, Eye } from "lucide-react";
+import { Plus, RefreshCw, AlertCircle, Eye, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/admin/shared-states";
 import { useExperience } from "../hooks/use-experience";
 import type { Experience } from "../types";
 import { ExperienceToolbar } from "./experience-toolbar";
@@ -79,6 +80,21 @@ export function ExperiencePage() {
           <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Retry
         </Button>
       </div>
+    );
+  }
+
+  if (!loading && filteredExperiences.length === 0) {
+    return (
+      <EmptyState
+        icon={Briefcase}
+        title="No experience entries yet"
+        description="Add your work experience to showcase your career."
+        action={{
+          label: "New Entry",
+          onClick: () => setFormOpen(true),
+          icon: Plus,
+        }}
+      />
     );
   }
 

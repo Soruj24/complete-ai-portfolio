@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus, RefreshCw, LayoutGrid, List } from "lucide-react";
-import { ErrorState } from "@/components/admin/shared-states";
+import { Plus, RefreshCw, LayoutGrid, List, BookOpen } from "lucide-react";
+import { ErrorState, EmptyState } from "@/components/admin/shared-states";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { STATUS_OPTIONS } from "../constants";
@@ -99,10 +99,16 @@ export function BlogsPage() {
           {Array.from({ length: 6 }).map((_: unknown, i: number) => <div key={i} className="h-36 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
       ) : !filtered.length ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <p className="text-lg font-medium">No posts found</p>
-          <p className="mt-1 text-sm">Try adjusting your search or filters</p>
-        </div>
+        <EmptyState
+          icon={BookOpen}
+          title="No blog posts yet"
+          description="Create your first blog post to share your knowledge."
+          action={{
+            label: "New Post",
+            onClick: () => setDialogOpen(true),
+            icon: Plus,
+          }}
+        />
       ) : view === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((post: BlogPost, i: number) => <BlogCard key={post.id} post={post} index={i} />)}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Shield, AlertTriangle, Info, Filter, Loader2 } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import type { AuditEntry } from "../types";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
@@ -65,10 +66,7 @@ export function AuditPage() {
 
       <div className="rounded-xl border border-border-primary bg-surface-primary overflow-hidden">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-            <Shield size={40} className="mb-3 opacity-40" />
-            <p className="font-medium">No audit entries found</p>
-          </div>
+          <EmptyState icon={Shield} title="No audit logs" description="Audit logs will appear here as actions are performed." />
         ) : (
           <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-border-primary bg-surface-secondary text-left text-xs text-text-tertiary">
             <th className="p-3 font-medium">User</th><th className="p-3 font-medium">Action</th><th className="p-3 font-medium">Resource</th><th className="p-3 font-medium">Changes</th><th className="p-3 font-medium">Severity</th><th className="p-3 font-medium">Timestamp</th><th className="p-3 font-medium">IP</th>

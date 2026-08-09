@@ -40,9 +40,6 @@ export function ActivityChart({ data }: Props) {
   }
 
   const isDark = theme === "dark";
-  const accent = isDark ? "var(--accent)" : "var(--accent)";
-  const textSecondary = isDark ? "var(--text-tertiary)" : "var(--text-tertiary)";
-  const surface = isDark ? "var(--surface)" : "var(--surface)";
 
   return (
     <Card className="border border-border-subtle shadow-none rounded-xl bg-surface">

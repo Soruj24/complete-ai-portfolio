@@ -1,7 +1,9 @@
 "use client";
 
-import { type LucideIcon, FolderOpen, Search, RefreshCw } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { type LucideIcon, FolderOpen, Search, RefreshCw, MoreHorizontal, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface EmptyStateProps {
   icon?: LucideIcon;
@@ -89,6 +91,76 @@ export function FilteredEmptyState({ filterDescription = "your search or filters
         <Button variant="ghost" size="sm" onClick={onClear} className="mt-3 h-7 text-[12px]">
           Clear all filters
         </Button>
+      )}
+    </div>
+  );
+}
+
+export function LoadingSpinner({ size = 24, className }: { size?: number; className?: string }) {
+  return <Loader2 size={size} className={cn("animate-spin text-accent", className)} />;
+}
+
+export function PageLoader() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <LoadingSpinner size={24} />
+    </div>
+  );
+}
+
+interface ActionDropdownItem {
+  label: string;
+  icon?: LucideIcon;
+  onClick: () => void;
+  variant?: "default" | "destructive";
+  separator?: boolean;
+}
+
+interface ActionDropdownProps {
+  items: ActionDropdownItem[];
+  align?: "left" | "right";
+}
+
+export function ActionDropdown({ items, align = "right" }: ActionDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    if (open) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <Button variant="ghost" size="icon" className="h-8 w-8 min-w-[32px]" onClick={() => setOpen(!open)}>
+        <MoreHorizontal className="h-3.5 w-3.5 text-text-tertiary" />
+      </Button>
+      {open && (
+        <div className={cn(
+          "absolute top-full z-50 mt-1 w-44 rounded-lg border border-border-subtle bg-background py-1 shadow-lg",
+          align === "right" ? "right-0" : "left-0"
+        )}>
+          {items.map((item, i) => (
+            <div key={i}>
+              {item.separator && <div className="my-0.5 h-px bg-border-subtle" />}
+              <button
+                onClick={() => { setOpen(false); item.onClick(); }}
+                className={cn(
+                  "flex w-full items-center gap-2 px-3 py-2 text-[12px] transition-colors min-h-[36px]",
+                  item.variant === "destructive"
+                    ? "text-red-500 hover:bg-red-500/10"
+                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+                )}
+              >
+                {item.icon && <item.icon className="h-3 w-3" />}
+                {item.label}
+              </button>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
