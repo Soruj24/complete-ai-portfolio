@@ -5,11 +5,11 @@ import { MessageCircle, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAiChat } from "@/hooks/use-ai-chat";
 import { useChatScroll } from "@/hooks/use-chat-scroll";
-import { ChatNudge } from "@/components/portfolio/chat/chat-nudge";
-import { ChatHeader } from "@/components/portfolio/chat/chat-header";
-import { ChatMessage } from "@/components/portfolio/chat/chat-message";
-import { ChatInput } from "@/components/portfolio/chat/chat-input";
-import { QuickActions } from "@/components/portfolio/chat/quick-actions";
+import { ChatNudge } from "./chat-nudge";
+import { ChatHeader } from "./chat-header";
+import { ChatMessage } from "./chat-message";
+import { ChatInput } from "./chat-input";
+import { QuickActions } from "./quick-actions";
 
 export function AIChatBot() {
   const {

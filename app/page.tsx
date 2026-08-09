@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/footer";
+import { Navbar } from "@/components/layout/navbar/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/sections/hero";
 import { About } from "@/components/sections/about";
 import { getPortfolioData } from "@/lib/portfolio-data";

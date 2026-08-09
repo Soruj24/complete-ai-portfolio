@@ -8,7 +8,7 @@ import { SkipLink } from "@/components/layout/skip-link";
 import { Suspense, lazy } from "react";
 import { METADATA, SITE } from "@/lib/constants";
 
-const ChatBotWrapper = lazy(() => import("@/components/portfolio/ChatBotWrapper"));
+const ChatBotWrapper = lazy(() => import("@/components/chatbot/ChatBotWrapper"));
 const PageViewTracker = lazy(() => import("@/components/page-view-tracker").then(m => ({ default: m.PageViewTracker })));
 
 const inter = Inter({

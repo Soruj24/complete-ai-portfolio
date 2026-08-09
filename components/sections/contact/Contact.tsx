@@ -17,8 +17,8 @@ import { z } from "zod";
 import { Section } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { cn } from "@/lib/utils";
-import { InputField } from "./contact-input-field";
-import { TextareaField } from "./contact-textarea-field";
+import { InputField } from "./InputField";
+import { TextareaField } from "./TextareaField";
 import { SITE, SOCIAL } from "@/lib/constants";
 
 const contactSchema = z.object({

@@ -17,7 +17,6 @@ import {
   Search,
   Boxes,
   Network,
-  Loader2,
 } from "lucide-react";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
