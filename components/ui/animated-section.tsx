@@ -1,9 +1,7 @@
 "use client";
 
-import { type HTMLAttributes } from "react";
-import { motion } from "framer-motion";
+import { useRef, useEffect, useState, type HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
-import { useReducedMotion } from "@/lib/hooks";
 
 interface AnimatedSectionProps extends HTMLAttributes<HTMLDivElement> {
   delay?: number;
@@ -15,25 +13,62 @@ export function AnimatedSection({
   className,
   delay = 0,
   direction = "up",
-  duration = 0.5,
+  duration = 500,
   children,
   ...props
 }: AnimatedSectionProps) {
-  const reducedMotion = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [prefersReduced, setPrefersReduced] = useState(false);
 
-  if (reducedMotion) {
-    return <div className={cn(className)} {...props}>{children}</div>;
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReduced(mq.matches);
+
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(element);
+        }
+      },
+      { threshold: 0.1, rootMargin: "-30px" }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  if (prefersReduced) {
+    return (
+      <div className={cn(className)} {...props}>
+        {children}
+      </div>
+    );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: direction === "up" ? 12 : 0 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-30px" }}
-      transition={{ duration, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={cn(className)}
+    <div
+      ref={ref}
+      className={cn(
+        "transition-all",
+        isVisible
+          ? "opacity-100 translate-y-0"
+          : direction === "up"
+            ? "opacity-0 translate-y-3"
+            : "opacity-0",
+        className
+      )}
+      style={{
+        transitionDuration: `${duration}ms`,
+        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+        transitionDelay: `${delay * 1000}ms`,
+      }}
+      {...props}
     >
-      <div {...props}>{children}</div>
-    </motion.div>
+      {children}
+    </div>
   );
 }

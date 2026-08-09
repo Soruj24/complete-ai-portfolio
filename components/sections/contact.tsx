@@ -19,7 +19,6 @@ import { AnimatedSection } from "@/components/ui/animated-section";
 import { cn } from "@/lib/utils";
 import { InputField } from "./contact-input-field";
 import { TextareaField } from "./contact-textarea-field";
-import { useSiteSettings } from "@/lib/hooks";
 import { SITE, SOCIAL } from "@/lib/constants";
 
 const contactSchema = z.object({
@@ -38,11 +37,15 @@ interface ContactMethod {
   href?: string;
 }
 
-export function Contact() {
+interface ContactProps {
+  settings?: any;
+  socialLinks?: any[];
+}
+
+export function Contact({ settings, socialLinks = [] }: ContactProps) {
   const [submitState, setSubmitState] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
-  const { settings, socialLinks } = useSiteSettings();
   const abortRef = useRef<AbortController | null>(null);
 
   const email =

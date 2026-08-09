@@ -6,15 +6,17 @@ import {
   Code2,
   Layers,
   Zap,
-  Loader2,
   ArrowUpRight,
   BookOpen,
 } from "lucide-react";
 import { Section, SectionHeader } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
-import { useSiteSettings } from "@/lib/hooks";
 import { SITE } from "@/lib/constants";
 import { TechBadge } from "@/components/ui/tech-icon";
+
+interface AboutProps {
+  settings: any;
+}
 
 const PRIMARY_STACK = ["Next.js", "TypeScript", "Node.js", "MongoDB", "AI"];
 
@@ -49,19 +51,7 @@ function InfoCard({
   );
 }
 
-export function About() {
-  const { settings, loading } = useSiteSettings();
-
-  if (loading) {
-    return (
-      <Section id="about">
-        <div className="container flex items-center justify-center py-20">
-          <Loader2 className="w-5 h-5 animate-spin text-text-tertiary" role="status" aria-label="Loading" />
-        </div>
-      </Section>
-    );
-  }
-
+export function About({ settings }: AboutProps) {
   const title = settings?.professionalTitle || SITE.title;
   const bio =
     settings?.bio ||
@@ -152,7 +142,7 @@ export function About() {
                   What I Specialize In
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
-                  {specializations.map((spec) => (
+                  {specializations.map((spec: string) => (
                     <span
                       key={spec}
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11.5px] font-medium rounded-md bg-surface text-text-secondary border border-border-subtle"

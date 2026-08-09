@@ -140,17 +140,22 @@ function ExperienceCard({ exp }: { exp: Experience }) {
   );
 }
 
-export function Experience() {
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [loading, setLoading] = useState(true);
+interface ExperienceProps {
+  initialExperiences?: Experience[];
+}
+
+export function Experience({ initialExperiences = [] }: ExperienceProps) {
+  const [experiences, setExperiences] = useState<Experience[]>(initialExperiences);
+  const [loading, setLoading] = useState(initialExperiences.length === 0);
 
   useEffect(() => {
+    if (initialExperiences.length > 0) return;
     fetch("/api/experience")
       .then((res) => res.json())
       .then((data) => setExperiences(data.data ?? []))
       .catch(() => setExperiences([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialExperiences.length]);
 
   return (
     <Section id="experience">

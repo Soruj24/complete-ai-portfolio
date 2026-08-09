@@ -1,14 +1,15 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ArrowRight, Sparkle } from "lucide-react";
 import { SITE } from "@/lib/constants";
-import { useInView, useReducedMotion, useSiteSettings } from "@/lib/hooks";
+import { useInView } from "@/lib/hooks";
 
-export function CTA() {
+interface CTAProps {
+  settings?: any;
+}
+
+export function CTA({ settings }: CTAProps) {
   const [ref, isVisible] = useInView();
-  const { settings } = useSiteSettings();
-  const reducedMotion = useReducedMotion();
 
   const email = settings?.contactEmail || "sorujmahmudb2h@gmail.com";
   const resumeUrl = SITE.resumeUrl;
@@ -18,10 +19,10 @@ export function CTA() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--accent-subtle),transparent_60%)] pointer-events-none opacity-50" aria-hidden="true" />
 
       <div ref={ref} className="container relative text-center">
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 16 }}
-          animate={isVisible ? { opacity: 1, y: 0 } : undefined}
-          transition={reducedMotion ? undefined : { duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        <div
+          className={`transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
         >
           <div className="flex justify-center mb-5">
             <span className="p-2 rounded-lg bg-accent/8 text-accent">
@@ -52,7 +53,7 @@ export function CTA() {
               Download Resume
             </a>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

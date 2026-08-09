@@ -18,11 +18,16 @@ interface Achievement {
   featured: boolean;
 }
 
-export function Achievements() {
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [loading, setLoading] = useState(true);
+interface AchievementsProps {
+  initialAchievements?: Achievement[];
+}
+
+export function Achievements({ initialAchievements = [] }: AchievementsProps) {
+  const [achievements, setAchievements] = useState<Achievement[]>(initialAchievements);
+  const [loading, setLoading] = useState(initialAchievements.length === 0);
 
   useEffect(() => {
+    if (initialAchievements.length > 0) return;
     const fetchData = async () => {
       try {
         const res = await fetch("/api/achievements");
@@ -37,7 +42,7 @@ export function Achievements() {
       }
     };
     fetchData();
-  }, []);
+  }, [initialAchievements.length]);
 
   if (loading) {
     return (

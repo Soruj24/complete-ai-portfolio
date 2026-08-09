@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { ExternalLink, Github, ImageOff, Loader2, ArrowUpRight, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Section, SectionHeader } from "@/components/ui/section";
@@ -34,7 +35,6 @@ interface Project {
 }
 
 function ProjectImage({ src, alt }: { src: string; alt: string }) {
-  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
   if (error) {
@@ -46,24 +46,15 @@ function ProjectImage({ src, alt }: { src: string; alt: string }) {
   }
 
   return (
-    <>
-      {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-surface">
-          <Loader2 className="w-4 h-4 animate-spin text-text-tertiary" role="status" aria-label="Loading image" />
-        </div>
-      )}
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
-        className={cn(
-          "w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]",
-          loaded ? "opacity-100" : "opacity-0"
-        )}
-      />
-    </>
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+      onError={() => setError(true)}
+      unoptimized={src.startsWith("data:")}
+    />
   );
 }
 
@@ -257,12 +248,17 @@ function ProjectCard({ project }: { project: Project }) {
   );
 }
 
-export function Projects() {
+interface ProjectsProps {
+  initialProjects?: Project[];
+}
+
+export function Projects({ initialProjects = [] }: ProjectsProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>("All");
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [loading, setLoading] = useState(initialProjects.length === 0);
 
   useEffect(() => {
+    if (initialProjects.length > 0) return;
     fetch("/api/projects?limit=100")
       .then((res) => res.json())
       .then((data) => {
@@ -276,7 +272,7 @@ export function Projects() {
       })
       .catch(() => setProjects([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialProjects.length]);
 
   const filtered = projects.filter(
     (p) => activeFilter === "All" || p.category === activeFilter

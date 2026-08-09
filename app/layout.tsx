@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import Providers from "./providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ScrollProgress } from "@/components/layout/scroll-progress";
 import { SkipLink } from "@/components/layout/skip-link";
@@ -109,25 +108,23 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
-        <Providers>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ScrollProgress />
-            <SkipLink />
-            <Suspense fallback={null}>
-              <PageViewTracker />
-            </Suspense>
-            {children}
-            <Suspense fallback={null}>
-              <ChatBotWrapper />
-            </Suspense>
-            <Toaster position="top-right" richColors closeButton />
-          </ThemeProvider>
-        </Providers>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ScrollProgress />
+          <SkipLink />
+          <Suspense fallback={null}>
+            <PageViewTracker />
+          </Suspense>
+          {children}
+          <Suspense fallback={null}>
+            <ChatBotWrapper />
+          </Suspense>
+          <Toaster position="top-right" richColors closeButton />
+        </ThemeProvider>
       </body>
     </html>
   );

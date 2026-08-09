@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import {
   Github,
   Star,
@@ -218,10 +219,13 @@ export function OpenSource() {
             {data?.user && (
               <AnimatedSection>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 p-4 sm:p-5 rounded-2xl bg-surface border border-border-subtle">
-                  <img
+                  <Image
                     src={data.user.avatar_url}
                     alt={data.user.login}
-                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-border-subtle shrink-0"
+                    width={56}
+                    height={56}
+                    className="rounded-full border border-border-subtle shrink-0"
+                    unoptimized
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

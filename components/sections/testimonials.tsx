@@ -19,11 +19,16 @@ interface Testimonial {
   date: string;
 }
 
-export function Testimonials() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading] = useState(true);
+interface TestimonialsProps {
+  initialTestimonials?: Testimonial[];
+}
+
+export function Testimonials({ initialTestimonials = [] }: TestimonialsProps) {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
+  const [loading, setLoading] = useState(initialTestimonials.length === 0);
 
   useEffect(() => {
+    if (initialTestimonials.length > 0) return;
     const fetchData = async () => {
       try {
         const res = await fetch("/api/testimonials");
@@ -38,7 +43,7 @@ export function Testimonials() {
       }
     };
     fetchData();
-  }, []);
+  }, [initialTestimonials.length]);
 
   if (loading) {
     return (

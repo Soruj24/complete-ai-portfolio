@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import Swal from "sweetalert2";
 import type { ChatMessage } from "@/types/chat";
 import { sendChatMessage, readStream } from "@/lib/services/portfolio-chat";
 import { buildWelcomeMessage, getGreeting } from "@/constants/chat";
@@ -67,24 +66,12 @@ export function useAiChat() {
   }, []);
 
   const clearChat = useCallback(() => {
-    Swal.fire({
-      title: "Start fresh?",
-      text: "This will clear the entire conversation.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, clear it",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-      reverseButtons: true,
-    }).then((result) => {
-      if (!result.isConfirmed) return;
-      setMessages([
-        { id: "welcome", role: "assistant", content: `${getGreeting()}! \n\nI'm Soruj AI, ready for a new chat!`, timestamp: new Date() },
-      ]);
-      localStorage.removeItem("portfolioChat");
-      toast.success("Chat cleared", { description: "Started fresh!" });
-    });
+    if (!window.confirm("Start fresh? This will clear the entire conversation.")) return;
+    setMessages([
+      { id: "welcome", role: "assistant", content: `${getGreeting()}! \n\nI'm Soruj AI, ready for a new chat!`, timestamp: new Date() },
+    ]);
+    localStorage.removeItem("portfolioChat");
+    toast.success("Chat cleared", { description: "Started fresh!" });
   }, []);
 
   const copyMessage = useCallback(async (text: string) => {

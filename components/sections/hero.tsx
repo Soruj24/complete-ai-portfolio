@@ -12,8 +12,13 @@ import {
   Globe,
 } from "lucide-react";
 import { SITE, SOCIAL } from "@/lib/constants";
-import { useSiteSettings, useReducedMotion } from "@/lib/hooks";
+import { useReducedMotion } from "@/lib/hooks";
 import { TechBadge } from "@/components/ui/tech-icon";
+
+interface HeroProps {
+  settings: any;
+  socialLinks: any[];
+}
 
 const iconMap: Record<string, React.ElementType> = {
   github: Github,
@@ -46,18 +51,9 @@ const scrollToSection = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 };
 
-export function Hero() {
+export function Hero({ settings, socialLinks }: HeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { settings, socialLinks, loading } = useSiteSettings();
   const reducedMotion = useReducedMotion();
-
-  if (loading) {
-    return (
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
-        <div className="w-5 h-5 border-[1.5px] border-border-strong/30 border-t-accent rounded-full animate-spin" role="status" aria-label="Loading" />
-      </section>
-    );
-  }
 
   const socialIcons = socialLinks.length > 0
     ? socialLinks.map((link) => {
@@ -109,7 +105,6 @@ export function Hero() {
 
       <div className="container relative z-10">
         <div className="max-w-2xl mx-auto text-center">
-          {/* Badge */}
           <motion.div
             {...anim}
             className="mb-5"
@@ -120,7 +115,6 @@ export function Hero() {
             </span>
           </motion.div>
 
-          {/* Heading */}
           <motion.h1
             {...animUp}
             className="text-[clamp(2rem,5vw,3.5rem)] font-semibold tracking-[-0.03em] leading-[1.1]"
@@ -133,7 +127,6 @@ export function Hero() {
             </span>
           </motion.h1>
 
-          {/* Name */}
           <motion.p
             initial={reducedMotion ? false : { opacity: 0, y: 8 }}
             animate={reducedMotion ? undefined : { opacity: 1, y: 0 }}
@@ -143,7 +136,6 @@ export function Hero() {
             {settings?.fullName || SITE.name}
           </motion.p>
 
-          {/* Bio */}
           <motion.p
             {...animBio}
             className="mt-4 text-[clamp(0.875rem,1.3vw,1rem)] text-text-secondary leading-relaxed max-w-md mx-auto"
@@ -151,7 +143,6 @@ export function Hero() {
             {settings?.bio || "I architect production-grade AI systems and full-stack applications with LangChain, MCP servers, and scalable infrastructure."}
           </motion.p>
 
-          {/* CTAs */}
           <motion.div
             {...animCta}
             className="mt-7 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2.5 w-full"
@@ -180,7 +171,6 @@ export function Hero() {
             </button>
           </motion.div>
 
-          {/* Tech Stack */}
           <motion.div
             {...animStack}
             className="mt-6 flex flex-wrap items-center justify-center gap-1.5"
@@ -190,7 +180,6 @@ export function Hero() {
             ))}
           </motion.div>
 
-          {/* Socials */}
           <motion.div
             {...animSocial}
             className="mt-6 flex items-center justify-center gap-1"
@@ -214,7 +203,6 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
       <motion.div
         {...animScroll}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"

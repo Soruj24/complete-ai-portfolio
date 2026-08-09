@@ -19,11 +19,16 @@ interface Certificate {
   image: string;
 }
 
-export function Certificates() {
-  const [certificates, setCertificates] = useState<Certificate[]>([]);
-  const [loading, setLoading] = useState(true);
+interface CertificatesProps {
+  initialCertificates?: Certificate[];
+}
+
+export function Certificates({ initialCertificates = [] }: CertificatesProps) {
+  const [certificates, setCertificates] = useState<Certificate[]>(initialCertificates);
+  const [loading, setLoading] = useState(initialCertificates.length === 0);
 
   useEffect(() => {
+    if (initialCertificates.length > 0) return;
     const fetchData = async () => {
       try {
         const res = await fetch("/api/certificates");
@@ -38,7 +43,7 @@ export function Certificates() {
       }
     };
     fetchData();
-  }, []);
+  }, [initialCertificates.length]);
 
   if (loading) {
     return (
