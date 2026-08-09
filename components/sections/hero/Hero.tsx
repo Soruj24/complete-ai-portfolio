@@ -14,10 +14,11 @@ import {
 import { SITE, SOCIAL } from "@/lib/constants";
 import { useReducedMotion } from "@/lib/hooks";
 import { TechBadge } from "@/components/ui/tech-icon";
+import type { ISettings, ISocialLink } from "@/shared/types";
 
 interface HeroProps {
-  settings: any;
-  socialLinks: any[];
+  settings: Partial<ISettings>;
+  socialLinks: ISocialLink[];
 }
 
 const iconMap: Record<string, React.ElementType> = {

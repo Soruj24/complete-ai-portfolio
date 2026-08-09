@@ -13,9 +13,10 @@ import { Section, SectionHeader } from "@/components/ui/section";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { SITE } from "@/lib/constants";
 import { TechBadge } from "@/components/ui/tech-icon";
+import type { ISettings } from "@/shared/types";
 
 interface AboutProps {
-  settings: any;
+  settings: Partial<ISettings>;
 }
 
 const PRIMARY_STACK = ["Next.js", "TypeScript", "Node.js", "MongoDB", "AI"];

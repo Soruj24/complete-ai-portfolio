@@ -3,9 +3,10 @@
 import { ArrowRight, Sparkle } from "lucide-react";
 import { SITE } from "@/lib/constants";
 import { useInView } from "@/lib/hooks";
+import type { ISettings } from "@/shared/types";
 
 interface CTAProps {
-  settings?: any;
+  settings?: Partial<ISettings>;
 }
 
 export function CTA({ settings }: CTAProps) {

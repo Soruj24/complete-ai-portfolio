@@ -20,13 +20,4 @@ export function ScrollProgress() {
   );
 }
 
-export function ScrollIndicator() {
-  return (
-    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-      <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-text-disabled">
-        Scroll
-      </span>
-      <div className="w-px h-8 bg-gradient-to-b from-border to-transparent" />
-    </div>
-  );
-}
+

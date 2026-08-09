@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { InputField } from "./InputField";
 import { TextareaField } from "./TextareaField";
 import { SITE, SOCIAL } from "@/lib/constants";
+import type { ISettings, ISocialLink } from "@/shared/types";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -38,8 +39,8 @@ interface ContactMethod {
 }
 
 interface ContactProps {
-  settings?: any;
-  socialLinks?: any[];
+  settings?: Partial<ISettings>;
+  socialLinks?: ISocialLink[];
 }
 
 export function Contact({ settings, socialLinks = [] }: ContactProps) {
