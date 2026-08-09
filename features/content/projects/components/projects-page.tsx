@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,11 +12,11 @@ import { ProjectsTable } from "./projects-table";
 import { ProjectsGrid } from "./projects-grid";
 import { ProjectsPagination } from "./projects-pagination";
 import { ProjectsEmptyState } from "./projects-empty-state";
-import { ProjectFormDialog } from "./project-form-dialog";
 import { ProjectDeleteDialog } from "./project-delete-dialog";
-import type { Project, ProjectStatus } from "../types";
+import type { Project } from "../types";
 
 export function ProjectsPage() {
+  const router = useRouter();
   const {
     projects,
     filteredProjects,
@@ -48,8 +49,6 @@ export function ProjectsPage() {
     toggleSelectAll,
     toggleSelect,
     fetchProjects,
-    createProject,
-    updateProject,
     deleteProject,
     bulkDelete,
     toggleFeatured,
@@ -57,8 +56,6 @@ export function ProjectsPage() {
     duplicateProject,
   } = useProjects();
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [bulkDeleteTarget, setBulkDeleteTarget] = useState<string[] | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -76,20 +73,17 @@ export function ProjectsPage() {
   }, [sortKey]);
 
   const handleEdit = useCallback((project: Project) => {
-    setEditingProject(project);
-    setFormOpen(true);
-  }, []);
+    router.push(`/admin/projects/editor/${project.id}`);
+  }, [router]);
 
   const handleAddNew = useCallback(() => {
-    setEditingProject(null);
-    setFormOpen(true);
-  }, []);
+    router.push("/admin/projects/editor");
+  }, [router]);
 
   const handleDeleteClick = useCallback((id: string) => {
-    const project = projects.find((p) => p.id === id);
     setDeleteTarget(id);
     setBulkDeleteTarget(null);
-  }, [projects]);
+  }, []);
 
   const handleBulkDeleteClick = useCallback(() => {
     if (selected.length === 0) return;
@@ -113,14 +107,6 @@ export function ProjectsPage() {
       setDeleteLoading(false);
     }
   }, [bulkDeleteTarget, deleteTarget, bulkDelete, deleteProject]);
-
-  const handleFormSubmit = useCallback(async (data: Partial<Project>) => {
-    if (editingProject) {
-      await updateProject(editingProject.id, data);
-    } else {
-      await createProject(data);
-    }
-  }, [editingProject, updateProject, createProject]);
 
   const clearFilters = useCallback(() => {
     setSearch("");
@@ -293,15 +279,6 @@ export function ProjectsPage() {
           onPageSizeChange={(size) => { setPageSize(size); setPage(1); }}
         />
       )}
-
-      {/* Form Dialog */}
-      <ProjectFormDialog
-        open={formOpen}
-        onClose={() => { setFormOpen(false); setEditingProject(null); }}
-        onSubmit={handleFormSubmit}
-        project={editingProject}
-        categories={categories.map((c) => (typeof c === "string" ? c : c.name))}
-      />
 
       {/* Delete Confirmation */}
       <ProjectDeleteDialog
