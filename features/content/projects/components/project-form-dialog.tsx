@@ -1,148 +1,263 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Image as ImageIcon } from "lucide-react";
-import type { Project } from "../types";
-import { CATEGORIES } from "../constants";
+import { X, Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Project, ProjectStatus } from "../types";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: Partial<Project>) => Promise<void>;
   project?: Project | null;
+  categories: string[];
 }
 
 const emptyForm = {
-  title: "", description: "", category: "", tags: [] as string[],
-  techStack: [] as string[], status: "draft" as Project["status"],
-  priority: "medium" as Project["priority"],
-  demoUrl: "", repoUrl: "", client: "",
+  title: "",
+  description: "",
+  category: "",
+  status: "draft" as ProjectStatus,
+  techStack: [] as string[],
+  demoUrl: "",
+  repoUrl: "",
+  client: "",
+  featured: false,
 };
 
-export function ProjectFormDialog({ open, onClose, onSubmit, project }: Props) {
+export function ProjectFormDialog({ open, onClose, onSubmit, project, categories }: Props) {
   const isEditing = !!project;
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [techInput, setTechInput] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (open) {
-      setForm(project ? {
-        title: project.title,
-        description: project.description,
-        category: project.category,
-        tags: project.tags ?? [],
-        techStack: project.techStack ?? [],
-        status: project.status,
-        priority: project.priority,
-        demoUrl: project.demoUrl ?? "",
-        repoUrl: project.repoUrl ?? "",
-        client: project.client ?? "",
-      } : emptyForm);
+      if (project) {
+        setForm({
+          title: project.title,
+          description: project.description,
+          category: project.category || "",
+          status: project.status,
+          techStack: [...(project.techStack || [])],
+          demoUrl: project.demoUrl || "",
+          repoUrl: project.repoUrl || "",
+          client: project.client || "",
+          featured: project.featured,
+        });
+      } else {
+        setForm(emptyForm);
+      }
       setTechInput("");
+      setErrors({});
     }
   }, [open, project]);
 
-  const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((prev) => ({ ...prev, [k]: v }));
+  const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
+    setForm((prev) => ({ ...prev, [k]: v }));
 
   const addTech = () => {
     const t = techInput.trim();
-    if (t && !form.techStack.includes(t)) { update("techStack", [...form.techStack, t]); setTechInput(""); }
+    if (t && !form.techStack.includes(t)) {
+      update("techStack", [...form.techStack, t]);
+      setTechInput("");
+    }
+  };
+
+  const removeTech = (tech: string) => {
+    update("techStack", form.techStack.filter((t) => t !== tech));
+  };
+
+  const validate = (): boolean => {
+    const errs: Record<string, string> = {};
+    if (!form.title.trim()) errs.title = "Title is required";
+    if (!form.description.trim()) errs.description = "Description is required";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.description) return;
+    if (!validate()) return;
     setSubmitting(true);
     try {
-      await onSubmit({ ...form, slug: form.title.toLowerCase().replace(/\s+/g, "-"), updatedAt: new Date().toISOString() });
-      setForm(emptyForm);
+      await onSubmit({
+        ...form,
+        slug: form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+      });
       onClose();
+    } catch {
+      setErrors({ submit: "Failed to save project" });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl border border-border-primary bg-surface-primary shadow-xl">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-primary bg-surface-primary px-6 py-4">
-              <h2 className="text-lg font-semibold text-text-primary">{isEditing ? "Edit Project" : "New Project"}</h2>
-              <button onClick={onClose} className="rounded-lg p-1.5 text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"><X size={18} /></button>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-[560px] max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-[16px]">{isEditing ? "Edit Project" : "New Project"}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium text-text-secondary">Title *</label>
+            <Input
+              value={form.title}
+              onChange={(e) => update("title", e.target.value)}
+              placeholder="Project name"
+              className="h-8 text-[13px]"
+            />
+            {errors.title && <p className="text-[11px] text-red-500">{errors.title}</p>}
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium text-text-secondary">Description *</label>
+            <textarea
+              value={form.description}
+              onChange={(e) => update("description", e.target.value)}
+              rows={3}
+              placeholder="Brief project description"
+              className="w-full rounded-md border border-border-subtle bg-background px-3 py-2 text-[13px] text-text-primary outline-none focus:ring-1 focus:ring-accent/30 resize-y"
+            />
+            {errors.description && <p className="text-[11px] text-red-500">{errors.description}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">Category</label>
+              <Input
+                value={form.category}
+                onChange={(e) => update("category", e.target.value)}
+                placeholder="e.g. Web App"
+                className="h-8 text-[13px]"
+                list="category-suggestions"
+              />
+              {categories.length > 0 && (
+                <datalist id="category-suggestions">
+                  {categories.map((c) => <option key={c} value={c} />)}
+                </datalist>
+              )}
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5 sm:col-span-2"><label className="text-xs font-medium text-text-secondary">Title *</label>
-                  <input type="text" value={form.title} onChange={(e) => update("title", e.target.value)} placeholder="Project name" required
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" /></div>
-                <div className="space-y-1.5 sm:col-span-2"><label className="text-xs font-medium text-text-secondary">Description *</label>
-                  <textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={3} placeholder="Brief project description" required
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent resize-y" /></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Category</label>
-                  <select value={form.category} onChange={(e) => update("category", e.target.value)}
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent">
-                    <option value="">Select category</option>
-                    {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Priority</label>
-                  <select value={form.priority} onChange={(e) => update("priority", e.target.value as Project["priority"])}
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent">
-                    {["low", "medium", "high", "critical"].map((p) => <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
-                  </select></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Status</label>
-                  <select value={form.status} onChange={(e) => update("status", e.target.value as Project["status"])}
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent">
-                    {["draft", "in-progress", "review", "published", "archived"].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                  </select></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Client</label>
-                  <input type="text" value={form.client} onChange={(e) => update("client", e.target.value)} placeholder="Client name (optional)"
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" /></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Demo URL</label>
-                  <input type="url" value={form.demoUrl} onChange={(e) => update("demoUrl", e.target.value)} placeholder="https://"
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" /></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Repository URL</label>
-                  <input type="url" value={form.repoUrl} onChange={(e) => update("repoUrl", e.target.value)} placeholder="https://"
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" /></div>
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">Status</label>
+              <Select value={form.status} onValueChange={(v) => update("status", v as ProjectStatus)}>
+                <SelectTrigger className="h-8 text-[13px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft" className="text-[13px]">Draft</SelectItem>
+                  <SelectItem value="in-progress" className="text-[13px]">In Progress</SelectItem>
+                  <SelectItem value="review" className="text-[13px]">Review</SelectItem>
+                  <SelectItem value="published" className="text-[13px]">Published</SelectItem>
+                  <SelectItem value="archived" className="text-[13px]">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-              <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Tech Stack</label>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {form.techStack.map((t) => (
-                    <span key={t} className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2 py-0.5 text-xs text-accent">
-                      {t}
-                      <button type="button" onClick={() => update("techStack", form.techStack.filter((s) => s !== t))} className="hover:text-error transition-colors"><X size={10} /></button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <input type="text" value={techInput} onChange={(e) => setTechInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTech(); } }}
-                    placeholder="Add technology..." className="flex-1 rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" />
-                  <button type="button" onClick={addTech} className="rounded-lg bg-accent px-3 py-2 text-white text-sm hover:bg-accent-hover"><Plus size={14} /></button>
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">Demo URL</label>
+              <Input
+                value={form.demoUrl}
+                onChange={(e) => update("demoUrl", e.target.value)}
+                placeholder="https://"
+                className="h-8 text-[13px]"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">Repository URL</label>
+              <Input
+                value={form.repoUrl}
+                onChange={(e) => update("repoUrl", e.target.value)}
+                placeholder="https://"
+                className="h-8 text-[13px]"
+              />
+            </div>
+          </div>
 
-              <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-border-primary bg-surface-secondary p-8 text-text-tertiary hover:border-border-hover transition-colors cursor-pointer">
-                <div className="text-center"><ImageIcon size={32} className="mx-auto mb-2 opacity-50" /><p className="text-sm">Upload Cover Image</p><p className="text-xs">Drag & drop or click to browse</p></div>
-              </div>
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium text-text-secondary">Client</label>
+            <Input
+              value={form.client}
+              onChange={(e) => update("client", e.target.value)}
+              placeholder="Client name (optional)"
+              className="h-8 text-[13px]"
+            />
+          </div>
 
-              <div className="flex items-center gap-3 pt-2">
-                <button type="button" onClick={onClose} className="flex-1 rounded-lg border border-border-primary px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-hover transition-colors">Cancel</button>
-                <button type="submit" disabled={submitting || !form.title || !form.description}
-                  className="flex-1 rounded-lg bg-accent px-4 py-2.5 text-sm text-white hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  {submitting ? (isEditing ? "Updating..." : "Creating...") : (isEditing ? "Update Project" : "Create Project")}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium text-text-secondary">Technologies</label>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {form.techStack.map((t) => (
+                <span
+                  key={t}
+                  className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2 py-0.5 text-[11px] text-accent"
+                >
+                  {t}
+                  <button
+                    type="button"
+                    onClick={() => removeTech(t)}
+                    className="hover:text-red-500 transition-colors"
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              <Input
+                value={techInput}
+                onChange={(e) => setTechInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTech();
+                  }
+                }}
+                placeholder="Add technology..."
+                className="h-8 text-[13px] flex-1"
+              />
+              <Button type="button" variant="outline" size="icon" onClick={addTech} className="h-8 w-8 shrink-0">
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="featured"
+              checked={form.featured}
+              onChange={(e) => update("featured", e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-border-subtle"
+            />
+            <label htmlFor="featured" className="text-[12px] font-medium text-text-secondary">Featured project</label>
+          </div>
+
+          {errors.submit && <p className="text-[11px] text-red-500">{errors.submit}</p>}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose} className="h-8 text-[13px]">
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting} className="h-8 text-[13px]">
+              {submitting ? "Saving..." : isEditing ? "Update" : "Create"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
