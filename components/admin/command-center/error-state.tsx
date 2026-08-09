@@ -17,18 +17,18 @@ export function ErrorState({
   className,
 }: ErrorStateProps) {
   return (
-    <div className={cn("flex flex-col items-center justify-center py-12 text-center", className)}>
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500/10 border border-red-500/20 mb-4">
-        <AlertTriangle className="h-6 w-6 text-red-500" />
+    <div className={cn("flex flex-col items-center justify-center py-10 text-center", className)}>
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-error/10 mb-3">
+        <AlertTriangle className="h-5 w-5 text-error" />
       </div>
-      <p className="text-sm font-semibold text-text-primary">{title}</p>
-      <p className="text-xs text-text-tertiary mt-1 max-w-[220px]">{description}</p>
+      <p className="text-[13px] font-medium text-text-primary">{title}</p>
+      <p className="text-[12px] text-text-tertiary mt-0.5 max-w-[220px]">{description}</p>
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent/80 transition-colors"
+          className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium text-accent hover:text-accent/80 transition-colors"
         >
-          <RefreshCw className="h-3.5 w-3.5" />
+          <RefreshCw className="h-3 w-3" />
           Try again
         </button>
       )}

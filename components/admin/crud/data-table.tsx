@@ -59,7 +59,6 @@ export function DataTable({
 
   const visibleFields = fields.filter(f => columnVisibility[f.key] !== false && f.showInTable !== false);
   const allSelected = data.length > 0 && selected.length === data.length;
-  const someSelected = selected.length > 0 && selected.length < data.length;
 
   const toggleAll = () => {
     onSelectionChange(allSelected ? [] : data.map(r => getId(r)));
@@ -73,18 +72,18 @@ export function DataTable({
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="p-3 rounded-full bg-error/10">
-          <EyeOff className="h-6 w-6 text-error" />
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-error/10">
+          <EyeOff className="h-5 w-5 text-error" />
         </div>
-        <p className="text-text-secondary text-sm font-medium">Failed to load data</p>
-        <p className="text-text-tertiary text-xs">{error}</p>
+        <p className="text-text-secondary text-[13px] font-medium">Failed to load data</p>
+        <p className="text-text-tertiary text-[12px]">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <DataTableToolbar
         search={search} onSearchChange={onSearchChange}
         searchFocused={searchFocused} onSearchFocus={setSearchFocused}
@@ -97,31 +96,31 @@ export function DataTable({
         <DataTableBulkActions selected={selected} onSelectionChange={onSelectionChange} onBulkAction={onBulkAction} features={features} bulkActions={bulkActions} />
       )}
 
-      <div className="rounded-xl border border-border-subtle overflow-hidden bg-surface">
+      <div className="rounded-lg border border-border-subtle overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-background/50">
-                <TableHead className="w-10 px-3">
+              <TableRow className="border-b border-border-subtle bg-surface/50 hover:bg-surface/50">
+                <TableHead className="w-9 px-3">
                   <Checkbox checked={allSelected} onCheckedChange={toggleAll} aria-label="Select all" />
                 </TableHead>
                 {visibleFields.map((field) => (
                   <TableHead
                     key={field.key}
                     className={cn(
-                      "text-xs font-semibold text-text-tertiary uppercase tracking-wider",
+                      "text-[11px] font-medium text-text-tertiary uppercase tracking-wider h-9",
                       field.sortable && "cursor-pointer select-none hover:text-text-primary",
                     )}
                     style={field.width ? { width: field.width } : undefined}
                     onClick={() => field.sortable && onSort(field.key)}
                   >
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                       {field.label}
                       {features.sorting && field.sortable !== false && <SortIcon field={field} sortKey={sortKey} sortDir={sortDir} />}
                     </div>
                   </TableHead>
                 ))}
-                <TableHead className="w-16 text-right text-xs font-semibold text-text-tertiary uppercase tracking-wider">
+                <TableHead className="w-12 text-right text-[11px] font-medium text-text-tertiary uppercase tracking-wider h-9">
                   Actions
                 </TableHead>
               </TableRow>
@@ -129,21 +128,21 @@ export function DataTable({
             <TableBody>
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="px-3"><Skeleton className="h-4 w-4" /></TableCell>
+                  <TableRow key={i} className="border-b border-border-subtle">
+                    <TableCell className="px-3"><Skeleton className="h-3.5 w-3.5" /></TableCell>
                     {visibleFields.map((f) => (
-                      <TableCell key={f.key}><Skeleton className="h-4 w-full" /></TableCell>
+                      <TableCell key={f.key}><Skeleton className="h-3.5 w-full" /></TableCell>
                     ))}
-                    <TableCell><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-3.5 w-12 ml-auto" /></TableCell>
                   </TableRow>
                 ))
               ) : data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={visibleFields.length + 2} className="h-60 text-center">
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      {emptyIcon || <Search className="h-8 w-8 text-text-tertiary/30" />}
-                      <p className="text-sm font-medium text-text-secondary">{emptyMessage || "No data found"}</p>
-                      <p className="text-xs text-text-tertiary">Try adjusting your search or filters</p>
+                  <TableCell colSpan={visibleFields.length + 2} className="h-48 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      {emptyIcon || <Search className="h-7 w-7 text-text-tertiary/30" />}
+                      <p className="text-[13px] font-medium text-text-secondary">{emptyMessage || "No data found"}</p>
+                      <p className="text-[12px] text-text-tertiary">Try adjusting your search or filters</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -153,18 +152,21 @@ export function DataTable({
                   return (
                     <TableRow
                       key={id}
-                      className={cn("group", onRowClick && "cursor-pointer hover:bg-surface-hover")}
+                      className={cn(
+                        "group border-b border-border-subtle last:border-0",
+                        onRowClick && "cursor-pointer hover:bg-surface/50",
+                      )}
                       onClick={() => onRowClick?.(row)}
                     >
                       <TableCell className="px-3" onClick={(e) => e.stopPropagation()}>
                         <Checkbox checked={selected.includes(id)} onCheckedChange={() => toggleOne(id)} aria-label="Select row" />
                       </TableCell>
                       {visibleFields.map((field) => (
-                        <TableCell key={field.key} className="text-sm text-text-primary">
+                        <TableCell key={field.key} className="text-[13px] text-text-primary py-2.5">
                           {renderCell(field, row)}
                         </TableCell>
                       ))}
-                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="text-right py-2.5" onClick={(e) => e.stopPropagation()}>
                         {renderActions?.(row)}
                       </TableCell>
                     </TableRow>

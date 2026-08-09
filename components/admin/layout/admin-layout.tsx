@@ -20,11 +20,11 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
       <main
         className={cn(
-          "pt-14 min-h-screen transition-all duration-300",
-          collapsed ? "pl-[68px]" : "pl-60",
+          "pt-12 min-h-screen transition-all duration-200",
+          collapsed ? "pl-[60px]" : "pl-[240px]",
         )}
       >
-        <div className="p-6 md:p-8 max-w-7xl mx-auto">
+        <div className="p-5 md:p-6 max-w-[1400px] mx-auto">
           {children}
         </div>
       </main>

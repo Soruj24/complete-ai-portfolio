@@ -19,7 +19,7 @@ export function FormFieldRenderer({ field, value, onChange, error, loading }: {
     id: field.key,
     placeholder: field.placeholder,
     disabled: field.disabled || loading,
-    className: cn("border-border-subtle bg-surface rounded-lg", error && "border-error", field.type === "textarea" ? "min-h-[80px]" : "h-9"),
+    className: cn("border-border-subtle bg-surface rounded-md text-[13px]", error && "border-error", field.type === "textarea" ? "min-h-[80px]" : "h-8"),
     ...field.inputProps,
   };
 
@@ -38,12 +38,12 @@ export function FormFieldRenderer({ field, value, onChange, error, loading }: {
     case "select":
       return (
         <Select value={String(val)} onValueChange={(v) => onChange(field.key, v)} disabled={field.disabled || loading}>
-          <SelectTrigger className={cn("h-9 border-border-subtle bg-surface rounded-lg", error && "border-error")}>
+          <SelectTrigger className={cn("h-8 text-[13px] border-border-subtle bg-surface rounded-md", error && "border-error")}>
             <SelectValue placeholder={field.placeholder || `Select ${field.label}`} />
           </SelectTrigger>
           <SelectContent>
             {field.options?.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              <SelectItem key={opt.value} value={opt.value} className="text-[13px]">{opt.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -64,9 +64,9 @@ export function FormFieldRenderer({ field, value, onChange, error, loading }: {
       return (
         <div className="flex items-center gap-2">
           <Input type="color" value={String(val ?? "#000000")} onChange={(e) => onChange(field.key, e.target.value)}
-            className="w-10 h-9 p-0.5 border-border-subtle rounded-lg cursor-pointer" />
+            className="w-8 h-8 p-0.5 border-border-subtle rounded-md cursor-pointer" />
           <Input value={String(val)} onChange={(e) => onChange(field.key, e.target.value)}
-            className="flex-1 h-9 border-border-subtle bg-surface rounded-lg" />
+            className="flex-1 h-8 text-[13px] border-border-subtle bg-surface rounded-md" />
         </div>
       );
     default:

@@ -40,16 +40,16 @@ export function ResourcePage({ config }: ResourcePageProps) {
   useEffect(() => { fetchData(endpoint); }, [endpoint, fetchData]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">{config.name}</h1>
-          <p className="text-sm text-text-secondary mt-1">{config.description}</p>
+          <h1 className="text-[18px] font-semibold text-text-primary tracking-[-0.02em]">{config.name}</h1>
+          <p className="text-[13px] text-text-tertiary mt-0.5">{config.description}</p>
         </div>
         {features.create && (
-          <Button onClick={() => openCreate()} className="gap-1.5 rounded-lg bg-accent hover:bg-accent/90 text-xs h-9">
-            <Plus className="h-4 w-4" />
+          <Button onClick={() => openCreate()} className="gap-1.5 rounded-md bg-accent hover:bg-accent/90 text-[12px] h-8">
+            <Plus className="h-3.5 w-3.5" />
             New {config.nameSingular}
           </Button>
         )}
@@ -58,9 +58,9 @@ export function ResourcePage({ config }: ResourcePageProps) {
       {/* Tabs */}
       {config.tabs && (
         <Tabs defaultValue={config.tabs[0].value}>
-          <TabsList className="bg-surface-hover p-0.5 rounded-lg">
+          <TabsList className="bg-surface p-0.5 rounded-md">
             {config.tabs.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value} className="rounded-md text-xs data-[state=active]:bg-surface data-[state=active]:shadow-sm">
+              <TabsTrigger key={tab.value} value={tab.value} className="rounded text-[12px] data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 {tab.label}
               </TabsTrigger>
             ))}
@@ -97,34 +97,34 @@ export function ResourcePage({ config }: ResourcePageProps) {
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" className="h-7 w-7 p-0 rounded-md opacity-0 group-hover:opacity-100">
+                <Button variant="ghost" className="h-6 w-6 p-0 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                   <MoreHorizontal className="h-3.5 w-3.5 text-text-tertiary" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36 p-1">
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(row); }} className="rounded-md gap-2 text-xs py-1.5">
+              <DropdownMenuContent align="end" className="w-32 p-1">
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(row); }} className="rounded gap-2 text-[12px] py-1.5 cursor-pointer">
                   <Pencil className="h-3 w-3" /> Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }} className="rounded-md gap-2 text-xs py-1.5">
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }} className="rounded gap-2 text-[12px] py-1.5 cursor-pointer">
                   <Eye className="h-3 w-3" /> View
                 </DropdownMenuItem>
                 {features.archive && row.status === "published" && (
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }} className="rounded-md gap-2 text-xs py-1.5 text-warning">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }} className="rounded gap-2 text-[12px] py-1.5 text-warning cursor-pointer">
                     <Archive className="h-3 w-3" /> Archive
                   </DropdownMenuItem>
                 )}
                 {features.restore && row.status === "archived" && (
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }} className="rounded-md gap-2 text-xs py-1.5 text-success">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }} className="rounded gap-2 text-[12px] py-1.5 text-success cursor-pointer">
                     <RotateCcw className="h-3 w-3" /> Restore
                   </DropdownMenuItem>
                 )}
                 {features.history && (
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }} className="rounded-md gap-2 text-xs py-1.5">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); }} className="rounded gap-2 text-[12px] py-1.5 cursor-pointer">
                     <History className="h-3 w-3" /> History
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(endpoint, id); }} className="rounded-md gap-2 text-xs py-1.5 text-error">
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(endpoint, id); }} className="rounded gap-2 text-[12px] py-1.5 text-error cursor-pointer">
                   <Trash2 className="h-3 w-3" /> Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>

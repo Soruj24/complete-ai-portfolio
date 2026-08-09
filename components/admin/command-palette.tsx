@@ -16,7 +16,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { setCommandPaletteOpen } from "@/lib/store/slices/ui-slice";
 import {
   LayoutDashboard, FolderKanban, Code2, Briefcase, BookOpen, Image,
-  Users, Settings, Home, Moon, Sun, Keyboard, Mail, FileText, Sparkles,
+  Users, Settings, Home, Moon, Sun, Mail, FileText, Sparkles,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -65,29 +65,29 @@ export function CommandPalette() {
 
   return (
     <CommandDialog open={open} onOpenChange={(v) => dispatch(setCommandPaletteOpen(v))}>
-      <CommandInput placeholder="Search pages, actions, or settings..." />
+      <CommandInput placeholder="Search pages, actions, or settings..." className="text-[13px]" />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Navigate">
+        <CommandEmpty className="text-[13px]">No results found.</CommandEmpty>
+        <CommandGroup heading="Navigate" className="text-[12px]">
           {pages.map((page) => (
-            <CommandItem key={page.href} onSelect={() => handleSelect(page)}>
-              <page.icon className="mr-2 h-4 w-4" />
+            <CommandItem key={page.href} onSelect={() => handleSelect(page)} className="text-[13px]">
+              <page.icon className="mr-2 h-3.5 w-3.5" />
               <span>{page.label}</span>
-              <CommandShortcut>{page.shortcut}</CommandShortcut>
+              <CommandShortcut className="text-[10px]">{page.shortcut}</CommandShortcut>
             </CommandItem>
           ))}
         </CommandGroup>
         <CommandSeparator />
-        <CommandGroup heading="Actions">
-          <CommandItem onSelect={() => handleSelect({ label: "Toggle Theme", icon: Sun, action: "theme", shortcut: "T T" })}>
-            {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+        <CommandGroup heading="Actions" className="text-[12px]">
+          <CommandItem onSelect={() => handleSelect({ label: "Toggle Theme", icon: Sun, action: "theme", shortcut: "T T" })} className="text-[13px]">
+            {theme === "dark" ? <Sun className="mr-2 h-3.5 w-3.5" /> : <Moon className="mr-2 h-3.5 w-3.5" />}
             <span>Toggle Theme</span>
-            <CommandShortcut>T T</CommandShortcut>
+            <CommandShortcut className="text-[10px]">T T</CommandShortcut>
           </CommandItem>
-          <CommandItem onSelect={() => router.push("/admin/ai/settings")}>
-            <Sparkles className="mr-2 h-4 w-4" />
+          <CommandItem onSelect={() => router.push("/admin/ai/settings")} className="text-[13px]">
+            <Sparkles className="mr-2 h-3.5 w-3.5" />
             <span>AI Assistant</span>
-            <CommandShortcut>G A</CommandShortcut>
+            <CommandShortcut className="text-[10px]">G A</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>

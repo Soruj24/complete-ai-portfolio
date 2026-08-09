@@ -24,12 +24,12 @@ export function AnalyticsPage() {
   }, [isRealtime]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Analytics</h1>
-          <p className="text-sm text-text-secondary mt-1 flex items-center gap-2">
+          <h1 className="text-[18px] font-semibold text-text-primary tracking-[-0.02em]">Analytics</h1>
+          <p className="text-[13px] text-text-tertiary mt-0.5 flex items-center gap-2">
             Comprehensive visitor analytics and engagement metrics
             {isRealtime && (
               <span className="flex items-center gap-1 text-[10px] text-success font-medium">
@@ -39,17 +39,17 @@ export function AnalyticsPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <Select value={dateRange} onValueChange={setDateRange}>
-            <SelectTrigger className="w-28 h-9 border-border-subtle bg-surface rounded-xl text-xs">
+            <SelectTrigger className="w-28 h-8 border-border-subtle bg-surface rounded-md text-[12px]">
               <CalendarRange className="h-3 w-3 mr-1" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="24h">Last 24h</SelectItem>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="90d">Last 90 days</SelectItem>
+              <SelectItem value="24h" className="text-[13px]">Last 24h</SelectItem>
+              <SelectItem value="7d" className="text-[13px]">Last 7 days</SelectItem>
+              <SelectItem value="30d" className="text-[13px]">Last 30 days</SelectItem>
+              <SelectItem value="90d" className="text-[13px]">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
 
@@ -57,13 +57,13 @@ export function AnalyticsPage() {
             variant="outline"
             size="sm"
             onClick={() => setIsRealtime(!isRealtime)}
-            className={cn("h-9 rounded-xl border-border-subtle text-xs gap-1.5", isRealtime && "bg-success/10 border-success/30 text-success")}
+            className={cn("h-8 rounded-md border-border-subtle text-[12px] gap-1.5", isRealtime && "bg-success/10 border-success/30 text-success")}
           >
             {isRealtime ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
             {isRealtime ? "Live" : "Paused"}
           </Button>
 
-          <Button variant="outline" size="sm" className="h-9 rounded-xl border-border-subtle text-xs gap-1.5">
+          <Button variant="outline" size="sm" className="h-8 rounded-md border-border-subtle text-[12px] gap-1.5">
             <Download className="h-3.5 w-3.5" /> Export
           </Button>
         </div>
@@ -75,7 +75,7 @@ export function AnalyticsPage() {
           <RefreshCw className={cn("h-3 w-3", isRealtime && "animate-spin")} />
           Last updated: {lastUpdated.toLocaleTimeString()}
         </div>
-        <Badge variant="outline" className="text-[8px] px-1.5 py-0 rounded-full border-border-subtle text-text-tertiary">
+        <Badge variant="outline" className="text-[8px] px-1.5 py-0 rounded border-border-subtle text-text-tertiary">
           Auto-refresh every 5s
         </Badge>
       </div>

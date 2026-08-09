@@ -16,14 +16,14 @@ interface ActivityTimelineProps {
 
 export function ActivityTimeline({ items, loading, error, onRetry }: ActivityTimelineProps) {
   return (
-    <div className="rounded-xl border border-border-subtle bg-surface">
-      <div className="flex items-center gap-2 px-5 py-4 border-b border-border-subtle">
-        <Clock className="h-4 w-4 text-text-tertiary" />
-        <h2 className="text-sm font-semibold text-text-primary">Recent Activity</h2>
+    <div className="rounded-lg border border-border-subtle bg-surface">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle">
+        <Clock className="h-3.5 w-3.5 text-text-tertiary" />
+        <h2 className="text-[13px] font-medium text-text-primary">Recent Activity</h2>
       </div>
-      <div className="px-2 py-1">
+      <div className="px-1 py-1">
         {error ? (
-          <ErrorState onRetry={onRetry} className="py-8" />
+          <ErrorState onRetry={onRetry} className="py-6" />
         ) : loading ? (
           Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} variant="timeline" />)
         ) : !items || items.length === 0 ? (
@@ -31,7 +31,7 @@ export function ActivityTimeline({ items, loading, error, onRetry }: ActivityTim
             title="No recent activity"
             description="Activity will appear here as you make changes."
             icon={Clock}
-            className="py-10"
+            className="py-8"
           />
         ) : (
           items.map((item) => (

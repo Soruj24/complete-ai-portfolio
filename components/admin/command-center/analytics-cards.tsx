@@ -28,10 +28,10 @@ export function AnalyticsCards({ stats, loading, error, onRetry }: AnalyticsCard
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-text-primary">Portfolio Analytics</h2>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-[13px] font-medium text-text-primary">Portfolio Analytics</h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
         {loading
           ? statConfigs.map((_, i) => <SkeletonCard key={i} />)
           : statConfigs.map((cfg, i) => (

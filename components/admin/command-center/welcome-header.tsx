@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 interface WelcomeHeaderProps {
   name: string;
   unscheduledItems?: number;
@@ -28,24 +26,16 @@ export function WelcomeHeader({ name, unscheduledItems = 0 }: WelcomeHeaderProps
   const date = getCurrentDate();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="relative overflow-hidden rounded-2xl border border-border-subtle bg-gradient-to-br from-accent/5 via-surface to-surface p-6"
-    >
-      <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      <div className="relative z-10">
-        <p className="text-xs font-medium text-accent uppercase tracking-wider">{greeting}</p>
-        <h1 className="text-2xl font-bold text-text-primary mt-1">{name}</h1>
-        <p className="text-sm text-text-tertiary mt-1">{date}</p>
-        {unscheduledItems > 0 && (
-          <p className="text-xs text-amber-500 mt-3 inline-flex items-center gap-1.5 bg-amber-500/10 rounded-full px-3 py-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-            {unscheduledItems} unscheduled {unscheduledItems === 1 ? "item" : "items"} need attention
-          </p>
-        )}
-      </div>
-    </motion.div>
+    <div>
+      <p className="text-[12px] font-medium text-text-tertiary">{greeting}</p>
+      <h1 className="text-[20px] font-semibold text-text-primary tracking-[-0.02em] mt-0.5">{name}</h1>
+      <p className="text-[12px] text-text-tertiary mt-0.5">{date}</p>
+      {unscheduledItems > 0 && (
+        <p className="text-[11px] text-amber-500 mt-2 inline-flex items-center gap-1.5 bg-amber-500/10 rounded px-2 py-0.5 font-medium">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+          {unscheduledItems} unscheduled {unscheduledItems === 1 ? "item" : "items"} need attention
+        </p>
+      )}
+    </div>
   );
 }

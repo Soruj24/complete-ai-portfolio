@@ -57,73 +57,79 @@ export function AdminTopbar() {
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 z-30 flex h-14 items-center gap-4 border-b border-border-subtle bg-background/80 backdrop-blur-xl px-4 transition-all duration-300",
-        collapsed ? "left-[68px]" : "left-60",
+        "fixed top-0 right-0 z-30 flex h-12 items-center gap-3 border-b border-border-subtle bg-background/80 backdrop-blur-xl px-4 transition-all duration-200",
+        collapsed ? "left-[60px]" : "left-[240px]",
       )}
     >
+      {/* Mobile menu toggle */}
       <button
         onClick={() => dispatch(toggleSidebar())}
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors lg:hidden"
+        className="flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors lg:hidden"
       >
         <Menu className="h-4 w-4" />
       </button>
 
+      {/* Spacer */}
       <div className="flex-1" />
 
+      {/* Search trigger */}
       <button
         onClick={() => dispatch(toggleCommandPalette())}
-        className="hidden sm:flex items-center gap-2 h-8 px-3 rounded-lg border border-border-subtle text-xs text-text-tertiary hover:text-text-primary hover:border-border transition-colors"
+        className="hidden sm:flex items-center gap-2 h-7 px-2.5 rounded-md border border-border-subtle text-[12px] text-text-tertiary hover:text-text-primary hover:border-border transition-colors"
       >
         <Search className="h-3.5 w-3.5" />
         <span>Search...</span>
-        <kbd className="hidden md:inline-flex items-center gap-0.5 ml-4 text-[10px] text-text-tertiary bg-surface px-1.5 py-0.5 rounded">
+        <kbd className="hidden md:inline-flex items-center gap-0.5 ml-3 text-[10px] text-text-tertiary bg-surface px-1 py-0.5 rounded">
           <Command className="h-2.5 w-2.5" />K
         </kbd>
       </button>
 
+      {/* Notifications */}
       <button
         onClick={() => dispatch(setNotificationsOpen(true))}
-        className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors"
+        className="relative flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors"
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[14px] flex items-center justify-center rounded-full bg-error text-[9px] font-semibold text-white px-1">
+          <span className="absolute -top-0.5 -right-0.5 h-3.5 min-w-[14px] flex items-center justify-center rounded-full bg-error text-[8px] font-bold text-white px-1">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
 
+      {/* Theme toggle */}
       <ModeToggle />
 
+      {/* User menu */}
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
-          <Avatar className="h-8 w-8 cursor-pointer ring-1 ring-border-subtle hover:ring-accent/30 transition-all">
+          <Avatar className="h-7 w-7 cursor-pointer ring-1 ring-border-subtle hover:ring-accent/30 transition-all">
             <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || "admin"}`} />
-            <AvatarFallback className="text-xs bg-accent/10 text-accent">
+            <AvatarFallback className="text-[10px] bg-accent/10 text-accent">
               {user?.name?.charAt(0)?.toUpperCase() || "A"}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 mt-1.5">
+        <DropdownMenuContent align="end" className="w-52 mt-1.5">
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col gap-0.5">
-              <p className="text-sm font-medium">{user?.name || "Admin"}</p>
-              <p className="text-xs text-text-tertiary">{user?.email}</p>
+              <p className="text-[13px] font-medium">{user?.name || "Admin"}</p>
+              <p className="text-[11px] text-text-tertiary">{user?.email}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/admin/profile" className="cursor-pointer">Profile</Link>
+            <Link href="/admin/profile" className="cursor-pointer text-[13px]">Profile</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/admin/settings/general" className="cursor-pointer">Settings</Link>
+            <Link href="/admin/settings/general" className="cursor-pointer text-[13px]">Settings</Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={handleLogout}
-            className="text-error focus:text-error cursor-pointer"
+            className="text-error focus:text-error cursor-pointer text-[13px]"
           >
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="mr-2 h-3.5 w-3.5" />
             Sign out
           </DropdownMenuItem>
         </DropdownMenuContent>
