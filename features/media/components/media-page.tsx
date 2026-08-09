@@ -1,136 +1,145 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
+import { useState } from "react";
+import { Search, Upload, RefreshCw, Image, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useMedia } from "../hooks/use-media";
 import { MediaGrid } from "./media-grid";
-import { MediaSidebar } from "./media-sidebar";
-import { MediaPreview } from "./media-preview";
 import { MediaUploader } from "./media-uploader";
-import type { MediaItem, MediaFilterState, UploadFile, MediaType } from "../types";
-
-const defaultFilters: MediaFilterState = { folder: "all", type: "all", search: "", sort: "date", order: "desc", activeTags: [], activeCategories: [] };
+import { MediaPreview } from "./media-preview";
+import { FILE_TYPE_OPTIONS } from "../constants";
+import type { MediaItem, MediaType } from "../types";
+import { cn } from "@/lib/utils";
 
 export function MediaPage() {
-  const { data: response, isLoading, refetch } = useGetAdminResourceQuery({ resource: "media" });
-  const items: MediaItem[] = useMemo(() => (response?.data ?? []).map((d: Record<string, unknown>) => ({
-    id: String(d._id ?? d.id ?? ""),
-    name: String(d.name ?? d.filename ?? "Untitled"),
-    type: String(d.type ?? "image") as MediaType,
-    mime: String(d.mime ?? "application/octet-stream"),
-    size: Number(d.size ?? 0),
-    url: String(d.url ?? ""),
-    thumbnail: String(d.thumbnail ?? d.url ?? ""),
-    folder: String(d.folder ?? "all"),
-    tags: Array.isArray(d.tags) ? d.tags as string[] : [],
-    category: String(d.category ?? "general"),
-    favorite: Boolean(d.favorite),
-    createdAt: String(d.createdAt ?? ""),
-    modifiedAt: String(d.modifiedAt ?? d.updatedAt ?? ""),
-    version: Number(d.version ?? 1),
-    versions: Array.isArray(d.versions) ? d.versions as MediaItem["versions"] : [],
-  })), [response]);
+  const {
+    filteredItems,
+    loading,
+    error,
+    search,
+    typeFilter,
+    selected,
+    uploads,
+    isUploading,
+    setSearch,
+    setTypeFilter,
+    toggleSelect,
+    selectAll,
+    clearSelection,
+    deleteSelected,
+    deleteItem,
+    addFiles,
+    removeUpload,
+    clearCompleted,
+    copyUrl,
+    fetchItems,
+  } = useMedia();
 
-  const [filters, setFilters] = useState<MediaFilterState>(defaultFilters);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showUploader, setShowUploader] = useState(false);
   const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
-  const [uploads, setUploads] = useState<UploadFile[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-  const [dropzoneActive, setDropzoneActive] = useState(false);
 
-  const filtered = useMemo(() => items.filter((item) => {
-    if (filters.folder !== "all" && item.folder !== filters.folder) return false;
-    if (filters.type !== "all" && item.type !== filters.type) return false;
-    if (filters.search && !item.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
-    return true;
-  }), [items, filters]);
-
-  const toggleSelect = useCallback((id: string) => {
-    setSelected((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
-  }, []);
-
-  const selectAll = useCallback(() => {
-    setSelected((prev) => prev.size === filtered.length ? new Set() : new Set(filtered.map((i) => i.id)));
-  }, [filtered]);
-
-  const clearSelection = useCallback(() => setSelected(new Set()), []);
-
-  const toggleFavorite = useCallback((id: string) => {
-    fetch(`/api/admin/media/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ favorite: !items.find((i) => i.id === id)?.favorite }) });
-  }, [items]);
-
-  const deleteSelected = useCallback(() => {
-    for (const id of selected) { fetch(`/api/admin/media/${id}`, { method: "DELETE" }); }
-    setSelected(new Set());
-    refetch();
-  }, [selected, refetch]);
-
-  const totalProgress = uploads.length ? Math.round(uploads.reduce((s: number, u) => s + u.progress, 0) / uploads.length) : 0;
-
-  const addFiles = useCallback(async (files: FileList | File[]) => {
-    const fileArray = Array.from(files);
-    const pending: UploadFile[] = fileArray.map((file) => ({
-      id: crypto.randomUUID(), file, name: file.name, size: file.size, type: file.type, progress: 0, status: "pending" as const,
-    }));
-    setUploads((prev) => [...prev, ...pending]);
-    setIsUploading(true);
-    for (const item of pending) {
-      setUploads((prev) => prev.map((u) => u.id === item.id ? { ...u, progress: 50, status: "uploading" as const } : u));
-      await new Promise((r) => setTimeout(r, 500));
-      setUploads((prev) => prev.map((u) => u.id === item.id ? { ...u, progress: 100, status: "done" as const } : u));
-    }
-    setIsUploading(false);
-    refetch();
-  }, [refetch]);
-
-  const removeFile = useCallback((id: string) => { setUploads((prev) => prev.filter((u) => u.id !== id)); }, []);
-  const clearCompleted = useCallback(() => { setUploads((prev) => prev.filter((u) => u.status !== "done")); }, []);
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <AlertCircle className="h-10 w-10 text-red-500 mb-3" />
+        <p className="text-[13px] font-medium text-text-primary">Failed to load media</p>
+        <p className="text-[12px] text-text-tertiary mt-1">{error}</p>
+        <Button variant="outline" size="sm" onClick={fetchItems} className="mt-4 h-8 text-[13px]">
+          <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-full flex gap-0">
-      <MediaSidebar
-        currentFolder={filters.folder}
-        currentType={filters.type}
-        onFolderChange={(f: string) => setFilters((prev) => ({ ...prev, folder: f }))}
-        onTypeChange={(t: MediaType | "all") => setFilters((prev) => ({ ...prev, type: t }))}
-      />
-      <div className="flex-1 min-w-0 flex flex-col">
+    <div className="h-[calc(100vh-4rem)] flex flex-col">
+      <div className="shrink-0 p-4 pb-3 space-y-3 border-b border-border-subtle">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-semibold text-text-primary">Media Library</h1>
+            <p className="text-[12px] text-text-tertiary">Manage images and files for your portfolio</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={fetchItems} disabled={loading} className="h-8 text-[13px] gap-1.5">
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            </Button>
+            <Button size="sm" onClick={() => setShowUploader(true)} className="h-8 text-[13px] gap-1.5">
+              <Upload className="h-3.5 w-3.5" /> Upload
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-tertiary" />
+            <Input
+              placeholder="Search files..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 h-8 text-[13px] rounded-md border-border-subtle bg-surface"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-1 rounded-md border border-border-subtle bg-surface p-0.5">
+            {FILE_TYPE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setTypeFilter(opt.value as MediaType | "all")}
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1 rounded-sm text-[11px] font-medium transition-colors",
+                  typeFilter === opt.value
+                    ? "bg-accent text-accent-foreground"
+                    : "text-text-tertiary hover:text-text-primary"
+                )}
+              >
+                <opt.icon className="h-3 w-3" />
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 min-h-0 flex">
         <MediaGrid
-          items={filtered}
-          loading={isLoading}
-          error={null}
+          items={filteredItems}
+          loading={loading}
           selected={selected}
-          filters={filters}
+          search={search}
+          typeFilter={typeFilter}
           onToggleSelect={toggleSelect}
           onSelectAll={selectAll}
           onClearSelection={clearSelection}
           onDeleteSelected={deleteSelected}
-          onRefresh={refetch}
+          onRefresh={fetchItems}
           onPreview={setPreviewItem}
-          onFavorite={toggleFavorite}
-          onFiltersChange={(f: Partial<MediaFilterState>) => setFilters((prev) => ({ ...prev, ...f }))}
+          onSearchChange={setSearch}
+          onTypeFilterChange={setTypeFilter}
           onUploadClick={() => setShowUploader(true)}
         />
+
+        {previewItem && (
+          <MediaPreview
+            item={previewItem}
+            onClose={() => setPreviewItem(null)}
+            onCopyUrl={copyUrl}
+            onDelete={(id) => {
+              deleteItem(id);
+              setPreviewItem(null);
+            }}
+          />
+        )}
       </div>
+
       {showUploader && (
         <MediaUploader
           uploads={uploads}
           isUploading={isUploading}
-          dropzoneActive={dropzoneActive}
-          totalProgress={totalProgress}
           onAddFiles={addFiles}
-          onRemoveFile={removeFile}
+          onRemoveFile={removeUpload}
           onClearCompleted={clearCompleted}
-          onDropzoneActive={setDropzoneActive}
           onClose={() => setShowUploader(false)}
-        />
-      )}
-      {previewItem && (
-        <MediaPreview
-          item={previewItem}
-          onClose={() => setPreviewItem(null)}
-          onFavorite={() => toggleFavorite(previewItem.id)}
-          onDelete={() => { deleteSelected(); setPreviewItem(null); }}
         />
       )}
     </div>

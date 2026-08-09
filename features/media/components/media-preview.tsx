@@ -1,126 +1,146 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/shared/utils";
-import { Badge } from "@/components/ui/badge";
+import { X, Copy, Trash2, ExternalLink, Image, FileText, Music, Video, Shapes, File, Calendar, HardDrive, Maximize } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { X, Star, StarOff, Trash2, Download, Copy, Check, Image, FileText, Music, Video, Clock, Layers, Info } from "lucide-react";
-import { TYPE_COLORS } from "../constants";
 import { formatSize } from "../utils";
-import { PREVIEW_PANEL_ANIMATION } from "../animations/media-animations";
-import type { MediaItem } from "../types";
+import type { MediaItem, MediaType } from "../types";
 
-export function MediaPreview({ item, onClose, onFavorite, onDelete }: {
-  item: MediaItem; onClose: () => void; onFavorite: () => void; onDelete: () => void;
-}) {
-  const [tab, setTab] = useState("details");
-  const Icon = tab === "versions" ? Layers : Info;
+const TYPE_ICONS: Record<MediaType, React.ElementType> = {
+  image: Image,
+  video: Video,
+  pdf: FileText,
+  document: FileText,
+  icon: Shapes,
+  svg: Shapes,
+  audio: Music,
+};
+
+interface MediaPreviewProps {
+  item: MediaItem;
+  onClose: () => void;
+  onCopyUrl: (url: string) => void;
+  onDelete: (id: string) => void;
+}
+
+export function MediaPreview({ item, onClose, onCopyUrl, onDelete }: MediaPreviewProps) {
+  const Icon = TYPE_ICONS[item.type] || File;
+  const isImage = item.type === "image" || item.type === "svg";
 
   return (
-    <motion.aside {...PREVIEW_PANEL_ANIMATION}
-      className="fixed right-0 top-14 bottom-0 w-96 border-l border-border-subtle bg-background z-30 flex flex-col shadow-xl"
-    >
-      <div className="flex items-center justify-between p-4 border-b border-border-subtle shrink-0">
-        <h3 className="text-sm font-semibold text-text-primary truncate flex-1">{item.name}</h3>
-        <div className="flex items-center gap-1">
-          <button onClick={onFavorite}
-            className="p-1.5 rounded-lg hover:bg-surface-hover text-text-tertiary">
-            {item.favorite ? <Star className="h-4 w-4 text-amber-500 fill-amber-500" /> : <StarOff className="h-4 w-4" />}
-          </button>
-          <button onClick={onDelete}
-            className="p-1.5 rounded-lg hover:bg-surface-hover text-text-tertiary hover:text-error">
-            <Trash2 className="h-4 w-4" />
-          </button>
-          <button onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-surface-hover text-text-tertiary">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <div className="w-80 shrink-0 border-l border-border-subtle bg-background flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between p-3 border-b border-border-subtle shrink-0">
+        <h3 className="text-[13px] font-semibold text-text-primary truncate flex-1">Details</h3>
+        <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface-hover text-text-tertiary">
+          <X className="h-4 w-4" />
+        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex-1 overflow-y-auto">
         <div className="p-4">
-          <div className={cn("aspect-video rounded-xl flex items-center justify-center border border-border-subtle bg-background mb-4", TYPE_COLORS[item.type])}>
-            <Icon className="h-16 w-16 opacity-40" />
+          <div className="aspect-video rounded-lg overflow-hidden bg-background border border-border-subtle mb-4">
+            {isImage && item.url ? (
+              <img src={item.url} alt={item.alt || item.name} className="w-full h-full object-contain" />
+            ) : (
+              <div className={cn("w-full h-full flex items-center justify-center", `bg-${item.type === "video" ? "purple" : item.type === "audio" ? "pink" : "blue"}-500/10`)}>
+                <Icon className="h-12 w-12 text-text-tertiary" />
+              </div>
+            )}
           </div>
 
-          <Input defaultValue={item.name}
-            className="text-sm font-semibold text-text-primary mb-4 border-border-subtle bg-surface" />
-        </div>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] font-medium text-text-secondary block mb-1">Filename</label>
+              <p className="text-[13px] text-text-primary font-medium break-all">{item.name}</p>
+            </div>
 
-        <Tabs value={tab} onValueChange={setTab} className="px-4">
-          <TabsList className="bg-surface-hover p-0.5 rounded-xl w-full">
-            <TabsTrigger value="details" className="flex-1 rounded-lg text-xs data-[state=active]:bg-surface">
-              Details
-            </TabsTrigger>
-            <TabsTrigger value="versions" className="flex-1 rounded-lg text-xs data-[state=active]:bg-surface">
-              Version History
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="details" className="mt-3 space-y-3">
-            {[
-              { label: "Type", value: item.type, badge: item.type },
-              { label: "Size", value: formatSize(item.size) },
-              { label: "Dimensions", value: item.dimensions || "-" },
-              { label: "MIME Type", value: item.mime },
-              { label: "Folder", value: item.folder },
-              { label: "Category", value: item.category },
-              { label: "Created", value: formatDate(item.createdAt) },
-              { label: "Modified", value: formatDate(item.modifiedAt) },
-              item.duration ? { label: "Duration", value: item.duration } : null,
-            ].filter(Boolean).map((row) => row && (
-              <div key={row.label} className="flex items-center justify-between py-1.5 text-[10px] border-b border-border-subtle/50 last:border-0">
-                <span className="text-text-tertiary">{row.label}</span>
-                <span className="text-text-primary font-mono font-medium">{row.value}</span>
-              </div>
-            ))}
-
-            {item.tags.length > 0 && (
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-[9px] text-text-tertiary mb-1">Tags</p>
-                <div className="flex flex-wrap gap-1">
-                  {item.tags.map((tag) => (
-                    <Badge key={tag} className="text-[7px] px-1.5 py-0.5 rounded-full border border-border-subtle bg-surface-hover text-text-tertiary">
-                      {tag}
-                    </Badge>
-                  ))}
+                <label className="text-[11px] font-medium text-text-secondary block mb-1">Type</label>
+                <p className="text-[12px] text-text-primary uppercase">{item.type}</p>
+              </div>
+              <div>
+                <label className="text-[11px] font-medium text-text-secondary block mb-1">Size</label>
+                <p className="text-[12px] text-text-primary">{formatSize(item.size)}</p>
+              </div>
+            </div>
+
+            {item.dimensions && (
+              <div>
+                <label className="text-[11px] font-medium text-text-secondary block mb-1">Dimensions</label>
+                <p className="text-[12px] text-text-primary">{item.dimensions}</p>
+              </div>
+            )}
+
+            <div>
+              <label className="text-[11px] font-medium text-text-secondary block mb-1">MIME Type</label>
+              <p className="text-[12px] text-text-primary font-mono">{item.mime}</p>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium text-text-secondary block mb-1">Uploaded</label>
+              <p className="text-[12px] text-text-primary">
+                {item.createdAt
+                  ? new Date(item.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "--"}
+              </p>
+            </div>
+
+            {item.url && (
+              <div>
+                <label className="text-[11px] font-medium text-text-secondary block mb-1">URL</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={item.url}
+                    className="flex-1 text-[11px] font-mono text-text-tertiary bg-surface rounded px-2 py-1 border border-border-subtle truncate"
+                  />
+                  <button
+                    onClick={() => onCopyUrl(item.url)}
+                    className="p-1.5 rounded hover:bg-surface-hover text-text-tertiary hover:text-accent"
+                    title="Copy URL"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
             )}
-          </TabsContent>
-
-          <TabsContent value="versions" className="mt-3 space-y-2">
-            {item.versions?.map((v) => (
-              <div key={v.version} className="flex items-center justify-between p-2.5 rounded-lg border border-border-subtle bg-surface text-[10px]">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1 rounded bg-surface-hover">
-                    <Layers className="h-3 w-3 text-text-tertiary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-text-primary">v{v.version}</p>
-                    <p className="text-[8px] text-text-tertiary">{v.note} &middot; {formatSize(v.size)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-[8px] text-text-tertiary">
-                  <Clock className="h-2.5 w-2.5" />
-                  {formatDate(v.createdAt)}
-                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-lg">
-                    <Download className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </div>
-    </motion.aside>
-  );
-}
 
-function formatDate(d: string): string {
-  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      <div className="p-3 border-t border-border-subtle shrink-0">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(item.url, "_blank")}
+            className="flex-1 h-8 text-[11px] gap-1.5"
+          >
+            <ExternalLink className="h-3 w-3" /> Open
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onCopyUrl(item.url)}
+            className="flex-1 h-8 text-[11px] gap-1.5"
+          >
+            <Copy className="h-3 w-3" /> Copy URL
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDelete(item.id)}
+            className="h-8 w-8 px-0 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
