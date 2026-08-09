@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, BookOpen, Pencil, Trash2 } from "lucide-react";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { BlogCategoryFormDialog } from "./blog-category-form-dialog";
@@ -30,10 +31,7 @@ export function BlogCategoriesPage() {
   }, [categories, search]);
 
   if (error) {
-    return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-      <p className="text-lg font-medium text-error">Failed to load categories</p>
-      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
-    </div>;
+    return <ErrorState message={"Failed to load categories"} onRetry={refetch} />;
   }
 
   return (
@@ -63,11 +61,15 @@ export function BlogCategoriesPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_: unknown, i: number) => <div key={i} className="h-28 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
-      ) : !filtered.length ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <BookOpen size={48} className="mb-4 opacity-40" />
-          <p className="text-lg font-medium">No categories found</p>
-        </div>
+      ) : categories.length === 0 ? (
+        <EmptyState
+          icon={BookOpen}
+          title="No blog categories yet"
+          description="Create your first category to organize your blog posts."
+          action={{ label: "New Category", onClick: () => setDialogOpen(true), icon: Plus }}
+        />
+      ) : filtered.length === 0 ? (
+        <FilteredEmptyState onClear={() => setSearch("")} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((cat: BlogCategory, i: number) => (

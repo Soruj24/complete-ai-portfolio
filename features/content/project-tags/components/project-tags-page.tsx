@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Tags, Pencil, Trash2 } from "lucide-react";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { ProjectTagFormDialog } from "./project-tag-form-dialog";
@@ -30,10 +31,7 @@ export function ProjectTagsPage() {
   }, [tags, search]);
 
   if (error) {
-    return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-      <p className="text-lg font-medium text-error">Failed to load tags</p>
-      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
-    </div>;
+    return <ErrorState message={"Failed to load tags"} onRetry={refetch} />;
   }
 
   return (
@@ -63,11 +61,15 @@ export function ProjectTagsPage() {
         <div className="flex flex-wrap gap-3">
           {Array.from({ length: 15 }).map((_: unknown, i: number) => <div key={i} className="h-20 w-40 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
-      ) : !filtered.length ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <Tags size={48} className="mb-4 opacity-40" />
-          <p className="text-lg font-medium">No tags found</p>
-        </div>
+      ) : tags.length === 0 ? (
+        <EmptyState
+          icon={Tags}
+          title="No tags yet"
+          description="Create your first tag to label your projects."
+          action={{ label: "New Tag", onClick: () => setDialogOpen(true), icon: Plus }}
+        />
+      ) : filtered.length === 0 ? (
+        <FilteredEmptyState onClear={() => setSearch("")} />
       ) : (
         <div className="flex flex-wrap gap-3">
           {filtered.map((tag: ProjectTag, i: number) => (

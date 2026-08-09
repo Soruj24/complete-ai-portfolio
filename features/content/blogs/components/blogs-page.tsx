@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Plus, RefreshCw, LayoutGrid, List } from "lucide-react";
+import { ErrorState } from "@/components/admin/shared-states";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { STATUS_OPTIONS } from "../constants";
@@ -46,11 +47,7 @@ export function BlogsPage() {
   }), [posts]);
 
   if (error) {
-    return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-      <p className="text-lg font-medium text-error">Failed to load blogs</p>
-      <p className="mt-1 text-sm">{String(error)}</p>
-      <button onClick={() => refetch()} className="mt-4 flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
-    </div>;
+    return <ErrorState message="Failed to load blogs" onRetry={() => refetch()} />;
   }
 
   return (

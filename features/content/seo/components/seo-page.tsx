@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, FileText, Globe, AlertTriangle, CheckCircle2, XCircle, Info, RefreshCw, Save, Code, Loader2 } from "lucide-react";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import type { SeoPage, SitemapEntry } from "../types";
 
@@ -15,7 +16,7 @@ export function SeoPage() {
   const [robotsContent, setRobotsContent] = useState("");
   const [sitemapEntries, setSitemapEntries] = useState<SitemapEntry[]>([]);
   const [loadingRobots, setLoadingRobots] = useState(true);
-  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "seo" });
+  const { data: response, isLoading, error } = useGetAdminResourceQuery({ resource: "seo" });
   const pages: SeoPage[] = response?.data ?? [];
 
   useEffect(() => {
@@ -119,10 +120,15 @@ export function SeoPage() {
             <div className="flex h-64 items-center justify-center">
               <Loader2 size={24} className="animate-spin text-accent" />
             </div>
+          ) : error ? (
+            <ErrorState message={typeof error === 'string' ? error : 'Failed to load SEO data'} onRetry={() => {}} />
           ) : pages.length === 0 ? (
-            <div className="flex h-64 items-center justify-center rounded-xl border border-border-primary bg-surface-primary">
-              <p className="text-sm text-text-tertiary">No SEO data available</p>
-            </div>
+            <EmptyState
+              icon={Globe}
+              title="No SEO data available"
+              description="Run a scan to analyze your pages for SEO optimization."
+              action={{ label: "Scan Pages", onClick: () => {}, icon: RefreshCw }}
+            />
           ) : (
           <>
           <div className="relative max-w-md">

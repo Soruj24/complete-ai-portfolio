@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Award, ExternalLink, Calendar, Clock, Shield } from "lucide-react";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { PROVIDER_LABELS } from "../types";
 import type { CertProvider, Certificate } from "../types";
 import { CertificateFormDialog } from "./certificate-form-dialog";
@@ -31,10 +32,7 @@ export function CertificatesPage() {
   }, [certificates, search, provider]);
 
   if (error) {
-    return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-      <p className="text-lg font-medium text-error">Failed to load certificates</p>
-      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
-    </div>;
+    return <ErrorState message="Failed to load certificates" onRetry={refetch} />;
   }
 
   return (
@@ -91,11 +89,15 @@ export function CertificatesPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_: unknown, i: number) => <div key={i} className="h-40 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
+      ) : !filtered.length && certificates.length === 0 ? (
+        <EmptyState
+          icon={Award}
+          title="No certificates yet"
+          description="Add your professional certifications to showcase your expertise."
+          action={{ label: "New Certificate", onClick: () => setDialogOpen(true), icon: Plus }}
+        />
       ) : !filtered.length ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <Award size={48} className="mb-4 opacity-40" />
-          <p className="text-lg font-medium">No certificates found</p>
-        </div>
+        <FilteredEmptyState onClear={() => { setSearch(""); setProvider("all"); }} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((cert: Certificate, i: number) => (

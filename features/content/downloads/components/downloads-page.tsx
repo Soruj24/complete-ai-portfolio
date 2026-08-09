@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Download, FileText, Archive, Image, Eye, EyeOff, BarChart3 } from "lucide-react";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
 import { DownloadFormDialog } from "./download-form-dialog";
@@ -43,10 +44,7 @@ export function DownloadsPage() {
   }, [downloads, search, category, visibility]);
 
   if (error) {
-    return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-      <p className="text-lg font-medium text-error">Failed to load downloads</p>
-      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
-    </div>;
+    return <ErrorState message={"Failed to load downloads"} onRetry={refetch} />;
   }
 
   return (
@@ -107,11 +105,15 @@ export function DownloadsPage() {
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_: unknown, i: number) => <div key={i} className="h-20 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
-      ) : !filtered.length ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <Download size={48} className="mb-4 opacity-40" />
-          <p className="text-lg font-medium">No downloads found</p>
-        </div>
+      ) : downloads.length === 0 ? (
+        <EmptyState
+          icon={Download}
+          title="No downloads yet"
+          description="Upload your first file to share with your audience."
+          action={{ label: "Upload File", onClick: () => setDialogOpen(true), icon: Plus }}
+        />
+      ) : filtered.length === 0 ? (
+        <FilteredEmptyState onClear={() => { setSearch(""); setCategory("all"); setVisibility("all"); }} />
       ) : (
         <div className="space-y-2">
           {filtered.map((dl: DownloadItem, i: number) => (

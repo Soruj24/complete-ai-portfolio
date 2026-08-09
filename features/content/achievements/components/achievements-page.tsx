@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, Award, Star, TrendingUp, ExternalLink } from "lucide-react";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { AchievementFormDialog } from "./achievement-form-dialog";
 interface Achievement {
   id: string;
@@ -36,10 +37,7 @@ export function AchievementsPage() {
   }, [achievements, search, category]);
 
   if (error) {
-    return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-      <p className="text-lg font-medium text-error">Failed to load achievements</p>
-      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
-    </div>;
+    return <ErrorState message="Failed to load achievements" onRetry={refetch} />;
   }
 
   return (
@@ -96,11 +94,15 @@ export function AchievementsPage() {
         <div className="space-y-4">
           {Array.from({ length: 8 }).map((_: unknown, i: number) => <div key={i} className="h-28 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
+      ) : !filtered.length && achievements.length === 0 ? (
+        <EmptyState
+          icon={Award}
+          title="No achievements yet"
+          description="Add your first achievement to showcase your accomplishments."
+          action={{ label: "New Achievement", onClick: () => setDialogOpen(true), icon: Plus }}
+        />
       ) : !filtered.length ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <Award size={48} className="mb-4 opacity-40" />
-          <p className="text-lg font-medium">No achievements found</p>
-        </div>
+        <FilteredEmptyState onClear={() => { setSearch(""); setCategory("all"); }} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {filtered.map((ach: Achievement, i: number) => (

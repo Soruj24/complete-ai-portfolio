@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FileText, RefreshCw, Save, Eye, EyeOff, GripVertical, FileDown } from "lucide-react";
+import { FileText, RefreshCw, Save, Eye, EyeOff, GripVertical, FileDown, Plus } from "lucide-react";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import type { ResumeSection, ResumeTemplate } from "../types";
 
 export function ResumePage() {
-  const { data: response, isLoading } = useGetAdminResourceQuery({ resource: "resume" });
+  const { data: response, isLoading, error } = useGetAdminResourceQuery({ resource: "resume" });
   const resumeData = Array.isArray(response?.data) ? response?.data?.[0] : response?.data;
   const sections: ResumeSection[] = resumeData?.sections ?? [];
   const templates: ResumeTemplate[] = resumeData?.templates ?? [];
@@ -67,6 +68,8 @@ export function ResumePage() {
             </div>
           ))}
         </div>
+      ) : error ? (
+        <ErrorState message="Failed to load resume data" onRetry={() => {}} />
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-4">
@@ -90,11 +93,12 @@ export function ResumePage() {
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-text-primary">Sections</h3>
               {activeSections.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-                  <FileText size={48} className="mb-4 opacity-40" />
-                  <p className="text-lg font-medium">No sections</p>
-                  <p className="text-sm">No resume sections available.</p>
-                </div>
+                <EmptyState
+                  icon={FileText}
+                  title="No resume sections"
+                  description="Add sections to build your resume."
+                  action={{ label: "Add Section", onClick: () => {}, icon: Plus }}
+                />
               ) : activeSections.map((sec, i) => (
                 <motion.div key={sec.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                   className="rounded-xl border border-border-primary bg-surface-primary p-5"

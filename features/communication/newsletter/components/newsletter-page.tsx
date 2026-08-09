@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Users, Mail, MousePointerClick, AlertTriangle, Send, Plus, Trash2, Loader2 } from "lucide-react";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import type { Subscriber, Campaign } from "../types";
 
@@ -83,6 +84,9 @@ export function NewsletterPage() {
               ))}
             </div>
           </div>
+          {filteredSubscribers.length === 0 && subscribers.length > 0 ? (
+            <FilteredEmptyState filterDescription="your search or filters" onClear={() => { setSearch(""); setFilter("all"); }} />
+          ) : (
           <div className="rounded-xl border border-border-primary bg-surface-primary overflow-hidden">
             <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-border-primary bg-surface-secondary text-left text-xs text-text-tertiary">
               <th className="p-3 font-medium">Email</th><th className="p-3 font-medium">Name</th><th className="p-3 font-medium">Status</th><th className="p-3 font-medium">Source</th><th className="p-3 font-medium">Subscribed</th><th className="p-3 font-medium">Campaigns</th><th className="p-3 font-medium">Last Opened</th><th className="p-3 font-medium w-12"></th>
@@ -102,6 +106,7 @@ export function NewsletterPage() {
               ))}
             </tbody></table></div>
           </div>
+          )}
         </>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">

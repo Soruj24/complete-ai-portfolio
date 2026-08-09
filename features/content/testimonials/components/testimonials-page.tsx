@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, MessageSquare, Star, Quote, ExternalLink } from "lucide-react";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { TestimonialFormDialog } from "./testimonial-form-dialog";
 
 interface Testimonial {
@@ -35,10 +36,7 @@ export function TestimonialsPage() {
   }, [testimonials, search, rating]);
 
   if (error) {
-    return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-      <p className="text-lg font-medium text-error">Failed to load testimonials</p>
-      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
-    </div>;
+    return <ErrorState message="Failed to load testimonials" onRetry={refetch} />;
   }
 
   return (
@@ -95,11 +93,15 @@ export function TestimonialsPage() {
         <div className="grid gap-4 md:grid-cols-2">
           {Array.from({ length: 6 }).map((_: unknown, i: number) => <div key={i} className="h-40 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
+      ) : !filtered.length && testimonials.length === 0 ? (
+        <EmptyState
+          icon={MessageSquare}
+          title="No testimonials yet"
+          description="Add your first testimonial to showcase client recommendations."
+          action={{ label: "New Testimonial", onClick: () => setDialogOpen(true), icon: Plus }}
+        />
       ) : !filtered.length ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <MessageSquare size={48} className="mb-4 opacity-40" />
-          <p className="text-lg font-medium">No testimonials found</p>
-        </div>
+        <FilteredEmptyState onClear={() => { setSearch(""); setRating(0); }} />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {filtered.map((t: Testimonial, i: number) => (

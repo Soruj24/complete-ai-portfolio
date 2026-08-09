@@ -191,9 +191,11 @@ export function MessagesPage() {
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
               <Inbox className="h-10 w-10 mb-3 opacity-40" />
-              <p className="text-[13px] font-medium">No messages found</p>
+              <p className="text-[13px] font-medium">
+                {search ? "No messages match your search" : filter !== "all" ? "No messages in this filter" : "No messages yet"}
+              </p>
               <p className="text-[11px] mt-1">
-                {search ? "Try a different search" : filter !== "all" ? "No messages in this filter" : "Your inbox is empty"}
+                {search ? "Try a different search term" : filter !== "all" ? "Try a different filter" : "Messages from your portfolio will appear here"}
               </p>
             </div>
           ) : (

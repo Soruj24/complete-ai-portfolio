@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { MoreHorizontal, Pencil, Copy, Trash2, ArrowUp, ArrowDown, Eye, EyeOff, MapPin, Building2 } from "lucide-react";
+import { FilteredEmptyState } from "@/components/admin/shared-states";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -155,10 +156,7 @@ export function ExperienceTable({
   if (experiences.length === 0) {
     return (
       <div className="rounded-lg border border-border-subtle overflow-hidden">
-        <div className="flex flex-col items-center justify-center py-16">
-          <p className="text-[13px] font-medium text-text-primary">No experience entries found</p>
-          <p className="text-[12px] text-text-tertiary mt-0.5">Try adjusting your search or filters</p>
-        </div>
+        <FilteredEmptyState onClear={() => {}} />
       </div>
     );
   }

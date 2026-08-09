@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Upload, RefreshCw, Image, AlertCircle } from "lucide-react";
+import { Search, Upload, RefreshCw, Image, Plus } from "lucide-react";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMedia } from "../hooks/use-media";
@@ -40,16 +41,7 @@ export function MediaPage() {
   const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
 
   if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <AlertCircle className="h-10 w-10 text-red-500 mb-3" />
-        <p className="text-[13px] font-medium text-text-primary">Failed to load media</p>
-        <p className="text-[12px] text-text-tertiary mt-1">{error}</p>
-        <Button variant="outline" size="sm" onClick={fetchItems} className="mt-4 h-8 text-[13px]">
-          <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Retry
-        </Button>
-      </div>
-    );
+    return <ErrorState message={error} onRetry={fetchItems} />;
   }
 
   return (

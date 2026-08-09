@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Users, UserCheck, UserX, Shield, MoreHorizontal, Plus, Loader2 } from "lucide-react";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import type { User } from "../types";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
@@ -70,10 +71,14 @@ export function UsersPage() {
 
       <div className="rounded-xl border border-border-primary bg-surface-primary overflow-hidden">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-            <Users size={40} className="mb-3 opacity-40" />
-            <p className="font-medium">No users found</p>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="No users found"
+            description="No users match your search criteria."
+            action={{ label: "Add User", onClick: () => {}, icon: Plus }}
+          />
+        ) : filtered.length === 0 ? (
+          <FilteredEmptyState filterDescription="your search or filters" onClear={() => { setSearch(""); setFilter("all"); }} />
         ) : (
           <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-border-primary bg-surface-secondary text-left text-xs text-text-tertiary">
             <th className="p-3 font-medium">User</th><th className="p-3 font-medium">Role</th><th className="p-3 font-medium">Status</th><th className="p-3 font-medium">Joined</th><th className="p-3 font-medium">Last Login</th><th className="p-3 font-medium">Projects</th><th className="p-3 w-12"></th>

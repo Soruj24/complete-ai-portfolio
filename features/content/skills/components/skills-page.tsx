@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, RefreshCw, AlertCircle } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
+import { ErrorState } from "@/components/admin/shared-states";
 import { Button } from "@/components/ui/button";
 import { useSkills } from "../hooks/use-skills";
 import type { Skill } from "../types";
@@ -69,16 +70,7 @@ export function SkillsPage() {
   };
 
   if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <AlertCircle className="h-10 w-10 text-red-500 mb-3" />
-        <p className="text-[13px] font-medium text-text-primary">Failed to load skills</p>
-        <p className="text-[12px] text-text-tertiary mt-1">{error}</p>
-        <Button variant="outline" size="sm" onClick={fetchSkills} className="mt-4 h-8 text-[13px]">
-          <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Retry
-        </Button>
-      </div>
-    );
+    return <ErrorState message="Failed to load skills" onRetry={fetchSkills} />;
   }
 
   return (

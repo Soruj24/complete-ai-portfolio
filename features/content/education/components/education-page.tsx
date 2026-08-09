@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Search, Plus, RefreshCw, GraduationCap, BookOpen, MapPin, Award, Calendar } from "lucide-react";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 import { toastSuccess } from "@/shared/utils/swal";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import { DEGREE_LABELS } from "../types";
 import type { DegreeType, Education } from "../types";
 import { EducationFormDialog } from "./education-form-dialog";
@@ -31,10 +32,7 @@ export function EducationPage() {
   }, [entries, search, degreeFilter]);
 
   if (error) {
-    return <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-      <p className="text-lg font-medium text-error">Failed to load education</p>
-      <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
-    </div>;
+    return <ErrorState message="Failed to load education" onRetry={refetch} />;
   }
 
   return (
@@ -91,11 +89,15 @@ export function EducationPage() {
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_: unknown, i: number) => <div key={i} className="h-32 animate-pulse rounded-xl bg-surface-hover" />)}
         </div>
+      ) : !filtered.length && entries.length === 0 ? (
+        <EmptyState
+          icon={GraduationCap}
+          title="No education entries yet"
+          description="Add your educational background to complete your profile."
+          action={{ label: "New Entry", onClick: () => setDialogOpen(true), icon: Plus }}
+        />
       ) : !filtered.length ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <GraduationCap size={48} className="mb-4 opacity-40" />
-          <p className="text-lg font-medium">No education entries found</p>
-        </div>
+        <FilteredEmptyState onClear={() => { setSearch(""); setDegreeFilter("all"); }} />
       ) : (
         <div className="grid gap-4">
           {filtered.map((edu: Education, i: number) => (

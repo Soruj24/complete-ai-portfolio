@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Shield, Plus, Edit2, Trash2, Loader2 } from "lucide-react";
+import { EmptyState, ErrorState, FilteredEmptyState } from "@/components/admin/shared-states";
 import type { Role } from "../types";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
@@ -35,10 +36,14 @@ export function RolesPage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <Shield size={40} className="mb-3 opacity-40" />
-          <p className="font-medium">No roles found</p>
-        </div>
+        <EmptyState
+          icon={Shield}
+          title="No roles yet"
+          description="Create your first role to manage permissions."
+          action={{ label: "Create Role", onClick: () => {}, icon: Plus }}
+        />
+      ) : filtered.length === 0 ? (
+        <FilteredEmptyState filterDescription="your search" onClear={() => setSearch("")} />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((r: Role, i: number) => (

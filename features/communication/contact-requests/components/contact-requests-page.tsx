@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, RefreshCw, MessageCircle, TrendingUp, Users, DollarSign, CheckCircle2, XCircle, AlertTriangle, ArrowUpRight, Mail, Loader2 } from "lucide-react";
+import { EmptyState } from "@/components/admin/shared-states";
 import type { ContactRequest } from "../types";
 import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
 
@@ -45,13 +46,11 @@ export function ContactRequestsPage() {
 
   if (requests.length === 0) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <div className="text-center text-text-tertiary">
-          <Mail size={48} className="mx-auto mb-3 opacity-40" />
-          <p className="font-medium">No contact requests</p>
-          <p className="text-xs">Contact requests will appear here once submitted</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={Mail}
+        title="No contact requests"
+        description="Contact requests will appear here once submitted from your portfolio."
+      />
     );
   }
 
