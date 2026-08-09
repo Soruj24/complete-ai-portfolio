@@ -1,110 +1,175 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus } from "lucide-react";
-import type { Experience, EmploymentType } from "../types";
-import { EMPLOYMENT_LABELS } from "../types";
+import { useState, useEffect } from "react";
+import { Plus, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import type { Experience, ExperienceFormData } from "../types";
+import { EMPLOYMENT_TYPES, EMPLOYMENT_LABELS, EMPTY_EXPERIENCE_FORM } from "../types";
 
 interface Props {
   open: boolean;
+  editingExperience: Experience | null;
   onClose: () => void;
-  onSubmit: (data: Partial<Experience>) => Promise<void>;
+  onSubmit: (data: ExperienceFormData) => Promise<void>;
 }
 
-const emptyForm = { company: "", position: "", location: "", employmentType: "full-time" as EmploymentType, description: "", techStack: [] as string[], startDate: "", endDate: "", current: false };
-
-export function ExperienceFormDialog({ open, onClose, onSubmit }: Props) {
-  const [form, setForm] = useState(emptyForm);
+export function ExperienceFormDialog({ open, editingExperience, onClose, onSubmit }: Props) {
+  const [form, setForm] = useState<ExperienceFormData>(EMPTY_EXPERIENCE_FORM);
   const [submitting, setSubmitting] = useState(false);
-  const [techInput, setTechInput] = useState("");
+  const [listInput, setListInput] = useState("");
+  const [activeList, setActiveList] = useState<"responsibilities" | "technologies" | "achievements">("responsibilities");
 
-  const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((p) => ({ ...p, [k]: v }));
+  useEffect(() => {
+    if (editingExperience) {
+      setForm({
+        role: editingExperience.role,
+        company: editingExperience.company,
+        location: editingExperience.location,
+        employmentType: editingExperience.employmentType,
+        startDate: editingExperience.startDate,
+        endDate: editingExperience.endDate,
+        current: editingExperience.current,
+        description: editingExperience.description,
+        responsibilities: editingExperience.responsibilities || [],
+        technologies: editingExperience.technologies || [],
+        achievements: editingExperience.achievements || [],
+        order: editingExperience.order,
+        enabled: editingExperience.enabled,
+      });
+    } else {
+      setForm(EMPTY_EXPERIENCE_FORM);
+    }
+  }, [editingExperience, open]);
 
-  const addTech = () => {
-    const t = techInput.trim();
-    if (t && !form.techStack.includes(t)) { update("techStack", [...form.techStack, t]); setTechInput(""); }
+  const update = <K extends keyof ExperienceFormData>(k: K, v: ExperienceFormData[K]) => setForm((p) => ({ ...p, [k]: v }));
+
+  const addListItem = () => {
+    const val = listInput.trim();
+    if (!val) return;
+    const current = form[activeList];
+    if (!current.includes(val)) {
+      update(activeList, [...current, val]);
+    }
+    setListInput("");
+  };
+
+  const removeListItem = (list: "responsibilities" | "technologies" | "achievements", item: string) => {
+    update(list, form[list].filter((x) => x !== item));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.company.trim() || !form.position.trim()) return;
+    if (!form.role.trim() || !form.company.trim()) return;
     setSubmitting(true);
     try {
-      await onSubmit({ ...form, endDate: form.current ? null : form.endDate || null, highlights: [], order: 0, createdAt: new Date().toISOString() });
-      setForm(emptyForm);
+      await onSubmit({ ...form, endDate: form.current ? null : form.endDate });
       onClose();
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const listLabels: Record<"responsibilities" | "technologies" | "achievements", string> = {
+    responsibilities: "Responsibility",
+    technologies: "Technology",
+    achievements: "Achievement",
   };
 
   return (
-    <AnimatePresence>
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-xl border border-border-primary bg-surface-primary shadow-xl">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-primary bg-surface-primary px-6 py-4">
-              <h2 className="text-lg font-semibold text-text-primary">New Experience</h2>
-              <button onClick={onClose} className="rounded-lg p-1.5 text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"><X size={18} /></button>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{editingExperience ? "Edit Experience" : "New Experience"}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">Role *</label>
+              <Input value={form.role} onChange={(e) => update("role", e.target.value)} placeholder="Job title" required autoFocus className="h-8 text-[13px]" />
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Company *</label>
-                  <input type="text" value={form.company} onChange={(e) => update("company", e.target.value)} placeholder="Company name" required
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" /></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Position *</label>
-                  <input type="text" value={form.position} onChange={(e) => update("position", e.target.value)} placeholder="Job title" required
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" /></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Location</label>
-                  <input type="text" value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="City, Country"
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" /></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Employment Type</label>
-                  <select value={form.employmentType} onChange={(e) => update("employmentType", e.target.value as EmploymentType)}
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent">
-                    {(Object.entries(EMPLOYMENT_LABELS) as [EmploymentType, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                  </select></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Start Date</label>
-                  <input type="date" value={form.startDate} onChange={(e) => update("startDate", e.target.value)}
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" /></div>
-                <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">End Date</label>
-                  <input type="date" value={form.endDate} onChange={(e) => update("endDate", e.target.value)} disabled={form.current}
-                    className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent disabled:opacity-50" /></div>
-              </div>
-              <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Description</label>
-                <textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={3} placeholder="Job description"
-                  className="w-full rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent resize-y" /></div>
-              <div className="space-y-1.5"><label className="text-xs font-medium text-text-secondary">Tech Stack</label>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {form.techStack.map((t) => (
-                    <span key={t} className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2 py-0.5 text-xs text-accent">
-                      {t}<button type="button" onClick={() => update("techStack", form.techStack.filter((x) => x !== t))} className="hover:text-error"><X size={10} /></button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <input type="text" value={techInput} onChange={(e) => setTechInput(e.target.value)} placeholder="Add technology..."
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTech(); } }}
-                    className="flex-1 rounded-lg border border-border-primary bg-surface-secondary px-3 py-2 text-sm text-text-primary outline-none focus:border-accent" />
-                  <button type="button" onClick={addTech} className="rounded-lg bg-accent px-3 py-2 text-white text-sm hover:bg-accent-hover"><Plus size={14} /></button>
-                </div>
-              </div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.current} onChange={(e) => update("current", e.target.checked)}
-                  className="rounded border-border-primary bg-surface-secondary text-accent focus:ring-accent" />
-                <span className="text-sm text-text-secondary">Current position</span>
-              </label>
-              <div className="flex items-center gap-3 pt-2">
-                <button type="button" onClick={onClose} className="flex-1 rounded-lg border border-border-primary px-4 py-2.5 text-sm text-text-secondary hover:bg-surface-hover transition-colors">Cancel</button>
-                <button type="submit" disabled={submitting || !form.company.trim() || !form.position.trim()}
-                  className="flex-1 rounded-lg bg-accent px-4 py-2.5 text-sm text-white hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                  {submitting ? "Creating..." : "Create Entry"}</button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">Company *</label>
+              <Input value={form.company} onChange={(e) => update("company", e.target.value)} placeholder="Company name" required className="h-8 text-[13px]" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">Location</label>
+              <Input value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="City, Country" className="h-8 text-[13px]" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">Employment Type</label>
+              <select value={form.employmentType} onChange={(e) => update("employmentType", e.target.value as ExperienceFormData["employmentType"])}
+                className="w-full rounded-md border border-border-subtle bg-surface px-3 py-1.5 text-[13px] text-text-primary outline-none focus:border-accent">
+                {EMPLOYMENT_TYPES.map((t) => <option key={t} value={t}>{EMPLOYMENT_LABELS[t]}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">Start Date</label>
+              <Input type="date" value={form.startDate} onChange={(e) => update("startDate", e.target.value)} className="h-8 text-[13px]" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-text-secondary">End Date</label>
+              <Input type="date" value={form.endDate || ""} onChange={(e) => update("endDate", e.target.value || null)} disabled={form.current} className="h-8 text-[13px] disabled:opacity-50" />
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={form.current} onChange={(e) => update("current", e.target.checked)}
+              className="rounded border-border-subtle bg-surface text-accent focus:ring-accent" />
+            <span className="text-[12px] text-text-secondary">Current position</span>
+          </label>
+
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium text-text-secondary">Description</label>
+            <textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={2} placeholder="Brief description of this role..."
+              className="w-full rounded-md border border-border-subtle bg-surface px-3 py-2 text-[13px] text-text-primary outline-none focus:border-accent resize-none" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex gap-1 rounded-md border border-border-subtle bg-surface p-0.5">
+              {(["responsibilities", "technologies", "achievements"] as const).map((list) => (
+                <button key={list} type="button" onClick={() => { setActiveList(list); setListInput(""); }}
+                  className={`rounded-sm px-3 py-1 text-[11px] font-medium transition-colors ${
+                    activeList === list ? "bg-accent text-accent-foreground" : "text-text-tertiary hover:text-text-primary"
+                  }`}>
+                  {list.charAt(0).toUpperCase() + list.slice(1)} ({form[list].length})
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1.5 min-h-[28px]">
+              {form[activeList].map((item) => (
+                <span key={item} className="inline-flex items-center gap-1 rounded-md bg-accent/10 px-2 py-0.5 text-[11px] text-accent">
+                  {item}
+                  <button type="button" onClick={() => removeListItem(activeList, item)} className="hover:text-red-500">
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input value={listInput} onChange={(e) => setListInput(e.target.value)} placeholder={`Add ${listLabels[activeList]}...`}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addListItem(); } }}
+                className="h-8 text-[13px]" />
+              <Button type="button" variant="outline" size="sm" onClick={addListItem} className="h-8 px-2.5">
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-medium text-text-secondary">Order</label>
+            <Input type="number" value={form.order} onChange={(e) => update("order", parseInt(e.target.value) || 0)} className="h-8 text-[13px] w-20" />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose} className="h-8 text-[13px]">Cancel</Button>
+            <Button type="submit" disabled={submitting || !form.role.trim() || !form.company.trim()} className="h-8 text-[13px]">
+              {submitting ? "Saving..." : editingExperience ? "Save Changes" : "Create Entry"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

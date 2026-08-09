@@ -106,23 +106,19 @@ export interface ISkill {
 export interface IExperience {
   _id?: string;
   id?: string;
-  year?: string;
-  role?: string;
-  position?: string;
+  role: string;
   company: string;
   location?: string;
   employmentType?: string;
-  description?: string;
-  technologies?: string[];
-  techStack?: string[];
-  highlights?: string[];
-  icon?: string;
-  color?: string;
-  period?: string;
   startDate?: string;
-  endDate?: string;
+  endDate?: string | null;
   current?: boolean;
+  description?: string;
+  responsibilities?: string[];
+  technologies?: string[];
+  achievements?: string[];
   order?: number;
+  enabled?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

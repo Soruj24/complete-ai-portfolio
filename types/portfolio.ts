@@ -82,15 +82,19 @@ export interface IProject {
 export interface IExperience {
   _id?: string;
   id?: string;
-  year: string;
   role: string;
   company: string;
+  location?: string;
+  employmentType?: string;
+  startDate?: string;
+  endDate?: string | null;
+  current?: boolean;
   description?: string;
+  responsibilities?: string[];
   technologies?: string[];
-  icon?: string;
-  color?: string;
-  period: string;
-  highlights: string[];
+  achievements?: string[];
+  order?: number;
+  enabled?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

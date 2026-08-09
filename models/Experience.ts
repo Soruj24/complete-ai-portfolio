@@ -1,19 +1,19 @@
 import mongoose, { Schema, model, models } from "mongoose";
 
 const ExperienceSchema = new Schema({
-  year: { type: String, required: true },
   role: { type: String, required: true },
   company: { type: String, required: true },
-  description: { type: String },
-  technologies: [{ type: String }],
-  icon: { type: String },
-  color: { type: String },
-  startDate: { type: String },
-  endDate: { type: String },
+  location: { type: String, default: "" },
+  employmentType: { type: String, default: "full-time" },
+  startDate: { type: String, default: "" },
+  endDate: { type: String, default: null },
   current: { type: Boolean, default: false },
-  location: { type: String },
-  companyUrl: { type: String },
+  description: { type: String, default: "" },
+  responsibilities: [{ type: String }],
+  technologies: [{ type: String }],
+  achievements: [{ type: String }],
   order: { type: Number, default: 0 },
+  enabled: { type: Boolean, default: true },
 }, { timestamps: true });
 
 export const Experience = models.Experience || model("Experience", ExperienceSchema);

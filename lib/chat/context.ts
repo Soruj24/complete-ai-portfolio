@@ -35,7 +35,7 @@ export function createBengaliContext(
     ${skills.map((s) => `- ${s.name} (${s.category})`).join("\n")}
 
     অভিজ্ঞতা:
-    ${experiences.map((e) => `- ${e.year}: ${e.company}-এ ${e.role}। ${e.description}`).join("\n")}
+    ${experiences.map((e) => `- ${e.startDate || "N/A"}: ${e.company}-এ ${e.role}। ${e.description || ""}`).join("\n")}
 
     বৈশিষ্ট্যযুক্ত প্রজেক্ট:
     ${projects.map((p) => `- ${p.title}: ${p.description}। ${p.liveUrl ? `লাইভ: ${p.liveUrl}` : ""}`).join("\n")}
@@ -95,7 +95,7 @@ export function createEnglishContext(
     ${skills.map((s) => `- ${s.name} (${s.category})`).join("\n")}
 
     Experience:
-    ${experiences.map((e) => `- ${e.year}: ${e.role} at ${e.company}. ${e.description}`).join("\n")}
+    ${experiences.map((e) => `- ${e.startDate || "N/A"}: ${e.role} at ${e.company}. ${e.description || ""}`).join("\n")}
 
     Featured Projects:
     ${projects.map((p) => `- ${p.title}: ${p.description}. ${p.liveUrl ? `Live: ${p.liveUrl}` : ""}`).join("\n")}

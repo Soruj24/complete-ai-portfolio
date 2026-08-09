@@ -78,15 +78,19 @@ export const skillSchema = z.object({
 });
 
 export const experienceSchema = z.object({
-  year: z.string().min(1, "Year is required"),
   role: z.string().min(1, "Role is required"),
   company: z.string().min(1, "Company is required"),
-  description: z.string().optional(),
+  location: z.string().default(""),
+  employmentType: z.string().default("full-time"),
+  startDate: z.string().default(""),
+  endDate: z.string().nullable().default(null),
+  current: z.boolean().default(false),
+  description: z.string().default(""),
+  responsibilities: z.array(z.string()).default([]),
   technologies: z.array(z.string()).default([]),
-  icon: z.string().optional(),
-  color: z.string().optional(),
-  period: z.string().default(""),
-  highlights: z.array(z.string()).default([]),
+  achievements: z.array(z.string()).default([]),
+  order: z.number().default(0),
+  enabled: z.boolean().default(true),
 });
 
 export const settingsSchema = z.object({
