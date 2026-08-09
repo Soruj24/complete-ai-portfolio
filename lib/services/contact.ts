@@ -7,9 +7,17 @@ class ContactService {
     return msg as unknown as ContactMessage;
   }
 
-  async getMessages(): Promise<ContactMessage[]> {
-    const result = await contactRepository.findAll({ sort: "createdAt", order: "desc" });
-    return result.data as unknown as ContactMessage[];
+  async getMessages(options?: { page?: number; limit?: number }): Promise<{ data: ContactMessage[]; total: number }> {
+    const result = await contactRepository.findAllNonArchived({
+      page: options?.page || 1,
+      limit: options?.limit || 50,
+      sort: "createdAt",
+      order: "desc",
+    });
+    return {
+      data: result.data as unknown as ContactMessage[],
+      total: result.pagination.total,
+    };
   }
 
   async markAsRead(id: string): Promise<ContactMessage | null> {
@@ -17,9 +25,29 @@ class ContactService {
     return msg as unknown as ContactMessage | null;
   }
 
+  async markAsUnread(id: string): Promise<ContactMessage | null> {
+    const msg = await contactRepository.markAsUnread(id);
+    return msg as unknown as ContactMessage | null;
+  }
+
+  async archive(id: string): Promise<ContactMessage | null> {
+    const msg = await contactRepository.archive(id);
+    return msg as unknown as ContactMessage | null;
+  }
+
   async deleteMessage(id: string): Promise<ContactMessage | null> {
     const msg = await contactRepository.delete(id);
     return msg as unknown as ContactMessage | null;
+  }
+
+  async getStats(): Promise<{ total: number; unread: number; archived: number }> {
+    const all = await contactRepository.findAll({ limit: 1000 });
+    const messages = all.data as unknown as ContactMessage[];
+    return {
+      total: messages.length,
+      unread: messages.filter((m) => m.status === "pending").length,
+      archived: messages.filter((m) => (m as any).archived).length,
+    };
   }
 }
 

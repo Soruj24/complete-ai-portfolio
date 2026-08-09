@@ -1,13 +1,15 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IContactMessage extends Document {
-  userId?: string; // Optional: if user is logged in
+  userId?: string;
   name: string;
   email: string;
   subject: string;
   message: string;
-  status: 'pending' | 'read' | 'replied';
+  status: "pending" | "read" | "replied";
+  archived: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const ContactMessageSchema = new Schema<IContactMessage>(
@@ -17,13 +19,16 @@ const ContactMessageSchema = new Schema<IContactMessage>(
     email: { type: String, required: true },
     subject: { type: String, required: true },
     message: { type: String, required: true },
-    status: { 
-      type: String, 
-      enum: ['pending', 'read', 'replied'], 
-      default: 'pending' 
+    status: {
+      type: String,
+      enum: ["pending", "read", "replied"],
+      default: "pending",
     },
+    archived: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-export const ContactMessage = mongoose.models.ContactMessage || mongoose.model<IContactMessage>("ContactMessage", ContactMessageSchema);
+export const ContactMessage =
+  mongoose.models.ContactMessage ||
+  mongoose.model<IContactMessage>("ContactMessage", ContactMessageSchema);
