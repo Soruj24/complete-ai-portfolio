@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
+  LayoutList,
   FolderKanban,
   Briefcase,
   Code2,
@@ -57,6 +58,7 @@ export const navSections: NavSection[] = [
     label: "Overview",
     items: [
       { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
+      { label: "Content Hub", icon: LayoutList, href: "/admin/content" },
     ],
   },
   {
