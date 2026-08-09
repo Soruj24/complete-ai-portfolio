@@ -1,120 +1,143 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Plus, RefreshCw, Code2 } from "lucide-react";
-import { useGetAdminResourceQuery } from "@/lib/store/api/admin-api";
-import { toastSuccess } from "@/shared/utils/swal";
-import { SKILL_CATEGORY_LABELS } from "../types";
-import type { Skill, SkillCategory } from "../types";
-import { SkillFormDialog } from "./skill-form-dialog";
+import { useState } from "react";
+import { Plus, RefreshCw, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useSkills } from "../hooks/use-skills";
+import type { Skill } from "../types";
 import { SkillsStats } from "./skills-stats";
-import { SkillsFilter } from "./skills-filter";
-import { SkillCard } from "./skill-card";
+import { SkillsToolbar } from "./skills-toolbar";
+import { SkillsTable } from "./skills-table";
+import { SkillFormDialog } from "./skill-form-dialog";
+import { SkillDeleteDialog } from "./skill-delete-dialog";
 
 export function SkillsPage() {
-  const { data: response, isLoading, error, refetch } = useGetAdminResourceQuery({ resource: "skills" });
-  const skills: Skill[] = useMemo(() => (response?.data ?? []) as Skill[], [response]);
+  const {
+    filteredSkills, stats, loading, error,
+    search, categoryFilter, selected,
+    setSearch, setCategoryFilter, setSelected,
+    toggleSelectAll, toggleSelect, fetchSkills,
+    createSkill, updateSkill, deleteSkill, bulkDelete,
+    toggleFeatured, toggleEnabled, updateOrder, moveUp, moveDown, duplicateSkill,
+  } = useSkills();
 
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<SkillCategory | "all">("all");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteName, setDeleteName] = useState("");
+  const [bulkDeleteMode, setBulkDeleteMode] = useState(false);
 
-  const filtered = useMemo(() => {
-    return skills.filter((s) => {
-      if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
-      if (category !== "all" && s.category !== category) return false;
-      return true;
-    });
-  }, [skills, search, category]);
+  const handleEdit = (skill: Skill) => {
+    setEditingSkill(skill);
+    setFormOpen(true);
+  };
 
-  const grouped = useMemo(() => {
-    const map = new Map<SkillCategory, Skill[]>();
-    for (const s of filtered) {
-      const existing = map.get(s.category) ?? [];
-      existing.push(s);
-      map.set(s.category, existing);
+  const handleNew = () => {
+    setEditingSkill(null);
+    setFormOpen(true);
+  };
+
+  const handleFormSubmit = async (data: Parameters<typeof createSkill>[0]) => {
+    if (editingSkill) {
+      await updateSkill(editingSkill._id, data);
+    } else {
+      await createSkill(data);
     }
-    return map;
-  }, [filtered]);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    const skill = filteredSkills.find((s) => s._id === id);
+    setDeleteId(id);
+    setDeleteName(skill?.name || "");
+    setBulkDeleteMode(false);
+  };
+
+  const handleBulkDelete = () => {
+    setBulkDeleteMode(true);
+    setDeleteName(`${selected.length} skill(s)`);
+    setDeleteId(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (bulkDeleteMode) {
+      await bulkDelete(selected);
+      setBulkDeleteMode(false);
+    } else if (deleteId) {
+      await deleteSkill(deleteId);
+      setDeleteId(null);
+    }
+  };
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-text-tertiary">
-        <p className="text-lg font-medium text-error">Failed to load skills</p>
-        <button onClick={() => refetch()} className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm text-white">Retry</button>
+      <div className="flex flex-col items-center justify-center py-20">
+        <AlertCircle className="h-10 w-10 text-red-500 mb-3" />
+        <p className="text-[13px] font-medium text-text-primary">Failed to load skills</p>
+        <p className="text-[12px] text-text-tertiary mt-1">{error}</p>
+        <Button variant="outline" size="sm" onClick={fetchSkills} className="mt-4 h-8 text-[13px]">
+          <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Retry
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Skills</h1>
-          <p className="text-sm text-text-tertiary">Manage your technical skills and proficiencies</p>
+          <h1 className="text-lg font-semibold text-text-primary">Skills</h1>
+          <p className="text-[12px] text-text-tertiary">Manage your technical skills and proficiencies</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={() => refetch()}
-            className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
-            <RefreshCw size={14} /> Refresh
-          </button>
-          <button onClick={() => setDialogOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
-            <Plus size={16} /> New Skill
-          </button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={fetchSkills} className="h-8 text-[13px] gap-1.5">
+            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          </Button>
+          <Button size="sm" onClick={handleNew} className="h-8 text-[13px] gap-1.5">
+            <Plus className="h-3.5 w-3.5" /> New Skill
+          </Button>
         </div>
       </div>
 
-      <SkillsStats skills={filtered} />
-      <SkillsFilter search={search} onSearchChange={setSearch} category={category} onCategoryChange={setCategory} />
+      <SkillsStats stats={stats} />
 
-      {isLoading ? (
-        <div className="space-y-6">
-          {Array.from({ length: 3 }).map((_, gi) => (
-            <div key={gi}>
-              <div className="mb-3 h-5 w-24 animate-pulse rounded bg-surface-hover" />
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-24 animate-pulse rounded-xl bg-surface-hover" />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : !filtered.length ? (
-        <div className="flex flex-col items-center justify-center py-16 text-text-tertiary">
-          <Code2 size={48} className="mb-4 opacity-40" />
-          <p className="text-lg font-medium">No skills found</p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {[...grouped.entries()].map(([cat, catSkills]) => (
-            <div key={cat}>
-              <h3 className="mb-3 text-sm font-semibold text-text-primary">
-                {SKILL_CATEGORY_LABELS[cat]} ({catSkills.length})
-              </h3>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {catSkills.map((skill, i) => (
-                  <SkillCard key={skill._id} skill={skill} index={i} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <SkillsToolbar
+        search={search}
+        categoryFilter={categoryFilter}
+        selected={selected}
+        onSearchChange={setSearch}
+        onCategoryFilterChange={setCategoryFilter}
+        onBulkDelete={handleBulkDelete}
+        onClearSelection={() => setSelected([])}
+      />
+
+      <SkillsTable
+        skills={filteredSkills}
+        loading={loading}
+        selected={selected}
+        onSelectAll={toggleSelectAll}
+        onSelect={toggleSelect}
+        onEdit={handleEdit}
+        onDelete={handleDeleteClick}
+        onDuplicate={duplicateSkill}
+        onToggleFeatured={toggleFeatured}
+        onToggleEnabled={toggleEnabled}
+        onMoveUp={moveUp}
+        onMoveDown={moveDown}
+        onOrderChange={updateOrder}
+      />
 
       <SkillFormDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onSubmit={async (d) => {
-          await fetch("/api/admin/skills", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(d),
-          });
-          toastSuccess("Created!", "Skill has been created.");
-          refetch();
-        }}
+        open={formOpen}
+        editingSkill={editingSkill}
+        onClose={() => { setFormOpen(false); setEditingSkill(null); }}
+        onSubmit={handleFormSubmit}
+      />
+
+      <SkillDeleteDialog
+        open={deleteId !== null || bulkDeleteMode}
+        skillName={deleteName}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => { setDeleteId(null); setBulkDeleteMode(false); }}
       />
     </div>
   );
