@@ -94,17 +94,36 @@ export const experienceSchema = z.object({
 });
 
 export const settingsSchema = z.object({
+  // General
   siteName: z.string().min(1, "Site name is required"),
-  contactEmail: z.string().email("Invalid contact email"),
-  allowRegistration: z.boolean(),
-  maintenanceMode: z.boolean().optional(),
+  siteDescription: z.string().default(""),
+  logo: z.string().default(""),
+  favicon: z.string().default(""),
+  contactEmail: z.string().email("Invalid email address").or(z.string().length(0)),
+  // Profile
   fullName: z.string().min(1, "Full name is required"),
   professionalTitle: z.string().min(1, "Professional title is required"),
-  bio: z.string().min(1, "Bio is required"),
-  location: z.string().min(1, "Location is required"),
-  phone: z.string().min(1, "Phone is required"),
-  githubUrl: z.string().url("Invalid GitHub URL").or(z.literal("")),
-  linkedinUrl: z.string().url("Invalid LinkedIn URL").or(z.literal("")),
-  twitterUrl: z.string().url("Invalid Twitter URL").or(z.literal("")),
+  bio: z.string().default(""),
+  location: z.string().default(""),
+  phone: z.string().default(""),
+  avatar: z.string().default(""),
+  // Social
+  githubUrl: z.string().url("Invalid URL").or(z.literal("")),
+  linkedinUrl: z.string().url("Invalid URL").or(z.literal("")),
+  twitterUrl: z.string().url("Invalid URL").or(z.literal("")),
+  youtubeUrl: z.string().url("Invalid URL").or(z.literal("")),
+  websiteUrl: z.string().url("Invalid URL").or(z.literal("")),
   specializations: z.array(z.string()).default([]),
+  // SEO
+  seoTitle: z.string().default(""),
+  seoDescription: z.string().default(""),
+  seoKeywords: z.array(z.string()).default([]),
+  ogImage: z.string().default(""),
+  // Appearance
+  theme: z.string().default("system"),
+  accentColor: z.string().default("#3b82f6"),
+  layoutStyle: z.string().default("modern"),
+  // Security
+  allowRegistration: z.boolean().default(false),
+  maintenanceMode: z.boolean().default(false),
 });

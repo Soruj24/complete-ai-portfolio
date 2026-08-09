@@ -2,68 +2,45 @@ import mongoose from "mongoose";
 
 const settingsSchema = new mongoose.Schema(
   {
-    siteName: {
-      type: String,
-      default: "YOURAPP",
-    },
-    contactEmail: {
-      type: String,
-      default: "admin@yourapp.com",
-    },
-    allowRegistration: {
-      type: Boolean,
-      default: true,
-    },
-    maintenanceMode: {
-      type: Boolean,
-      default: false,
-    },
-    // Personal Info
-    fullName: {
-      type: String,
-      default: "Soruj Mahmud",
-    },
-    professionalTitle: {
-      type: String,
-      default: "Aspiring Full-Stack Developer",
-    },
-    bio: {
-      type: String,
-      default: "Self-taught developer with comprehensive project-based learning in modern web technologies and AI applications",
-    },
-    location: {
-      type: String,
-      default: "Tangail, Dhaka, Bangladesh",
-    },
-    phone: {
-      type: String,
-      default: "+8801795397598",
-    },
-    githubUrl: {
-      type: String,
-      default: "https://github.com/",
-    },
-    linkedinUrl: {
-      type: String,
-      default: "https://linkedin.com/",
-    },
-    twitterUrl: {
-      type: String,
-      default: "https://twitter.com/",
-    },
-    specializations: {
-      type: [String],
-      default: [
-        "LangChain and AI Applications",
-        "MCP Server Development",
-        "Next.js, React, TypeScript",
-        "MongoDB, Node.js",
-        "Modern Web Technologies",
-      ],
-    },
-    updatedBy: {
-      type: String,
-    },
+    // General
+    siteName: { type: String, default: "Portfolio" },
+    siteDescription: { type: String, default: "" },
+    logo: { type: String, default: "" },
+    favicon: { type: String, default: "" },
+    contactEmail: { type: String, default: "" },
+
+    // Profile
+    fullName: { type: String, default: "" },
+    professionalTitle: { type: String, default: "" },
+    bio: { type: String, default: "" },
+    location: { type: String, default: "" },
+    phone: { type: String, default: "" },
+    avatar: { type: String, default: "" },
+
+    // Social
+    githubUrl: { type: String, default: "" },
+    linkedinUrl: { type: String, default: "" },
+    twitterUrl: { type: String, default: "" },
+    youtubeUrl: { type: String, default: "" },
+    websiteUrl: { type: String, default: "" },
+    specializations: { type: [String], default: [] },
+
+    // SEO
+    seoTitle: { type: String, default: "" },
+    seoDescription: { type: String, default: "" },
+    seoKeywords: { type: [String], default: [] },
+    ogImage: { type: String, default: "" },
+
+    // Appearance
+    theme: { type: String, default: "system" },
+    accentColor: { type: String, default: "#3b82f6" },
+    layoutStyle: { type: String, default: "modern" },
+
+    // Security
+    allowRegistration: { type: Boolean, default: false },
+    maintenanceMode: { type: Boolean, default: false },
+
+    updatedBy: { type: String },
   },
   { timestamps: true }
 );

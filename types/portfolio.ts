@@ -114,19 +114,39 @@ export interface ISkill {
 
 export interface ISettings {
   _id?: string;
+  id?: string;
+  // General
   siteName: string;
+  siteDescription: string;
+  logo: string;
+  favicon: string;
   contactEmail: string;
-  allowRegistration: boolean;
-  maintenanceMode: boolean;
+  // Profile
   fullName: string;
   professionalTitle: string;
   bio: string;
   location: string;
   phone: string;
+  avatar: string;
+  // Social
   githubUrl: string;
   linkedinUrl: string;
   twitterUrl: string;
+  youtubeUrl: string;
+  websiteUrl: string;
   specializations: string[];
+  // SEO
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string[];
+  ogImage: string;
+  // Appearance
+  theme: string;
+  accentColor: string;
+  layoutStyle: string;
+  // Security
+  allowRegistration: boolean;
+  maintenanceMode: boolean;
   updatedBy?: string;
   createdAt?: string;
   updatedAt?: string;
