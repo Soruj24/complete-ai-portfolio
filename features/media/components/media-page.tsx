@@ -55,17 +55,17 @@ export function MediaPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       <div className="shrink-0 p-4 pb-3 space-y-3 border-b border-border-subtle">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">Media Library</h1>
             <p className="text-[12px] text-text-tertiary">Manage images and files for your portfolio</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={fetchItems} disabled={loading} className="h-8 text-[13px] gap-1.5">
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> <span className="hidden sm:inline">Refresh</span>
             </Button>
             <Button size="sm" onClick={() => setShowUploader(true)} className="h-8 text-[13px] gap-1.5">
-              <Upload className="h-3.5 w-3.5" /> Upload
+              <Upload className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Upload</span>
             </Button>
           </div>
         </div>

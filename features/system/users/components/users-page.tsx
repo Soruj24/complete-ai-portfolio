@@ -32,9 +32,9 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div><h1 className="text-2xl font-bold text-text-primary">Users</h1><p className="text-sm text-text-tertiary">Manage system users</p></div>
-        <button className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"><Plus size={14} /> Add User</button>
+        <button className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"><Plus size={14} /> <span className="hidden sm:inline">Add User</span></button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4">

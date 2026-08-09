@@ -23,9 +23,9 @@ export function RolesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div><h1 className="text-2xl font-bold text-text-primary">Roles</h1><p className="text-sm text-text-tertiary">Manage user roles and permissions</p></div>
-        <button className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"><Plus size={14} /> Create Role</button>
+        <button className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"><Plus size={14} /> <span className="hidden sm:inline">Create Role</span></button>
       </div>
 
       <div className="relative max-w-md">

@@ -46,13 +46,13 @@ export function ApiKeysPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">API Keys</h1>
           <p className="text-sm text-text-tertiary">Manage API keys for external integrations</p>
         </div>
         <button className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
-          <Plus size={16} /> Generate Key
+          <Plus size={16} /> <span className="hidden sm:inline">Generate Key</span>
         </button>
       </div>
 

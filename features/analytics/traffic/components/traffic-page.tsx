@@ -91,7 +91,7 @@ export function TrafficPage() {
   if (!data || data.daily.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-text-primary">Traffic Analytics</h1>
             <p className="text-sm text-text-tertiary">Detailed website traffic data and trends</p>
@@ -115,7 +115,7 @@ export function TrafficPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Traffic Analytics</h1>
           <p className="text-sm text-text-tertiary">Detailed website traffic data and trends</p>
@@ -123,7 +123,7 @@ export function TrafficPage() {
         <div className="flex rounded-lg border border-border-primary p-0.5">
           {["7d", "30d"].map((p) => (
             <button key={p} onClick={() => setPeriod(p as "7d" | "30d")}
-              className={`rounded-md px-4 py-1.5 text-xs font-medium transition-colors ${period === p ? "bg-accent text-white" : "text-text-tertiary hover:text-text-primary"}`}>{p}</button>
+              className={`rounded-md px-4 py-1.5 text-xs font-medium transition-colors ${period === p ? "bg-accent text-white" : "text-text-tertiary hover:text-text-primary"}`}><span className="hidden sm:inline">{p}</span></button>
           ))}
         </div>
       </div>

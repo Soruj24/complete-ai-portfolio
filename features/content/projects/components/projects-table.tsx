@@ -254,7 +254,7 @@ export function ProjectsTable({
 
   return (
     <div className="rounded-lg border border-border-subtle overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-b border-border-subtle bg-surface/50 hover:bg-surface/50">
@@ -360,6 +360,41 @@ export function ProjectsTable({
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="md:hidden">
+        <div className="p-2 border-b border-border-subtle bg-surface/50">
+          <label className="flex items-center gap-2 px-2 py-1 text-[12px] text-text-secondary">
+            <Checkbox checked={allSelected} onCheckedChange={onSelectAll} aria-label="Select all" />
+            Select all ({projects.length})
+          </label>
+        </div>
+        <div className="divide-y divide-border-subtle">
+          {projects.map((project) => (
+            <div key={project.id} className="p-3 space-y-2">
+              <div className="flex items-start gap-3">
+                <Checkbox checked={selected.includes(project.id)} onCheckedChange={() => onSelect(project.id)} className="mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-text-primary truncate">{project.title}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {project.category && <span className="text-[11px] text-text-secondary">{project.category}</span>}
+                    <StatusBadge status={project.status} />
+                  </div>
+                </div>
+                <ActionDropdown project={project} onEdit={onEdit} onDelete={onDelete} onDuplicate={onDuplicate} onToggleFeatured={onToggleFeatured} onToggleStatus={onToggleStatus} />
+              </div>
+              <div className="flex items-center gap-2 ml-7">
+                {project.technologies?.slice(0, 3).map((tech) => (
+                  <span key={tech} className="inline-flex items-center rounded bg-background px-1.5 py-0.5 text-[10px] font-medium text-text-secondary">{tech}</span>
+                ))}
+                {project.technologies && project.technologies.length > 3 && (
+                  <span className="text-[10px] text-text-tertiary">+{project.technologies.length - 3}</span>
+                )}
+                <Star className={cn("h-3.5 w-3.5 cursor-pointer ml-auto", project.featured ? "fill-amber-500 text-amber-500" : "text-text-tertiary")} onClick={() => onToggleFeatured(project.id, !project.featured)} />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

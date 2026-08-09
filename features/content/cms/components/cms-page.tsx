@@ -111,17 +111,17 @@ export function CMSPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold text-text-primary">Content Hub</h1>
           <p className="text-[12px] text-text-tertiary">Manage all portfolio content from one place</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={refetch} disabled={loading} className="h-8 text-[13px] gap-1.5">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Button size="sm" onClick={() => window.open("/", "_blank")} className="h-8 text-[13px] gap-1.5">
-            <ExternalLink className="h-3.5 w-3.5" /> View Live
+            <ExternalLink className="h-3.5 w-3.5" /> <span className="hidden sm:inline">View Live</span>
           </Button>
         </div>
       </div>

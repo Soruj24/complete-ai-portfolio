@@ -56,7 +56,7 @@ export function AISettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">AI Settings</h1>
           <p className="text-sm text-text-tertiary">Configure AI model providers, defaults, and behavior</p>
@@ -64,11 +64,11 @@ export function AISettingsPage() {
         <div className="flex items-center gap-2">
           <button onClick={() => { setSettings(DEFAULT_SETTINGS); setPreset("custom"); }}
             className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-surface-hover transition-colors">
-            <RotateCcw size={14} /> Reset
+            <RotateCcw size={14} /> <span className="hidden sm:inline">Reset</span>
           </button>
           <button onClick={handleSave}
             className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2 text-sm text-white hover:bg-accent-hover transition-colors">
-            {saved ? <><RefreshCw size={14} className="animate-spin" /> Saved</> : <><Save size={14} /> Save</>}
+            {saved ? <><RefreshCw size={14} className="animate-spin" /> <span className="hidden sm:inline">Saved</span></> : <><Save size={14} /> <span className="hidden sm:inline">Save</span></>}
           </button>
         </div>
       </div>

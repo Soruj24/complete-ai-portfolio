@@ -139,7 +139,7 @@ export function MessagesPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       <div className="shrink-0 p-4 pb-3 border-b border-border-subtle">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">Messages</h1>
             <p className="text-[12px] text-text-tertiary">
@@ -147,7 +147,7 @@ export function MessagesPage() {
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchMessages} disabled={loading} className="h-8 text-[12px] gap-1.5">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} /> <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
 

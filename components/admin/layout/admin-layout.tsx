@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { AdminSidebar } from "./admin-sidebar";
 import { AdminTopbar } from "./admin-topbar";
 import { CommandPalette } from "../command-palette";
@@ -10,9 +11,17 @@ import { cn } from "@/lib/utils";
 
 export function AdminLayout({ children }: { children: ReactNode }) {
   const collapsed = useAppSelector((s) => s.ui.sidebarCollapsed);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <AdminSidebar />
       <AdminTopbar />
       <CommandPalette />
@@ -21,10 +30,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       <main
         className={cn(
           "pt-12 min-h-screen transition-[padding-left] duration-200 ease-in-out",
-          collapsed ? "pl-[60px]" : "pl-[220px]",
+          isMobile ? "pl-0" : collapsed ? "pl-[60px]" : "pl-[220px]",
         )}
       >
-        <div className="p-5 md:p-6 max-w-[1400px] mx-auto">
+        <div className="p-4 sm:p-5 md:p-6 max-w-[1400px] mx-auto">
           {children}
         </div>
       </main>

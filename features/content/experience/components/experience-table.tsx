@@ -165,7 +165,7 @@ export function ExperienceTable({
 
   return (
     <div className="rounded-lg border border-border-subtle overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-b border-border-subtle bg-surface/50 hover:bg-surface/50">
@@ -268,6 +268,46 @@ export function ExperienceTable({
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="md:hidden">
+        <div className="p-2 border-b border-border-subtle bg-surface/50">
+          <label className="flex items-center gap-2 px-2 py-1 text-[12px] text-text-secondary">
+            <Checkbox checked={allSelected} onCheckedChange={onSelectAll} aria-label="Select all" />
+            Select all ({experiences.length})
+          </label>
+        </div>
+        <div className="divide-y divide-border-subtle">
+          {experiences.map((exp) => (
+            <div key={exp._id} className={cn("p-3 space-y-2", !exp.enabled && "opacity-50")}>
+              <div className="flex items-start gap-3">
+                <Checkbox checked={selected.includes(exp._id)} onCheckedChange={() => onSelect(exp._id)} className="mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-[13px] font-medium text-text-primary truncate">{exp.role}</p>
+                    {exp.current && <span className="shrink-0 rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium text-emerald-600">Current</span>}
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[11px] text-text-secondary">{exp.company}</span>
+                    {exp.location && <span className="text-[11px] text-text-tertiary">· {exp.location}</span>}
+                  </div>
+                </div>
+                <ActionDropdown exp={exp} onEdit={onEdit} onDelete={onDelete} onDuplicate={onDuplicate} onToggleEnabled={onToggleEnabled} onMoveUp={onMoveUp} onMoveDown={onMoveDown} />
+              </div>
+              <div className="flex items-center gap-2 ml-7">
+                <span className="inline-flex items-center rounded bg-background px-1.5 py-0.5 text-[10px] font-medium text-text-secondary">
+                  {EMPLOYMENT_LABELS[exp.employmentType] || exp.employmentType}
+                </span>
+                <span className="text-[10px] text-text-tertiary">
+                  {formatDate(exp.startDate)} — {exp.current ? "Present" : formatDate(exp.endDate)}
+                </span>
+                <button onClick={() => onToggleEnabled(exp._id, !exp.enabled)} className={cn("relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full transition-colors ml-auto", exp.enabled ? "bg-emerald-500" : "bg-border-subtle")}>
+                  <span className={cn("pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform mt-0.5", exp.enabled ? "translate-x-3 ml-0.5" : "translate-x-0.5")} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

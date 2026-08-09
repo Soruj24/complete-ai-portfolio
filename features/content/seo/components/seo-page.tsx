@@ -72,13 +72,13 @@ export function SeoPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">SEO</h1>
           <p className="text-sm text-text-tertiary">Search engine optimization and page analysis</p>
         </div>
         <button className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
-          <RefreshCw size={14} /> Scan Pages
+          <RefreshCw size={14} /> <span className="hidden sm:inline">Scan Pages</span>
         </button>
       </div>
 

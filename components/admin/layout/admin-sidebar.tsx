@@ -5,11 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAppSelector, useAppDispatch } from "@/lib/store/hooks";
-import { setSidebarCollapsed } from "@/lib/store/slices/ui-slice";
+import { setSidebarCollapsed, toggleSidebar } from "@/lib/store/slices/ui-slice";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  X,
 } from "lucide-react";
 import { navSections } from "@/lib/admin/nav-data";
 
@@ -17,14 +18,27 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const collapsed = useAppSelector((s) => s.ui.sidebarCollapsed);
+  const sidebarOpen = useAppSelector((s) => s.ui.sidebarOpen);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(navSections.map((s) => s.label))
   );
   const navRef = useRef<HTMLElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const toggleCollapsed = useCallback(() => {
     dispatch(setSidebarCollapsed(!collapsed));
   }, [dispatch, collapsed]);
+
+  const closeMobile = useCallback(() => {
+    dispatch(toggleSidebar());
+  }, [dispatch]);
 
   const toggleSection = useCallback((label: string) => {
     setExpandedSections((prev) => {
@@ -40,40 +54,45 @@ export function AdminSidebar() {
     return pathname === href || pathname.startsWith(href + "/");
   };
 
-  // Keyboard navigation
+  useEffect(() => {
+    if (isMobile && sidebarOpen) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isMobile, sidebarOpen]);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && sidebarOpen) closeMobile();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [isMobile, sidebarOpen, closeMobile]);
+
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-
       const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>("a[data-nav-item]"));
       const currentIndex = links.findIndex((l) => l === document.activeElement);
       if (currentIndex === -1) return;
-
       e.preventDefault();
       const nextIndex = e.key === "ArrowDown"
         ? Math.min(currentIndex + 1, links.length - 1)
         : Math.max(currentIndex - 1, 0);
       links[nextIndex]?.focus();
     };
-
     nav.addEventListener("keydown", handleKeyDown);
     return () => nav.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  return (
-    <aside
-      className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-border-subtle bg-surface transition-[width] duration-200 ease-in-out",
-        collapsed ? "w-[60px]" : "w-[220px]",
-      )}
-      aria-label="Sidebar navigation"
-    >
-      {/* Logo */}
+  const sidebarContent = (
+    <>
       <div className="flex h-12 items-center gap-2 border-b border-border-subtle px-3 shrink-0">
-        <Link href="/admin/dashboard" className="flex items-center gap-2 shrink-0">
+        <Link href="/admin/dashboard" className="flex items-center gap-2 shrink-0" onClick={isMobile ? closeMobile : undefined}>
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-accent text-accent-foreground text-xs font-bold">
             A
           </div>
@@ -83,15 +102,22 @@ export function AdminSidebar() {
             </span>
           )}
         </Link>
+        {isMobile && (
+          <button
+            onClick={closeMobile}
+            className="ml-auto flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
+            aria-label="Close sidebar"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
-      {/* Navigation */}
       <nav ref={navRef} className="flex-1 overflow-y-auto no-scrollbar py-2 px-2">
         {navSections.map((section) => {
           const isExpanded = expandedSections.has(section.label);
           return (
             <div key={section.label} className="mb-1">
-              {/* Section header */}
               {collapsed ? (
                 <div className="px-2 py-1.5">
                   <div className="h-px bg-border-subtle" />
@@ -107,7 +133,6 @@ export function AdminSidebar() {
                 </button>
               )}
 
-              {/* Items */}
               {(collapsed || isExpanded) && (
                 <div className="space-y-px">
                   {section.items.map((item) => {
@@ -117,8 +142,9 @@ export function AdminSidebar() {
                         key={item.href}
                         href={item.href}
                         data-nav-item
+                        onClick={isMobile ? closeMobile : undefined}
                         className={cn(
-                          "group relative flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150 outline-none",
+                          "group relative flex items-center gap-2 rounded-md px-2.5 py-2 text-[13px] font-medium transition-colors duration-150 outline-none min-h-[36px]",
                           collapsed && "justify-center px-2",
                           active
                             ? "bg-accent/10 text-accent"
@@ -150,23 +176,60 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="border-t border-border-subtle p-2 shrink-0">
-        <button
-          onClick={toggleCollapsed}
-          className="flex w-full items-center justify-center gap-2 rounded-md px-2 py-1.5 text-[12px] font-medium text-text-tertiary hover:bg-surface-hover hover:text-text-secondary transition-colors"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? (
-            <ChevronRight className="h-3.5 w-3.5" />
-          ) : (
-            <>
-              <ChevronLeft className="h-3.5 w-3.5" />
-              <span>Collapse</span>
-            </>
+      {!isMobile && (
+        <div className="border-t border-border-subtle p-2 shrink-0">
+          <button
+            onClick={toggleCollapsed}
+            className="flex w-full items-center justify-center gap-2 rounded-md px-2 py-1.5 text-[12px] font-medium text-text-tertiary hover:bg-surface-hover hover:text-text-secondary transition-colors"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-3.5 w-3.5" />
+            ) : (
+              <>
+                <ChevronLeft className="h-3.5 w-3.5" />
+                <span>Collapse</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-200 lg:hidden",
+            sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
           )}
-        </button>
-      </div>
+          onClick={closeMobile}
+          aria-hidden="true"
+        />
+        <aside
+          className={cn(
+            "fixed left-0 top-0 z-50 flex h-screen w-[260px] flex-col border-r border-border-subtle bg-surface transition-transform duration-200 ease-in-out lg:hidden",
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+          aria-label="Sidebar navigation"
+        >
+          {sidebarContent}
+        </aside>
+      </>
+    );
+  }
+
+  return (
+    <aside
+      className={cn(
+        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-border-subtle bg-surface transition-[width] duration-200 ease-in-out hidden lg:flex",
+        collapsed ? "w-[60px]" : "w-[220px]",
+      )}
+      aria-label="Sidebar navigation"
+    >
+      {sidebarContent}
     </aside>
   );
 }

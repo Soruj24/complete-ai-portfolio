@@ -84,20 +84,20 @@ export function ExperiencePage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold text-text-primary">Experience</h1>
           <p className="text-[12px] text-text-tertiary">Manage your work history and career timeline</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setPreviewOpen(!previewOpen)} className="h-8 text-[13px] gap-1.5">
-            <Eye className="h-3.5 w-3.5" /> {previewOpen ? "Table" : "Preview"}
+            <Eye className="h-3.5 w-3.5" /> <span className="hidden sm:inline">{previewOpen ? "Table" : "Preview"}</span>
           </Button>
           <Button variant="outline" size="sm" onClick={fetchExperiences} className="h-8 text-[13px] gap-1.5">
-            <RefreshCw className="h-3.5 w-3.5" /> Refresh
+            <RefreshCw className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Button size="sm" onClick={handleNew} className="h-8 text-[13px] gap-1.5">
-            <Plus className="h-3.5 w-3.5" /> New Entry
+            <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">New Entry</span>
           </Button>
         </div>
       </div>

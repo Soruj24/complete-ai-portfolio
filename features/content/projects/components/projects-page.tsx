@@ -139,7 +139,7 @@ export function ProjectsPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-[18px] font-semibold text-text-primary">Projects</h1>
           <p className="text-[12px] text-text-tertiary mt-0.5">Manage and organize your portfolio projects</p>
@@ -149,7 +149,7 @@ export function ProjectsPage() {
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           </Button>
           <Button size="sm" onClick={handleAddNew} className="h-8 text-[12px] gap-1.5">
-            <Plus className="h-3.5 w-3.5" /> Add Project
+            <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Add Project</span>
           </Button>
         </div>
       </div>

@@ -32,11 +32,11 @@ export function NewsletterPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div><h1 className="text-2xl font-bold text-text-primary">Newsletter</h1><p className="text-sm text-text-tertiary">Manage subscribers and campaigns</p></div>
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-surface-hover"><Plus size={14} /> New Campaign</button>
-          <button className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"><Send size={14} /> Send Newsletter</button>
+          <button className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary hover:bg-surface-hover"><Plus size={14} /> <span className="hidden sm:inline">New Campaign</span></button>
+          <button className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"><Send size={14} /> <span className="hidden sm:inline">Send Newsletter</span></button>
         </div>
       </div>
 

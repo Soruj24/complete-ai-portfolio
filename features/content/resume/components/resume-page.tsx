@@ -37,18 +37,18 @@ export function ResumePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Resume Builder</h1>
           <p className="text-sm text-text-tertiary">Configure and manage your resume content</p>
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
-            <FileDown size={14} /> Export PDF
+            <FileDown size={14} /> <span className="hidden sm:inline">Export PDF</span>
           </button>
           <button onClick={handleSave}
             className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm text-white transition-all ${saved ? "bg-success" : "bg-accent hover:bg-accent-hover"}`}>
-            <Save size={14} /> {saved ? "Saved!" : "Save Changes"}
+            <Save size={14} /> <span className="hidden sm:inline">{saved ? "Saved!" : "Save Changes"}</span>
           </button>
         </div>
       </div>

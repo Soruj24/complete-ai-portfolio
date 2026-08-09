@@ -58,45 +58,134 @@ function ActionDropdown({
 
   return (
     <div ref={ref} className="relative">
-      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setOpen(!open)}>
+      <Button variant="ghost" size="icon" className="h-8 w-8 min-w-[32px]" onClick={() => setOpen(!open)}>
         <MoreHorizontal className="h-3.5 w-3.5 text-text-tertiary" />
       </Button>
       {open && (
         <div className="absolute right-0 top-full z-50 mt-1 w-44 rounded-lg border border-border-subtle bg-background py-1 shadow-lg">
           <button onClick={() => { setOpen(false); onEdit(skill); }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors">
+            className="flex w-full items-center gap-2 px-3 py-2 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors min-h-[36px]">
             <Pencil className="h-3 w-3" /> Edit
           </button>
           <button onClick={() => { setOpen(false); onDuplicate(skill); }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors">
+            className="flex w-full items-center gap-2 px-3 py-2 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors min-h-[36px]">
             <Copy className="h-3 w-3" /> Duplicate
           </button>
           <button onClick={() => { setOpen(false); onMoveUp(skill._id); }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors">
+            className="flex w-full items-center gap-2 px-3 py-2 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors min-h-[36px]">
             <ArrowUp className="h-3 w-3" /> Move Up
           </button>
           <button onClick={() => { setOpen(false); onMoveDown(skill._id); }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors">
+            className="flex w-full items-center gap-2 px-3 py-2 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors min-h-[36px]">
             <ArrowDown className="h-3 w-3" /> Move Down
           </button>
           <div className="my-0.5 h-px bg-border-subtle" />
           <button onClick={() => { setOpen(false); onToggleFeatured(skill._id, !skill.featured); }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors">
+            className="flex w-full items-center gap-2 px-3 py-2 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors min-h-[36px]">
             <Star className={cn("h-3 w-3", skill.featured ? "fill-amber-500 text-amber-500" : "")} />
             {skill.featured ? "Unfeature" : "Feature"}
           </button>
           <button onClick={() => { setOpen(false); onToggleEnabled(skill._id, !skill.enabled); }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors">
+            className="flex w-full items-center gap-2 px-3 py-2 text-[12px] text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-colors min-h-[36px]">
             {skill.enabled ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
             {skill.enabled ? "Disable" : "Enable"}
           </button>
           <div className="my-0.5 h-px bg-border-subtle" />
           <button onClick={() => { setOpen(false); onDelete(skill._id); }}
-            className="flex w-full items-center gap-2 px-3 py-1.5 text-[12px] text-red-500 hover:bg-red-500/10 transition-colors">
+            className="flex w-full items-center gap-2 px-3 py-2 text-[12px] text-red-500 hover:bg-red-500/10 transition-colors min-h-[36px]">
             <Trash2 className="h-3 w-3" /> Delete
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function SkillCard({
+  skill,
+  selected,
+  onSelect,
+  onEdit,
+  onDelete,
+  onDuplicate,
+  onToggleFeatured,
+  onToggleEnabled,
+}: {
+  skill: Skill;
+  selected: string[];
+  onSelect: (id: string) => void;
+  onEdit: (s: Skill) => void;
+  onDelete: (id: string) => void;
+  onDuplicate: (s: Skill) => void;
+  onToggleFeatured: (id: string, featured: boolean) => void;
+  onToggleEnabled: (id: string, enabled: boolean) => void;
+}) {
+  return (
+    <div className={cn(
+      "rounded-lg border border-border-subtle bg-surface p-3 space-y-2",
+      !skill.enabled && "opacity-50"
+    )}>
+      <div className="flex items-start gap-3">
+        <Checkbox
+          checked={selected.includes(skill._id)}
+          onCheckedChange={() => onSelect(skill._id)}
+          aria-label={`Select ${skill.name}`}
+          className="mt-0.5"
+        />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: skill.color }} />
+            <p className="text-[13px] font-medium text-text-primary truncate">{skill.name}</p>
+          </div>
+          {skill.description && (
+            <p className="text-[11px] text-text-tertiary truncate mt-0.5 ml-[18px]">{skill.description}</p>
+          )}
+        </div>
+        <ActionDropdown
+          skill={skill}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onDuplicate={onDuplicate}
+          onToggleFeatured={onToggleFeatured}
+          onToggleEnabled={onToggleEnabled}
+          onMoveUp={() => {}}
+          onMoveDown={() => {}}
+        />
+      </div>
+      <div className="flex items-center gap-2 ml-7">
+        <span className="inline-flex items-center rounded bg-background px-1.5 py-0.5 text-[10px] font-medium text-text-secondary">
+          {SKILL_CATEGORY_LABELS[skill.category] || skill.category}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <div className="h-1 w-10 rounded-full bg-background">
+            <div className="h-full rounded-full" style={{ width: `${skill.level}%`, backgroundColor: skill.color }} />
+          </div>
+          <span className="text-[10px] font-medium text-text-tertiary tabular-nums">{skill.level}%</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 ml-7">
+        <Star
+          className={cn(
+            "h-3.5 w-3.5 cursor-pointer transition-colors",
+            skill.featured ? "fill-amber-500 text-amber-500" : "text-text-tertiary hover:text-amber-500"
+          )}
+          onClick={() => onToggleFeatured(skill._id, !skill.featured)}
+        />
+        <button
+          onClick={() => onToggleEnabled(skill._id, !skill.enabled)}
+          className={cn(
+            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full transition-colors",
+            skill.enabled ? "bg-emerald-500" : "bg-border-subtle"
+          )}
+        >
+          <span
+            className={cn(
+              "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform mt-0.5",
+              skill.enabled ? "translate-x-4 ml-0.5" : "translate-x-0.5"
+            )}
+          />
+        </button>
+      </div>
     </div>
   );
 }
@@ -121,38 +210,49 @@ export function SkillsTable({
   if (loading) {
     return (
       <div className="rounded-lg border border-border-subtle overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b border-border-subtle bg-surface/50 hover:bg-surface/50">
-              <TableHead className="w-9 px-3"><Skeleton className="h-3.5 w-3.5" /></TableHead>
-              <TableHead className="w-9 px-3"><Skeleton className="h-3.5 w-3.5" /></TableHead>
-              <TableHead className="text-[11px] font-medium text-text-tertiary">Skill</TableHead>
-              <TableHead className="text-[11px] font-medium text-text-tertiary">Category</TableHead>
-              <TableHead className="text-[11px] font-medium text-text-tertiary">Proficiency</TableHead>
-              <TableHead className="text-[11px] font-medium text-text-tertiary">Experience</TableHead>
-              <TableHead className="text-[11px] font-medium text-text-tertiary">Order</TableHead>
-              <TableHead className="text-[11px] font-medium text-text-tertiary">Featured</TableHead>
-              <TableHead className="text-[11px] font-medium text-text-tertiary">Enabled</TableHead>
-              <TableHead className="w-12"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <TableRow key={i} className="border-b border-border-subtle">
-                <TableCell className="px-3"><Skeleton className="h-3.5 w-3.5" /></TableCell>
-                <TableCell className="px-3"><Skeleton className="h-3.5 w-3.5" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-16" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-12" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-8" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-5" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-8" /></TableCell>
-                <TableCell><Skeleton className="h-3.5 w-7" /></TableCell>
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b border-border-subtle bg-surface/50 hover:bg-surface/50">
+                <TableHead className="w-9 px-3"><Skeleton className="h-3.5 w-3.5" /></TableHead>
+                <TableHead className="w-9 px-3"><Skeleton className="h-3.5 w-3.5" /></TableHead>
+                <TableHead className="text-[11px] font-medium text-text-tertiary">Skill</TableHead>
+                <TableHead className="text-[11px] font-medium text-text-tertiary">Category</TableHead>
+                <TableHead className="text-[11px] font-medium text-text-tertiary">Proficiency</TableHead>
+                <TableHead className="text-[11px] font-medium text-text-tertiary">Order</TableHead>
+                <TableHead className="text-[11px] font-medium text-text-tertiary">Featured</TableHead>
+                <TableHead className="text-[11px] font-medium text-text-tertiary">Enabled</TableHead>
+                <TableHead className="w-12"></TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i} className="border-b border-border-subtle">
+                  <TableCell className="px-3"><Skeleton className="h-3.5 w-3.5" /></TableCell>
+                  <TableCell className="px-3"><Skeleton className="h-3.5 w-3.5" /></TableCell>
+                  <TableCell><Skeleton className="h-3.5 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-3.5 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-3.5 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-3.5 w-8" /></TableCell>
+                  <TableCell><Skeleton className="h-3.5 w-5" /></TableCell>
+                  <TableCell><Skeleton className="h-3.5 w-8" /></TableCell>
+                  <TableCell><Skeleton className="h-3.5 w-7" /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="md:hidden space-y-2 p-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-lg border border-border-subtle p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-3.5 w-3.5" />
+                <Skeleton className="h-3.5 w-32" />
+              </div>
+              <Skeleton className="h-1.5 w-full" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -170,7 +270,7 @@ export function SkillsTable({
 
   return (
     <div className="rounded-lg border border-border-subtle overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-b border-border-subtle bg-surface/50 hover:bg-surface/50">
@@ -181,7 +281,6 @@ export function SkillsTable({
               <TableHead className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">Skill</TableHead>
               <TableHead className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">Category</TableHead>
               <TableHead className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">Proficiency</TableHead>
-              <TableHead className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">Exp</TableHead>
               <TableHead className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider w-16">Order</TableHead>
               <TableHead className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider w-16">Featured</TableHead>
               <TableHead className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider w-16">Enabled</TableHead>
@@ -189,7 +288,7 @@ export function SkillsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {skills.map((skill, idx) => (
+            {skills.map((skill) => (
               <TableRow
                 key={skill._id}
                 className={cn(
@@ -222,16 +321,10 @@ export function SkillsTable({
                 <TableCell className="py-2.5">
                   <div className="flex items-center gap-2">
                     <div className="h-1.5 w-16 rounded-full bg-surface">
-                      <div
-                        className="h-full rounded-full"
-                        style={{ width: `${skill.level}%`, backgroundColor: skill.color }}
-                      />
+                      <div className="h-full rounded-full" style={{ width: `${skill.level}%`, backgroundColor: skill.color }} />
                     </div>
                     <span className="text-[11px] font-medium text-text-secondary tabular-nums">{skill.level}%</span>
                   </div>
-                </TableCell>
-                <TableCell className="py-2.5">
-                  <span className="text-[12px] text-text-tertiary">{skill.yearsOfExperience || 0} yr</span>
                 </TableCell>
                 <TableCell className="py-2.5">
                   <input
@@ -282,6 +375,30 @@ export function SkillsTable({
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="md:hidden">
+        <div className="p-2 border-b border-border-subtle bg-surface/50">
+          <label className="flex items-center gap-2 px-2 py-1 text-[12px] text-text-secondary">
+            <Checkbox checked={allSelected} onCheckedChange={onSelectAll} aria-label="Select all" />
+            Select all ({skills.length})
+          </label>
+        </div>
+        <div className="divide-y divide-border-subtle">
+          {skills.map((skill) => (
+            <SkillCard
+              key={skill._id}
+              skill={skill}
+              selected={selected}
+              onSelect={onSelect}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onDuplicate={onDuplicate}
+              onToggleFeatured={onToggleFeatured}
+              onToggleEnabled={onToggleEnabled}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

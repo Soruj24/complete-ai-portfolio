@@ -111,36 +111,38 @@ export function GeneralPage() {
 
   return (
     <div className="max-w-4xl">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-lg font-semibold text-text-primary">Settings</h1>
           <p className="text-[12px] text-text-tertiary">Manage your portfolio configuration</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setSettings(settings)} disabled={saving} className="h-8 text-[12px]">
-            Cancel
+            <span className="hidden sm:inline">Cancel</span>
           </Button>
           <Button size="sm" onClick={handleSave} disabled={saving} className="h-8 text-[12px] gap-1.5">
             {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-            {saved ? "Saved!" : "Save Changes"}
+            <span className="hidden sm:inline">{saved ? "Saved!" : "Save Changes"}</span>
           </Button>
         </div>
       </div>
 
       <div className="flex gap-6">
-        <nav className="w-48 shrink-0 space-y-1">
-          {SECTIONS.map((s) => {
-            const Icon = s.icon;
-            return (
-              <button key={s.id} onClick={() => setActiveSection(s.id)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-colors text-left ${
-                  activeSection === s.id ? "bg-accent/10 text-accent" : "text-text-secondary hover:bg-surface-hover"
-                }`}>
-                <Icon className="h-3.5 w-3.5" />
-                {s.label}
-              </button>
-            );
-          })}
+        <nav className="w-full sm:w-48 shrink-0 space-y-1 overflow-x-auto no-scrollbar">
+          <div className="flex sm:flex-col gap-1 sm:gap-0">
+            {SECTIONS.map((s) => {
+              const Icon = s.icon;
+              return (
+                <button key={s.id} onClick={() => setActiveSection(s.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] font-medium transition-colors text-left whitespace-nowrap sm:whitespace-normal ${
+                    activeSection === s.id ? "bg-accent/10 text-accent" : "text-text-secondary hover:bg-surface-hover"
+                  }`}>
+                  <Icon className="h-3.5 w-3.5" />
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
         </nav>
 
         <div className="flex-1 min-w-0">

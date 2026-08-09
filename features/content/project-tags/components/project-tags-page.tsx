@@ -38,17 +38,17 @@ export function ProjectTagsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Project Tags</h1>
           <p className="text-sm text-text-tertiary">Manage technology tags for projects</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => refetch()} className="flex items-center gap-2 rounded-lg border border-border-primary px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-hover">
-            <RefreshCw size={14} /> Refresh
+            <RefreshCw size={14} /> <span className="hidden sm:inline">Refresh</span>
           </button>
           <button onClick={() => setDialogOpen(true)} className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-hover">
-            <Plus size={16} /> New Tag
+            <Plus size={16} /> <span className="hidden sm:inline">New Tag</span>
           </button>
         </div>
       </div>

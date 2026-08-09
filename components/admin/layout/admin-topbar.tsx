@@ -15,7 +15,6 @@ import {
   Search,
   Menu,
   LogOut,
-  ChevronRight,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -43,6 +42,14 @@ export function AdminTopbar() {
   const collapsed = useAppSelector((s) => s.ui.sidebarCollapsed);
   const unreadCount = useAppSelector((s) => s.ui.unreadCount);
   const [user, setUser] = useState<User | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -56,33 +63,32 @@ export function AdminTopbar() {
     router.push("/login");
   }
 
+  const sidebarWidth = isMobile ? 0 : collapsed ? 60 : 220;
+
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 z-30 flex h-12 items-center gap-3 border-b border-border-subtle bg-background/80 backdrop-blur-xl px-4 transition-[left] duration-200 ease-in-out",
-        collapsed ? "left-[60px]" : "left-[220px]",
+        "fixed top-0 right-0 z-30 flex h-12 items-center gap-2 sm:gap-3 border-b border-border-subtle bg-background/80 backdrop-blur-xl px-3 sm:px-4 transition-[left] duration-200 ease-in-out",
+        isMobile ? "left-0" : `left-[${sidebarWidth}px]`,
       )}
     >
-      {/* Mobile menu toggle */}
       <button
         onClick={() => dispatch(toggleSidebar())}
-        className="flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors lg:hidden"
+        className="flex h-8 w-8 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors lg:hidden"
         aria-label="Toggle sidebar"
       >
         <Menu className="h-4 w-4" />
       </button>
 
-      {/* Breadcrumb */}
       <div className="hidden sm:block">
         <AdminBreadcrumb />
       </div>
 
       <div className="flex-1" />
 
-      {/* Search trigger */}
       <button
         onClick={() => dispatch(toggleCommandPalette())}
-        className="hidden sm:flex items-center gap-2 h-7 px-2.5 rounded-md border border-border-subtle text-[12px] text-text-tertiary hover:text-text-primary hover:border-border transition-colors"
+        className="hidden sm:flex items-center gap-2 h-8 px-2.5 rounded-md border border-border-subtle text-[12px] text-text-tertiary hover:text-text-primary hover:border-border transition-colors"
       >
         <Search className="h-3.5 w-3.5" />
         <span>Search...</span>
@@ -91,10 +97,17 @@ export function AdminTopbar() {
         </kbd>
       </button>
 
-      {/* Notifications */}
+      <button
+        onClick={() => dispatch(toggleCommandPalette())}
+        className="flex sm:hidden h-8 w-8 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors"
+        aria-label="Search"
+      >
+        <Search className="h-4 w-4" />
+      </button>
+
       <button
         onClick={() => dispatch(setNotificationsOpen(true))}
-        className="relative flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors"
+        className="relative flex h-8 w-8 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors"
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
       >
         <Bell className="h-4 w-4" />
@@ -105,13 +118,11 @@ export function AdminTopbar() {
         )}
       </button>
 
-      {/* Theme toggle */}
       <ModeToggle />
 
-      {/* User menu */}
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
-          <Avatar className="h-7 w-7 cursor-pointer ring-1 ring-border-subtle hover:ring-accent/30 transition-all">
+          <Avatar className="h-8 w-8 cursor-pointer ring-1 ring-border-subtle hover:ring-accent/30 transition-all">
             <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || "admin"}`} />
             <AvatarFallback className="text-[10px] bg-accent/10 text-accent">
               {user?.name?.charAt(0)?.toUpperCase() || "A"}
