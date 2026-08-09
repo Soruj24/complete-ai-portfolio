@@ -15,6 +15,7 @@ import {
   Search,
   Menu,
   LogOut,
+  ChevronRight,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -26,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ModeToggle } from "@/components/mode-toggle";
+import { AdminBreadcrumb } from "./admin-breadcrumb";
 import Link from "next/link";
 
 interface User {
@@ -57,19 +59,24 @@ export function AdminTopbar() {
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 z-30 flex h-12 items-center gap-3 border-b border-border-subtle bg-background/80 backdrop-blur-xl px-4 transition-all duration-200",
-        collapsed ? "left-[60px]" : "left-[240px]",
+        "fixed top-0 right-0 z-30 flex h-12 items-center gap-3 border-b border-border-subtle bg-background/80 backdrop-blur-xl px-4 transition-[left] duration-200 ease-in-out",
+        collapsed ? "left-[60px]" : "left-[220px]",
       )}
     >
       {/* Mobile menu toggle */}
       <button
         onClick={() => dispatch(toggleSidebar())}
         className="flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors lg:hidden"
+        aria-label="Toggle sidebar"
       >
         <Menu className="h-4 w-4" />
       </button>
 
-      {/* Spacer */}
+      {/* Breadcrumb */}
+      <div className="hidden sm:block">
+        <AdminBreadcrumb />
+      </div>
+
       <div className="flex-1" />
 
       {/* Search trigger */}
@@ -88,6 +95,7 @@ export function AdminTopbar() {
       <button
         onClick={() => dispatch(setNotificationsOpen(true))}
         className="relative flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-surface hover:text-text-primary transition-colors"
+        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
