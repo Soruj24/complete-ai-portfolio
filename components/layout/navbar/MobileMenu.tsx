@@ -72,7 +72,7 @@ export const MobileMenu = forwardRef<HTMLDivElement, MobileMenuProps>(
               </a>
             </div>
             <Button asChild variant="outline" className="w-full gap-2 min-h-[44px] text-[14px]">
-              <a href={SITE.resumeUrl} download onClick={onClose}>
+              <a href={SITE.resumeUrl} target="_blank" rel="noopener noreferrer" onClick={onClose}>
                 <Download className="h-4 w-4" aria-hidden="true" />
                 Download Resume
               </a>

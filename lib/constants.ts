@@ -8,7 +8,7 @@ export const SITE = {
   location: "Bangladesh",
   email: "sorujmahmudb2h@gmail.com",
   since: 2021,
-  resumeUrl: "/Soruj_Mahmud_CV.txt",
+  resumeUrl: "/resume",
 } as const;
 
 export const SOCIAL = {

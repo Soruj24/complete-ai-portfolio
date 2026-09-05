@@ -48,7 +48,8 @@ export function CTA({ settings }: CTAProps) {
             </a>
             <a
               href={resumeUrl}
-              download
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-border-subtle text-text-secondary text-[13px] font-medium hover:bg-surface hover:text-text-primary hover:border-border transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               Download Resume

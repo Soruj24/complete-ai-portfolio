@@ -195,7 +195,7 @@ export function Navbar() {
                 size="sm"
                 className="ml-1 gap-1.5"
               >
-                <a href={SITE.resumeUrl} download>
+                <a href={SITE.resumeUrl} target="_blank" rel="noopener noreferrer">
                   <Download className="h-3 w-3" aria-hidden="true" />
                   Resume
                 </a>

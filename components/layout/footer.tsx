@@ -87,14 +87,15 @@ export function Footer() {
               >
                 <Mail className="w-3.5 h-3.5" aria-hidden="true" />
               </Link>
-              <Link
+              <a
                 href={SITE.resumeUrl}
-                download
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2.5 rounded-lg text-text-tertiary hover:text-text-secondary hover:bg-surface transition-all duration-200 min-h-[40px] min-w-[40px] flex items-center justify-center"
                 aria-label="Download Resume"
               >
                 <Download className="w-3.5 h-3.5" aria-hidden="true" />
-              </Link>
+              </a>
             </div>
 
             <p className="text-[10px] text-text-disabled hidden sm:block">

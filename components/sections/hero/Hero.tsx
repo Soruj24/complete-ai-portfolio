@@ -157,7 +157,8 @@ export function Hero({ settings, socialLinks }: HeroProps) {
             </button>
             <a
               href={SITE.resumeUrl}
-              download
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-200 active:scale-[0.98] min-h-[44px]"
             >
               <Download className="w-3.5 h-3.5" aria-hidden="true" />
