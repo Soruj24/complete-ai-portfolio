@@ -61,7 +61,12 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed z-50 grid gap-4 border p-5 shadow-lg duration-200",
-          "inset-x-0 bottom-0 top-auto max-h-[85vh] rounded-t-xl sm:rounded-xl sm:top-[50%] sm:left-[50%] sm:bottom-auto sm:inset-x-auto sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:w-full sm:max-w-[calc(100%-2rem)]",
+          // Mobile: bottom sheet. sm+ : centered.
+          // Horizontal centering uses `inset-x-0` + `mx-auto` + a set width instead of
+          // `left-[50%]` + `translate-x-[-50%]`, so it cannot be knocked off-centre by
+          // Tailwind failing to emit one of those two classes.
+          "inset-x-0 bottom-0 top-auto w-full max-h-[85vh] rounded-t-xl",
+          "sm:top-1/2 sm:bottom-auto sm:mx-auto sm:w-[calc(100%-2rem)] sm:max-w-lg sm:-translate-y-1/2 sm:rounded-xl",
           className
         )}
         {...props}

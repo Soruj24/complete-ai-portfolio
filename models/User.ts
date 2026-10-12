@@ -7,6 +7,9 @@ export interface IUser extends Document {
   role: "admin";
   status: "active" | "banned";
   image?: string;
+  isVerified: boolean;
+  verificationToken?: string;
+  verificationTokenExpires?: Date;
   refreshTokenHash?: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
@@ -35,6 +38,9 @@ const userSchema = new Schema<IUser>(
       default: "active",
     },
     image: String,
+    isVerified: { type: Boolean, default: true },
+    verificationToken: { type: String, select: false },
+    verificationTokenExpires: { type: Date, select: false },
     refreshTokenHash: { type: String, select: false },
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpires: { type: Date, select: false },
