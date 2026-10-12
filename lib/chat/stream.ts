@@ -1,4 +1,4 @@
-import { getAIStream } from "@/lib/ollama";
+import { getAIStream } from "@/lib/openrouter";
 
 export function createResponseStream(message: string, history: { role: string; content: string }[], context: string): Response {
   const stream = new ReadableStream({

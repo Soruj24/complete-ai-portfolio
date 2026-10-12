@@ -15,7 +15,7 @@ export const PROVIDERS: AiProvider[] = [
   { id: "openai", name: "OpenAI", apiKey: "", baseUrl: "https://api.openai.com/v1", enabled: true, models: ["GPT-4o", "GPT-4o Mini", "GPT-4 Turbo"], color: "#10a37f", icon: "Brain" },
   { id: "anthropic", name: "Anthropic", apiKey: "", baseUrl: "https://api.anthropic.com/v1", enabled: true, models: ["Claude 3.5 Sonnet", "Claude 3 Haiku"], color: "#d97706", icon: "Brain" },
   { id: "google", name: "Google AI", apiKey: "", baseUrl: "https://generativelanguage.googleapis.com/v1", enabled: false, models: ["Gemini Pro", "Gemini Ultra"], color: "#4285f4", icon: "Brain" },
-  { id: "ollama", name: "Ollama (Local)", apiKey: "", baseUrl: "http://localhost:11434/v1", enabled: true, models: ["Llama 3.1", "Mistral", "CodeLlama"], color: "#6b7280", icon: "Server" },
+  { id: "openrouter", name: "OpenRouter", apiKey: "", baseUrl: "https://openrouter.ai/api/v1", enabled: true, models: ["openrouter/free", "google/gemini-2.5-flash", "anthropic/claude-sonnet-4.5", "openai/gpt-4o-mini"], color: "#6467f2", icon: "Globe" },
   { id: "mistral", name: "Mistral AI", apiKey: "", baseUrl: "https://api.mistral.ai/v1", enabled: false, models: ["Mistral Large", "Mistral Small"], color: "#7c3aed", icon: "Brain" },
 ];
 

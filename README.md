@@ -7,7 +7,7 @@ Production-grade portfolio and content management platform for Soruj Mahmud (`li
 - **Public site:** server-rendered portfolio at `/`, project case studies at `/projects/[id]`, printable resume at `/resume`, plus `/privacy`, `/terms`, `/cookie-policy`, `/verify-email`, `/banned`.
 - **Admin CMS:** ~65 pages under `/admin/*` (content, analytics, AI, media, users, security, system, settings, communication).
 - **API:** 65 Route Handlers under `app/api/**/route.ts` backed by MongoDB/Mongoose.
-- **AI:** public bilingual portfolio chatbot streaming from a local Ollama model via LangChain, plus admin copilots for blog/project generation.
+- **AI:** public bilingual portfolio chatbot streaming from OpenRouter via LangChain, plus admin copilots for blog/project generation.
 - **Stack:** `next@15.1.6`, `react@19.2.0`, `typescript@5`, `mongoose@9.0.1`, `next-auth@5.0.0-beta.30`, Redux Toolkit + RTK Query, Tailwind CSS v4.
 
 > Configured canonical URL in code is `https://soruj-mahmud.dev` (`lib/constants.ts:7`, used as `metadataBase` in `app/layout.tsx:40`). Live deployment status is not verified by this repo. Local default is `http://localhost:3000`.
@@ -40,7 +40,7 @@ Production-grade portfolio and content management platform for Soruj Mahmud (`li
 | DB | `mongoose@9.0.1`, `mongodb@6.21.0`, `config/db.ts:dbConnect()` |
 | Auth | `next-auth@5.0.0-beta.30`, `@auth/mongodb-adapter`, `jose@6.2.3`, `jsonwebtoken@^9.0.3`, `bcrypt@^6.0.0`, `bcryptjs@^3.0.3`, `otplib@^12.0.1`, `speakeasy@^2.0.0` (installed, unused), `qrcode@^1.5.4` |
 | State/data | `@reduxjs/toolkit@2.11.0`, `react-redux@9`, RTK Query, `react-hook-form@7.68.0`, `@hookform/resolvers@5.2.2`, `zod@4.2.1` |
-| AI | `@langchain/ollama`, `@langchain/core`, `@langchain/classic@1.0.7`, `@langchain/community`, `@langchain/openai`, `@langchain/google-genai`, `langchain@1.1.5`, `ai@7.0.15`, `@ai-sdk/openai@4.0.7`, `@modelcontextprotocol/sdk@1.24.3` |
+| AI | `@langchain/core`, `@langchain/classic@1.0.7`, `@langchain/community`, `@langchain/openai`, `@langchain/google-genai`, `langchain@1.1.5`, `ai@7.0.15`, `@ai-sdk/openai@4.0.7`, `@modelcontextprotocol/sdk@1.24.3` |
 | Infra | `@upstash/redis@1.36.0`, `@upstash/ratelimit@2.0.7` (installed, `Redis` class used; `Ratelimit` class unused), `cloudinary@2.8.0`, `next-cloudinary@6.17.5`, `@cloudinary/react`, `@cloudinary/url-gen`, `nodemailer@7`, `resend@6`, `@react-email/components`, `@react-email/render`, `react-email@5` |
 | UI | `tailwindcss@^4`, `@tailwindcss/postcss@^4`, `tw-animate-css@^1.4.0`, `next-themes@^0.4.6`, `@radix-ui/*` (23 packages), `class-variance-authority`, `clsx`, `tailwind-merge`, `framer-motion@^12.23.26`, `gsap@^3.14.2`, `@gsap/react@^2.1.2`, `recharts@^2.15.4`, `embla-carousel-react@^8.6.0`, `vaul@^1.1.2`, `sonner@^2.0.7`, `lucide-react@^0.555.0`, `cmdk`, `input-otp`, `react-day-picker`, `react-resizable-panels` |
 | Realtime | `socket.io@^4.8.1`, `socket.io-client@^4.8.1` — installed but **unused** (no `new Server`/`io()`/`on`/`emit` in source) |
@@ -71,7 +71,7 @@ flowchart TB
     M[("MongoDB<br/>19 Mongoose model files")]
     C[("Cloudinary CDN")]
     GH["GitHub REST/GraphQL"]
-    OL["Ollama localhost:11434<br/>gemma4"]
+    OL["OpenRouter<br/>OPENROUTER_MODEL"]
   end
   P --> M
   PD --> M
@@ -96,7 +96,7 @@ flowchart TB
 1. `GET /` → `app/page.tsx:35 PortfolioPage()` calls `lib/portfolio-data.ts:10 getPortfolioData()` → `dbConnect()` + `Promise.all` of 7 `lean()` finds → serialized props → `Hero/About` (SSR props) + `Projects initialProjects` etc. Fallback per-section `fetch(/api/...)` if `initial*` empty.
 2. `GET /projects/:id` → `app/projects/[id]/page.tsx:15 getProject()` → `Project.findById(id).lean()` → `notFound()` or 3-col render (`project-content.tsx`, `project-sidebar.tsx`, `table-of-contents.tsx`). View-count increment happens only on `GET /api/projects/[id]` (`portfolioService.incrementViews`), not the RSC path.
 3. Contact submit → `Contact.tsx:86 onSubmit` (RHF+zod) → `fetch POST /api/contact` → `app/api/contact/route.ts:23` validates required fields → `contactService.send()` → `ContactMessage.create` → `201`.
-4. Chatbot input → `hooks/use-ai-chat.ts:17 sendMessage` → `lib/services/portfolio-chat.ts:3 POST /api/chat/portfolio {message,history[-8:]}` → `app/api/chat/portfolio/route.ts:12` loads `Settings + Project(featured:5) + Experience + Skill` + `loadExtraContext()` + `detectLanguage()` → `createBengali|EnglishContext()` → `createResponseStream()` (`ChatOllama gemma4` stream) → `ReadableStream` chunks → incremental `setMessages` + `localStorage:portfolioChat`.
+4. Chatbot input → `hooks/use-ai-chat.ts:17 sendMessage` → `lib/services/portfolio-chat.ts:3 POST /api/chat/portfolio {message,history[-8:]}` → `app/api/chat/portfolio/route.ts:12` loads `Settings + Project(featured:5) + Experience + Skill` + `loadExtraContext()` + `detectLanguage()` → `createBengali|EnglishContext()` → `createResponseStream()` (`ChatOpenAI` → OpenRouter stream) → `ReadableStream` chunks → incremental `setMessages` + `localStorage:portfolioChat`.
 5. Pageview → `hooks/use-page-view-track.ts` (500ms debounce, `localStorage pv_session_id`) → `POST /api/analytics/track` → `UAParser` + `ip-api.com/json` geo (3s timeout, silent fail) → `PageView.create` / `Download.create` → admin analytics aggregates read it.
 
 ## Application Flow
@@ -113,7 +113,7 @@ sequenceDiagram
   UI->>H: RHF+zod / useAiChat / useProjects / RTK Query
   H->>A: fetch POST/GET (/api/contact, /api/chat/portfolio, /api/admin/*)
   A->>S: zod safeParse → *Service → *Repository
-  S->>DB: Mongoose find/create/update OR Cloudinary/GitHub/Ollama
+  S->>DB: Mongoose find/create/update OR Cloudinary/GitHub/OpenRouter
   DB-->>S: lean docs / secure_url / stream chunks
   S-->>A: createApiResponse / ReadableStream
   A-->>H: JSON envelope / SSE text
@@ -162,7 +162,7 @@ sequenceDiagram
 | Mixed | `GET /api/{blog,projects,projects/[id],skills,skills/[id],experience,experience/[id],settings,contact}` public; `POST/PUT/PATCH/DELETE` on same paths | writes: `auth()` or `getSession()` + `role==admin` → 401/403 |
 | Chat | `GET/POST /api/chat`, `GET /api/chat/admin`, `GET/POST /api/chat/ai` | `auth()` required; `chat/admin` requires `admin` |
 | User | `PUT /api/user/profile`, `PUT /api/user/password`, `GET/PATCH/DELETE /api/notifications` (owner-scoped `find({userId:session.user.id}).limit(20)`), `POST /api/auth/2fa/{setup,verify}`, `GET /api/auth/me`, `POST /api/auth/logout` | `auth()` (NextAuth) — custom-JWT callers get 401 |
-| Admin | `GET/POST/PUT/DELETE /api/admin/[...resource]` (gateway), `GET/PATCH/DELETE /api/admin/users`, `GET/POST /api/admin/settings`, `GET /api/admin/{search,stats,activity}`, `GET /api/admin/analytics/{route,traffic,visitors,charts,tables,realtime,calendar}`, `GET /api/admin/system-health{,/ollama}`, `POST /api/admin/ai/{generate-blog,optimize-project}`, `POST /api/cloudinary/sign {paramsToSign}→{signature}`, `GET/POST /api/seed` + `GET /api/seed/projects` subset | `getSession()` or `auth()` + `role==admin` |
+| Admin | `GET/POST/PUT/DELETE /api/admin/[...resource]` (gateway), `GET/PATCH/DELETE /api/admin/users`, `GET/POST /api/admin/settings`, `GET /api/admin/{search,stats,activity}`, `GET /api/admin/analytics/{route,traffic,visitors,charts,tables,realtime,calendar}`, `GET /api/admin/system-health{,/openrouter}`, `POST /api/admin/ai/{generate-blog,optimize-project}`, `POST /api/cloudinary/sign {paramsToSign}→{signature}`, `GET/POST /api/seed` + `GET /api/seed/projects` subset | `getSession()` or `auth()` + `role==admin` |
 | Envelope | `createApiResponse(data,{message,status,pagination})`, `createErrorResponse`, `handleApiError` (`lib/utils/api-response.ts`) | — |
 
 Gateway detail (`app/api/admin/[...resource]/route.ts`): `getSession` → `dbConnect()` → `getResourceKey(pathname)` (`lib/admin/route-utils.ts`) → `ANALYTICS_RESOURCES` → `handleAnalyticsGET()` else `isDedicatedModel(key)` (`certificates,testimonials,achievements,resume,social-links,skills`) → `handleDedicated*` else `handleGeneric*` on `AdminResource{resource,data}`; `DELETE .../bulk{ids}` via `handleBulkDELETE`. Pagination `?search&page&limit&sort&order`.
@@ -227,7 +227,7 @@ lib/
   services/*  repositories/*  schemas/{auth,portfolio,chat,blog,admin,index}.ts
   validations/auth.ts  validations.ts  mappers/*  chat/{stream,language,documents,context}.ts
   ai/{types,schemas,prompts,pdf}.ts  rag/{vector-store,embeddings,chunker,seed,index}.ts
-  github/{client,queries,constants}.ts  resume/*  admin/*  ollama.ts
+  github/{client,queries,constants}.ts  resume/*  admin/*  openrouter.ts
   redis.ts  rate-limit.ts  email.ts  env.ts  portfolio-data.ts
 models/ (19 files)  hooks/  config/db.ts  constants/  types/  shared/
 auth.ts  auth.config.ts  middleware.ts
@@ -285,8 +285,9 @@ EMAIL_PASSWORD=YOUR_PASSWORD       # legacy key in .env
 RESEND_API_KEY=YOUR_KEY            # installed, no `new Resend()` call in source
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# AI (lib/ollama.ts uses OLLAMA_BASE_URL; lib/rag/embeddings uses OpenAI)
-OLLAMA_BASE_URL=http://localhost:11434
+# AI (lib/openrouter.ts uses OPENROUTER_*; lib/rag/embeddings uses OpenAI)
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_MODEL=openrouter/free
 GOOGLE_GENERATIVE_AI_API_KEY=YOUR_KEY  # in lib/env.ts, unused in inference path
 GEMINI_MODEL=YOUR_MODEL
 OPENAI_API_KEY=YOUR_KEY
@@ -313,7 +314,7 @@ First-run admin:
 1. Visit `/setup` → submit name/email/password → `POST /api/admin/setup` (409 if admin exists).
 2. Visit `/login` → `loginAction` → redirect `/admin/dashboard` (middleware enforces `token` + `role==admin`).
 3. Route shims: `app/dashboard/page.tsx` redirects to `/admin/dashboard` if `getSession()` else `/login`; `app/profile/page.tsx` redirects to `/admin/profile` if session else `/login`; `app/banned/page.tsx` posts `POST /api/auth/logout` then pushes `/login`.
-4. Optional: start Ollama (`OLLAMA_BASE_URL`, model `gemma4` per `lib/ollama.ts:7`) for the chatbot and `POST /api/admin/ai/*` copilots; set `GITHUB_TOKEN` for higher GitHub rate limits; configure SMTP for forgot-password emails.
+4. Set `OPENROUTER_API_KEY` (+ optional `OPENROUTER_MODEL`) for the chatbot and `POST /api/admin/ai/*` copilots; set `GITHUB_TOKEN` for higher GitHub rate limits; configure SMTP for forgot-password emails.
 
 ## Available Scripts
 
@@ -366,7 +367,7 @@ All under `app/admin/*`, gated by `middleware.ts` (`/admin` → `token` + `role=
 - **Media:** `app/admin/media` → `features/media/components/media-page` + `hooks/use-media.ts` + `services/upload-service.ts:uploadToCloudinary` (XHR `.../auto/upload`, preset `ml_default`, `folder:portfolio`, progress) after `POST /api/cloudinary/sign` (`api_sign_request`); metadata in `AdminResource{resource:media}`.
 - **Users/IAM:** `users|roles|permissions` pages → `features/system/*` ← `GET/PATCH/DELETE /api/admin/users` (`updateUserSchema/deleteUserSchema` in `lib/schemas/admin.ts`) + gateway lists; `lib/repositories/user.ts`.
 - **Security:** `security|security/sessions|security/login-history` → `features/security/*` (overview/auth/access/monitoring/secrets/data tabs, score gauge, session/login rows) + `components/admin/security/*`; data via gateway; `Session`/`Token` models defined.
-- **System:** `system/{activity,audit,logs,database,backup,restore,storage}` → `features/system/*` + `GET /api/admin/system-health` (`mongoose.readyState`, `process.uptime/memory`) + `.../system-health/ollama`.
+- **System:** `system/{activity,audit,logs,database,backup,restore,storage}` → `features/system/*` + `GET /api/admin/system-health` (`mongoose.readyState`, `process.uptime/memory`) + `.../system-health/openrouter`.
 - **Settings/comms:** `settings/general` ↔ `GET/POST /api/admin/settings` (`Settings.findOne||create`, `settingsSchema`, `updatedBy`); `appearance[/themes]`, `profile` (mock local-state), `api-keys`, `integrations`, `environment`, `newsletter`, `messages`, `contact-requests`, `notifications`; `webrtc` page renders mock empty state.
 - **Seed/search:** `SeedButton` → `GET/POST /api/seed?all|users|projects|skills|experience|blogs|achievements` (`deleteMany+insertMany` from `lib/seed-data/*`); `command-palette` → `GET /api/admin/search?q=` (regex across Project/Skill/Experience/BlogPost/Testimonial/`AdminResource` media + settings label, 5 each, `{id,name,type,icon,editPath,meta}`).
 
@@ -381,15 +382,15 @@ flowchart LR
   M --> C["createBengali|EnglishContext()<br/>+ langInstruction"]
   D --> C
   L --> C
-  C --> O["ChatOllama<br/>gemma4, temp 0.7<br/>ChatPromptTemplate → StringOutputParser"]
+  C --> O["ChatOpenAI<br/>OPENROUTER_MODEL, temp 0.7<br/>ChatPromptTemplate → StringOutputParser"]
   O --> S["ReadableStream<br/>text/event-stream"]
   S --> R["readStream() → setMessages<br/>localStorage:portfolioChat"]
 ```
 
-- Sole inference: `lib/ollama.ts:5 new ChatOllama({baseUrl: OLLAMA_BASE_URL||localhost:11434, model:"gemma4"})`, `getAIStream(message,history,context)` with `ECONNREFUSED`/`not found` mapping (`ollama pull gemma4`).
+- Sole inference: `lib/openrouter.ts getChatModel()` → `new ChatOpenAI({model: OPENROUTER_MODEL, baseURL: OPENROUTER_BASE_URL||https://openrouter.ai/api/v1, defaultHeaders: HTTP-Referer/X-Title})`, `getAIStream(message,history,context)` with `describeOpenRouterError()` mapping 401/402/404/429 to actionable messages.
 - `POST /api/chat/portfolio` (public, no rate-limit): builds context from DB + docs + language rule, returns `createResponseStream()` (`lib/chat/stream.ts`).
-- `POST/GET /api/chat/ai` (requires `auth()`): persists user turn to `ChatMessage{receiverId:ai-assistant}`, loads last 5, streams via `getAIStream` without portfolio context, saves `senderId:ai-assistant` turn labeled `AI Assistant (Llama 3.2)` in code.
-- Copilots (admin-only): `POST /api/admin/ai/generate-blog` and `POST /api/admin/ai/optimize-project` stream via `prompt.pipe(ollamaModel).pipe(StringOutputParser)`.
+- `POST/GET /api/chat/ai` (requires `auth()`): persists user turn to `ChatMessage{receiverId:ai-assistant}`, loads last 5, streams via `getAIStream` without portfolio context, saves `senderId:ai-assistant` turn labeled `AI Assistant (${OPENROUTER_MODEL})` in code.
+- Copilots (admin-only): `POST /api/admin/ai/generate-blog` and `POST /api/admin/ai/optimize-project` stream via `prompt.pipe(getChatModel()).pipe(StringOutputParser)`.
 - RAG (`lib/rag/`): `embeddings.ts` (OpenAI `text-embedding-3-small` via `ai` SDK), `chunker.ts` (500 words/50 overlap, `chunkPortfolioData`), `vector-store.ts` (module-global array + `cosineSimilarity`, `searchSimilar`, `retrieveContext`), `seed.ts` (stub `return;`) — **not called by any chat route**; `admin/ai/{rag,embeddings,vector-db}` pages and `playground` (`setTimeout 20ms` fake responses, hardcoded `524 docs/$842`) are mocks.
 
 ## Real-Time Communication
@@ -447,7 +448,7 @@ npm run build
 npm run start
 ```
 
-Requires `MONGODB_URI` + `AUTH_SECRET`; optional `OLLAMA_BASE_URL` (chatbot/copilots), `GITHUB_TOKEN`, SMTP, Upstash. No `Dockerfile`/`vercel.json` to document.
+Requires `MONGODB_URI` + `AUTH_SECRET`; required `OPENROUTER_API_KEY` (chatbot/copilots), `GITHUB_TOKEN`, SMTP, Upstash. No `Dockerfile`/`vercel.json` to document.
 
 ## Troubleshooting
 
@@ -455,7 +456,8 @@ Requires `MONGODB_URI` + `AUTH_SECRET`; optional `OLLAMA_BASE_URL` (chatbot/copi
 |---|---|
 | `Please define MONGODB_URI in your .env file` (`config/db.ts:6`) | set `MONGODB_URI` |
 | `AUTH_SECRET environment variable is required` (`lib/auth/jwt.ts:5-6`) | set `AUTH_SECRET` |
-| `Ollama is not running...` / `The 'gemma4' model was not found. Please run 'ollama pull gemma4'` (`lib/ollama.ts:52`) | start Ollama / pull model |
+| `OpenRouter is not configured. Add OPENROUTER_API_KEY...` | add `OPENROUTER_API_KEY` to `.env.local` |
+| `OpenRouter rejected the API key` / `OpenRouter credits are exhausted` / `Model "..." is not available on OpenRouter` (`describeOpenRouterError` in `lib/openrouter.ts`) | fix the key / top up credits / set a valid `OPENROUTER_MODEL` |
 | `Admin already exists` 409 (`app/api/admin/setup/route.ts`) | `/setup` is one-time; go to `/login` |
 | `Unauthorized` 401 / `Forbidden` 403 | missing/expired `token` or non-admin role; re-login |
 | `Too many requests` 429 (`lib/rate-limit.ts`, `lib/redis.ts`) | wait out window (forgot-password 3/min) |
@@ -463,7 +465,7 @@ Requires `MONGODB_URI` + `AUTH_SECRET`; optional `OLLAMA_BASE_URL` (chatbot/copi
 | `Network error. Is your database running?` (setup page) | Mongo unreachable |
 | Reset email links to `/reset-password?token=` 404 | known mismatch: page is `/login/reset/[token]` — update `NEXTAUTH_URL` path or route |
 | Chat `400 Validation failed` on human send | known bug: widget sends `receiverId:""` and service drops `receiverId` (required) |
-| `GET /api/health` returns `503 Ollama unreachable` | Ollama down or `OLLAMA_BASE_URL` wrong; `GET /api/health` fetches `${baseUrl}/api/tags` with 2s timeout (`app/api/health/route.ts`) |
+| `GET /api/health` returns `503 OpenRouter unreachable` | OpenRouter API down or network blocked; `GET /api/health` calls `${OPENROUTER_BASE_URL}/key` with a 3s timeout (`app/api/health/route.ts`) |
 | Dead `API_ENDPOINTS.AUTH.LOGIN/REGISTER/SESSION` (`/api/auth/login`, `/api/register`, `/api/auth/session`) | stale constants in `shared/constants/api.ts` / `lib/store/api/auth-api.ts`; real routes are Server Actions + `/api/auth/me|refresh|logout` |
 
 ## Future Improvements

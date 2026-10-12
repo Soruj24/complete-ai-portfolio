@@ -32,7 +32,7 @@ registerResource("/admin/ai/llm-providers", {
     { key: "name", label: "Name", type: "text", sortable: true, validation: { required: true } },
     { key: "provider", label: "Provider", type: "select", options: [
       { label: "OpenAI", value: "openai" }, { label: "Anthropic", value: "anthropic" },
-      { label: "Google", value: "google" }, { label: "Ollama", value: "ollama" }, { label: "Custom", value: "custom" },
+      { label: "Google", value: "google" }, { label: "OpenRouter", value: "openrouter" }, { label: "Custom", value: "custom" },
     ]},
     { key: "enabled", label: "Enabled", type: "toggle", sortable: true },
     { key: "configured", label: "Configured", type: "toggle", sortable: true, showInForm: false },

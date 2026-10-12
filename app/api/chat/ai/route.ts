@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { dbConnect } from "@/config/db";
 import { ChatMessage } from "@/models/ChatMessage";
 import { NextResponse } from "next/server";
-import { getAIStream } from "@/lib/ollama";
+import { getAIStream, OPENROUTER_MODEL } from "@/lib/openrouter";
 
 export async function POST(request: Request) {
   try {
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         // 3. Save full AI response once stream finishes
         await ChatMessage.create({
           senderId: "ai-assistant",
-          senderName: "AI Assistant (Llama 3.2)",
+          senderName: `AI Assistant (${OPENROUTER_MODEL})`,
           senderImage: "/ai-avatar.png",
           receiverId: session.user.id,
           message: fullResponse,

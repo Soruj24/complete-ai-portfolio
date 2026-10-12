@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { ollamaModel } from "@/lib/ollama";
+import { getChatModel } from "@/lib/openrouter";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       ["user", `Original Description: ${description}`],
     ]);
 
-    const chain = prompt.pipe(ollamaModel).pipe(new StringOutputParser());
+    const chain = prompt.pipe(getChatModel(0.6)).pipe(new StringOutputParser());
     const stream = await chain.stream({
       description,
       techStack: techStack?.join(", "),

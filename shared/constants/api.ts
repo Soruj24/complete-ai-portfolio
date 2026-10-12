@@ -39,7 +39,7 @@ export const API_ENDPOINTS = {
     ACTIVITY: "/api/admin/activity",
     SYSTEM_HEALTH: "/api/admin/system-health",
     STATS: "/api/admin/stats",
-    OLLAMA_HEALTH: "/api/admin/system-health/ollama",
+    OPENROUTER_HEALTH: "/api/admin/system-health/openrouter",
     RESOURCE: (resource: string) => `/api/admin/${resource}`,
     AI_OPTIMIZE_PROJECT: "/api/admin/ai/optimize-project",
     AI_GENERATE_BLOG: "/api/admin/ai/generate-blog",

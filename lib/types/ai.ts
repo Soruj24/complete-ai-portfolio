@@ -16,7 +16,7 @@ export interface AIPrompt {
 export interface LLMProvider {
   _id: string;
   name: string;
-  provider: "openai" | "anthropic" | "google" | "ollama" | "custom";
+  provider: "openai" | "anthropic" | "google" | "openrouter" | "custom";
   apiKey: string;
   baseUrl: string;
   models: string[];

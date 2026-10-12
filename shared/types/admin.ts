@@ -16,7 +16,7 @@ export interface SystemHealth {
   memory: { used: number; total: number; percentage: number };
   cpu: { load: number; cores: number };
   database: { status: "connected" | "disconnected" | "error"; latency: number };
-  ollama?: { status: "running" | "stopped" | "error"; model?: string };
+  openrouter?: { status: "running" | "stopped" | "error"; model?: string };
 }
 
 export interface ActivityEntry {
