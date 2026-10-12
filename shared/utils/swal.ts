@@ -7,17 +7,41 @@ const base = {
   cancelButtonColor: "#6b7280",
 };
 
-export function confirmDelete(title: string, text: string) {
-  return Swal.fire({
+export interface ConfirmOptions {
+  confirmText?: string;
+  cancelText?: string;
+  /** Renders the confirm button in the destructive red. */
+  danger?: boolean;
+  icon?: "warning" | "question" | "info" | "error" | "success";
+}
+
+/**
+ * Generic yes/no confirmation replacing native `window.confirm`.
+ * Resolves `true` only when the user actually confirms — never a truthy result object.
+ */
+export async function confirmDialog(
+  title: string,
+  text?: string,
+  { confirmText = "Confirm", cancelText = "Cancel", danger = false, icon = "warning" }: ConfirmOptions = {}
+): Promise<boolean> {
+  const result = await Swal.fire({
     ...base,
     title,
     text,
-    icon: "warning",
+    icon,
     showCancelButton: true,
-    confirmButtonColor: "#ef4444",
-    confirmButtonText: "Yes, delete it",
-    cancelButtonText: "Cancel",
+    confirmButtonText: confirmText,
+    cancelButtonText: cancelText,
+    confirmButtonColor: danger ? "#ef4444" : base.confirmButtonColor,
+    reverseButtons: true,
   });
+
+  return result.isConfirmed;
+}
+
+/** Destructive-action confirmation. Resolves `true` only when confirmed. */
+export function confirmDelete(title: string, text?: string) {
+  return confirmDialog(title, text, { confirmText: "Yes, delete it", danger: true });
 }
 
 export function toastSuccess(title: string, text?: string) {

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import type { ChatMessage } from "@/types/chat";
 import { sendChatMessage, readStream } from "@/lib/services/portfolio-chat";
 import { buildWelcomeMessage, getGreeting } from "@/constants/chat";
+import { confirmDialog } from "@/shared/utils/swal";
 
 export function useAiChat() {
   const [isOpen, setIsOpen] = useState(false);
@@ -65,8 +66,13 @@ export function useAiChat() {
     setInput(prompt);
   }, []);
 
-  const clearChat = useCallback(() => {
-    if (!window.confirm("Start fresh? This will clear the entire conversation.")) return;
+  const clearChat = useCallback(async () => {
+    const confirmed = await confirmDialog(
+      "Start fresh?",
+      "This will clear the entire conversation.",
+      { confirmText: "Yes, start fresh", danger: true }
+    );
+    if (!confirmed) return;
     setMessages([
       { id: "welcome", role: "assistant", content: `${getGreeting()}! \n\nI'm Soruj AI, ready for a new chat!`, timestamp: new Date() },
     ]);
